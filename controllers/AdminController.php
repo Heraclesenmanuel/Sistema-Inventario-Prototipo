@@ -2,11 +2,8 @@
 require_once 'model/Conexion.php';
 require_once 'model/Inicio.php';
 require_once 'model/inventario.php';
-require_once 'model/pos.php';
 require_once 'model/config.php';
 require_once 'model/usuarios.php';
-require_once 'model/historial.php';
-require_once 'model/ccobrar.php';
 require_once 'model/proveedores.php';
 
 class AdminController 
@@ -18,7 +15,6 @@ class AdminController
     {
         $this->iniciarSesion();
         $this->bdatos = new Inicio();
-        $this->pos = new Pos();
         $this->clientes = new Usuarios();
     }
     protected function iniciarSesion()

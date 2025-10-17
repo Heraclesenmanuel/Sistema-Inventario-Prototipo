@@ -392,24 +392,6 @@
                 </a>
             </li>
             <li>
-                <a href="?action=pos&method=home">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Punto de venta</span>
-                </a>
-            </li>
-            <li>
-                <a href="?action=historial&method=home">
-                    <i class="fas fa-history"></i>
-                    <span>Historial</span>
-                </a>
-            </li>
-            <li>
-                <a href="?action=cuentas&method=home">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    <span>Cuentas por cobrar</span>
-                </a>
-            </li>
-            <li>
                 <a href="?action=cliente&method=users">
                     <i class="fas fa-users"></i>
                     <span>Clientes</span>
