@@ -53,7 +53,7 @@
             </form>
             
             <div class="footer-links">
-                <a href="#">¿Olvidaste tu contraseña?</a>
+                <a href="?action=inicio&method=forgotPassw">¿Olvidaste tu contraseña?</a>
             </div>
         </div>
     </div>

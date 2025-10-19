@@ -54,6 +54,47 @@ class Inicio
             echo "<script>alert('Ocurrió un error al iniciar sesión. Por favor, inténtelo de nuevo más tarde.');</script>";
         }
     }
+    public function checkPasswRequest($credencial)
+    {
+        try {
+            // Validar parámetros
+            if (empty($credencial)) {
+                echo "<script>alert('Colocar su cedula o usuario es obligatorio');</script>";
+                return false;
+            }
+
+            // Consulta preparada para prevenir inyección SQL
+            $consulta = "SELECT correo FROM inf_usuarios WHERE cedula = ? OR correo = ?";
+            $stmt = $this->db->prepare($consulta);
+            
+            if (!$stmt) {
+                throw new Exception("Error preparando consulta: " . ($this->db->error));
+            }
+
+            $stmt->bind_param("ss", $credencial, $credencial);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($fila = $result->fetch_array()) {
+                $correo = $fila[0];
+                $this->sendPasswRequest($correo);
+            } else {
+                header("Location: ?action=inicio&method=forgotPassw&error=1");
+                exit();
+            }
+
+            $stmt->close();
+            
+        } catch (Exception $e) {
+            error_log("Error en loginAuthenticate: " . $e->getMessage());
+            echo "<script>alert('Ocurrió un error al iniciar sesión. Por favor, inténtelo de nuevo más tarde.');</script>";
+        }
+    }
+    private function sendPasswRequest($correo)
+    {
+        echo $correo;
+        echo "jaja";
+    }
 
     private function establecerSesionUsuario($datosUsuario)
     {

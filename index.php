@@ -58,27 +58,24 @@ function crearBaseDeDatos($datosIniciales) {
         // Array con todas las consultas SQL
         $queries = [
             // Tabla admin
-            "DROP TABLE IF EXISTS `admin`",
+            "DROP TABLE IF EXISTS `admin`;",
             "CREATE TABLE `admin` (
                 `id` int NOT NULL AUTO_INCREMENT,
                 `claveSuper` varchar(100) NOT NULL,
                 `NombreAPP` varchar(100) NOT NULL,
-                `precio_dollar` double(100,2) NOT NULL,
+                `precio_dollar` double(10,2) NOT NULL,
                 PRIMARY KEY (`id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
-
-            // Tabla clientes
-            "DROP TABLE IF EXISTS `clientes`",
+            )",
+            "DROP TABLE IF EXISTS `clientes`;", 
             "CREATE TABLE `clientes` (
                 `id_cliente` int NOT NULL AUTO_INCREMENT,
                 `nombre_apellido` varchar(100) NOT NULL,
                 `cedula` varchar(100) NOT NULL,
                 `telefono` varchar(100) NOT NULL,
                 PRIMARY KEY (`id_cliente`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
-
+            )",
             // Tabla cuentascobrar
-            "DROP TABLE IF EXISTS `cuentascobrar`",
+            "DROP TABLE IF EXISTS `cuentascobrar`;",
             "CREATE TABLE `cuentascobrar` (
                 `id_historial` int NOT NULL AUTO_INCREMENT,
                 `fecha` date NOT NULL,
@@ -88,10 +85,10 @@ function crearBaseDeDatos($datosIniciales) {
                 `total_usd` decimal(10,2) NOT NULL,
                 `productos_vendidos` json NOT NULL,
                 PRIMARY KEY (`id_historial`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
+            )",
 
             // Tabla historial
-            "DROP TABLE IF EXISTS `historial`",
+            "DROP TABLE IF EXISTS `historial`;",
             "CREATE TABLE `historial` (
                 `id_historial` int NOT NULL AUTO_INCREMENT,
                 `fecha` date NOT NULL,
@@ -101,21 +98,21 @@ function crearBaseDeDatos($datosIniciales) {
                 `total_usd` decimal(10,2) NOT NULL,
                 `productos_vendidos` json NOT NULL,
                 PRIMARY KEY (`id_historial`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
-
+            )",
             // Tabla inf_usuarios
-            "DROP TABLE IF EXISTS `inf_usuarios`",
+            "DROP TABLE IF EXISTS `inf_usuarios`;",
             "CREATE TABLE `inf_usuarios` (
                 `id` int NOT NULL AUTO_INCREMENT,
                 `cedula` varchar(100) NOT NULL,
                 `clave` varchar(100) NOT NULL,
                 `id_cargo` int NOT NULL,
+                `correo` varchar(200) NOT NULL,
                 `nombre` varchar(100) NOT NULL,
                 PRIMARY KEY (`id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
+            )",
 
             // Tabla proveedores
-            "DROP TABLE IF EXISTS `proveedores`",
+            "DROP TABLE IF EXISTS `proveedores`;",
             "CREATE TABLE `proveedores` (
                 `id_proveedor` int NOT NULL AUTO_INCREMENT,
                 `nombre` varchar(100) NOT NULL,
@@ -126,30 +123,28 @@ function crearBaseDeDatos($datosIniciales) {
                 `estado` varchar(100) NOT NULL,
                 `nota` varchar(100) NOT NULL,
                 PRIMARY KEY (`id_proveedor`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
+            )",
 
             // Tabla inventario
-            "DROP TABLE IF EXISTS `inventario`",
+            "DROP TABLE IF EXISTS `inventario`;",
             "CREATE TABLE `inventario` (
                 `id_producto` int NOT NULL AUTO_INCREMENT,
                 `codigo` int NOT NULL,
                 `nombre` varchar(100) NOT NULL,
-                `un_disponibles` int DEFAULT '0',
+                `un_disponibles` int DEFAULT 0,
                 `precio_compra` decimal(10,2) NOT NULL,
                 `precio_venta` decimal(10,2) NOT NULL,
                 `medida` varchar(100) DEFAULT NULL,
                 PRIMARY KEY (`id_producto`),
                 UNIQUE KEY `codigo` (`codigo`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci"
+            )"
         ];
-
         // Ejecutar consultas de creación de tablas
         foreach ($queries as $query) {
-            if ($conn->query($query) !== TRUE) {
+            if ($conn->query($query) === FALSE) {
                 throw new Exception("Error ejecutando consulta: " . $conn->error . "<br>Consulta: " . $query);
             }
         }
-
         // Insertar datos en admin con la clave proporcionada
         $claveSuper = $conn->real_escape_string($datosIniciales['claveSuper']);
         $conn->query("INSERT INTO `admin` (`id`, `claveSuper`, `NombreAPP`, `precio_dollar`) VALUES (1, '$claveSuper', 'App', 0.00)");
@@ -159,8 +154,9 @@ function crearBaseDeDatos($datosIniciales) {
         $clave = $conn->real_escape_string($datosIniciales['clave']);
         $id_cargo = (int)$datosIniciales['id_cargo'];
         $nombre = $conn->real_escape_string($datosIniciales['nombre']);
+        $correo = $conn->real_escape_string($datosIniciales['correo']);
         
-        $conn->query("INSERT INTO `inf_usuarios` (`id`, `cedula`, `clave`, `id_cargo`, `nombre`) VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre')");
+        $conn->query("INSERT INTO `inf_usuarios` (`id`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`) VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo')");
 
         return true;
 
@@ -187,7 +183,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_bd'])) {
         'cedula' => trim($_POST['cedula'] ?? ''),
         'clave' => trim($_POST['clave'] ?? ''),
         'id_cargo' => 1, // Valor por defecto
-        'nombre' => trim($_POST['nombre'] ?? '')
+        'nombre' => trim($_POST['nombre'] ?? ''),
+        'correo' => trim($_POST['correo'] ?? '')
     ];
 
     // Validaciones
@@ -341,6 +338,8 @@ if (!verificarBaseDeDatosExiste()) {
         }
         
         input[type="text"],
+        input[type="email"],
+        input[type="number"],
         input[type="password"] {
             width: 100%;
             padding: 12px 16px;
@@ -521,6 +520,21 @@ if (!verificarBaseDeDatosExiste()) {
                         required
                     >
                     <div class="help-text">Este será su nombre de usuario para iniciar sesión.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="correo">
+                        Correo electrónico <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="email" 
+                        id="correo" 
+                        name="correo" 
+                        placeholder="tucorreoelectronico@gmail.com"
+                        value="<?= htmlspecialchars($_POST['correo'] ?? '') ?>"
+                        required
+                    >
+                    <div class="help-text">Este será su correo para comunicados fuera del sistéma.</div>
                 </div>
 
                 <div class="form-group">

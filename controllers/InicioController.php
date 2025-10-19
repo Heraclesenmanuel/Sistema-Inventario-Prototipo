@@ -31,4 +31,14 @@ class InicioController
             }
         }
     }
+    public function forgotPassw()
+    {
+        require_once 'views/auth/forgot.php';
+    }
+    public function sendPasswRequest()
+    {
+        $correo = trim($_POST['user']);
+        $this->modelo->checkPasswRequest($correo);
+        require_once 'views/auth/forgot.php';
+    }
 }
