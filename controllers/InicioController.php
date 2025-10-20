@@ -67,14 +67,13 @@ class InicioController
     {
         if(isset($_POST['init'])){
             if(strlen($_POST['passw']) >= 3 && strlen($_POST['passw2']) >= 3) {
-                $password = trim($_POST['id']);
                 $password1 = trim($_POST['passw']);
                 $password2 = trim($_POST['passw2']);
-                $this->modelo->changePassw($password1, $password2);
+                $this->modelo->changePassw($password1, $password2, $_SESSION['id']);
             }
             else{
                 echo "
-                <script>alert('Los campos debe ser mayores a 3 digitos');
+                <script>alert('Las contraseñas deben de ser mayores a 3 digitos');
                 setTimeout(()=>{
                     window.location.href = './'
                 },500)

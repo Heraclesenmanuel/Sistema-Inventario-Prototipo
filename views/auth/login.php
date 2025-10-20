@@ -24,6 +24,12 @@
                         <span>Usuario o contraseña incorrectos</span>
                     </div>
                 <?php endif; ?>
+                <?php if (isset($_GET['state'])): ?>
+                    <div class="alert alert-success">
+                        <i class="bi bi-heart-fill"></i>
+                        <span>¡Tu clave fue cambiada exitosamente!</span>
+                    </div>
+                <?php endif; ?>
                 
                 <div class="form-group">
                     <label for="user">
