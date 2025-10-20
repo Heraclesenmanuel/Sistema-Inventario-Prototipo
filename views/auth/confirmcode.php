@@ -14,13 +14,13 @@
         <div class="login-card">
             <div class="logo-section">
                 <i class="bi bi-shield-lock"></i>
-                <h1>Recuperar Contraseña</h1>
+                <h1>Ingrese el código</h1>
             </div>
-            <form action="?action=inicio&method=sendPasswRequest" method="post">
+            <form action="?action=inicio&method=checkCode" method="post">
                 <?php if (isset($_GET['error']) && $_GET['error']==1): ?>
                     <div class="alert error">
                         <i class="bi bi-exclamation-circle"></i>
-                        <span>Correo, usuario o cedula incorrectos.</span>
+                        <span>Codigo incorrecto.</span>
                     </div>
                 <?php elseif (isset($_GET['error']) && $_GET['error']==2): ?>
                     <div class="alert error">
@@ -32,9 +32,9 @@
                 <div class="form-group">
                     <label for="user">
                         <i class="bi bi-person icon"></i>
-                        <span>Credenciales</span>
+                        <span>Código</span>
                     </label>
-                    <input type="text" id="user" name="user" placeholder="Ingresa su correo, cedula o usuario" required>
+                    <input type="text" id="codigo" name="codigo" placeholder="Ingrese el codigo enviado a su correo" required>
                 </div>
                 <button type="submit" name="init" class="btn-submit">
                     <i class="bi bi-box-arrow-in-right"></i>

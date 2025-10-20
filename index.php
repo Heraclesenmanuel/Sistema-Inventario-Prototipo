@@ -137,6 +137,12 @@ function crearBaseDeDatos($datosIniciales) {
                 `medida` varchar(100) DEFAULT NULL,
                 PRIMARY KEY (`id_producto`),
                 UNIQUE KEY `codigo` (`codigo`)
+            )",
+            "DROP TABLE IF EXISTS `codigos_recuperacion`;",
+            "CREATE TABLE `codigos_recuperacion` (
+                `id` int NOT NULL AUTO_INCREMENT,
+                `codigo` varchar(100) NOT NULL,
+                PRIMARY KEY (`id`)
             )"
         ];
         // Ejecutar consultas de creación de tablas
@@ -154,7 +160,7 @@ function crearBaseDeDatos($datosIniciales) {
         $clave = $conn->real_escape_string($datosIniciales['clave']);
         $id_cargo = (int)$datosIniciales['id_cargo'];
         $nombre = $conn->real_escape_string($datosIniciales['nombre']);
-        $correo = $conn->real_escape_string($datosIniciales['correo']);
+        $correo = strtolower($conn->real_escape_string($datosIniciales['correo']));
         
         $conn->query("INSERT INTO `inf_usuarios` (`id`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`) VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo')");
 

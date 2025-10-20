@@ -16,11 +16,11 @@
                 <i class="bi bi-shield-lock"></i>
                 <h1>Recuperar Contraseña</h1>
             </div>
-            <form action="?action=inicio&method=sendPasswRequest" method="post">
+            <form action="?action=inicio&method=submitNewPassw" method="post">
                 <?php if (isset($_GET['error']) && $_GET['error']==1): ?>
                     <div class="alert error">
                         <i class="bi bi-exclamation-circle"></i>
-                        <span>Correo, usuario o cedula incorrectos.</span>
+                        <span>Contraseña incorrecta.</span>
                     </div>
                 <?php elseif (isset($_GET['error']) && $_GET['error']==2): ?>
                     <div class="alert error">
@@ -32,9 +32,16 @@
                 <div class="form-group">
                     <label for="user">
                         <i class="bi bi-person icon"></i>
-                        <span>Credenciales</span>
+                        <span>Contraseña</span>
                     </label>
-                    <input type="text" id="user" name="user" placeholder="Ingresa su correo, cedula o usuario" required>
+                    <input type="password" id="passw" name="passw" placeholder="Ingrese su nueva contraseña" required>
+                </div>
+                <div class="form-group">
+                    <label for="user">
+                        <i class="bi bi-person icon"></i>
+                        <span>Confirmar Contraseña</span>
+                    </label>
+                    <input type="password" id="passw2" name="passw2" placeholder="Confirme su nueva contraseña" required>
                 </div>
                 <button type="submit" name="init" class="btn-submit">
                     <i class="bi bi-box-arrow-in-right"></i>

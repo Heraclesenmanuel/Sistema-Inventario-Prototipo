@@ -39,6 +39,47 @@ class InicioController
     {
         $correo = trim($_POST['user']);
         $this->modelo->checkPasswRequest($correo);
-        require_once 'views/auth/forgot.php';
+    }
+    public function confirmCode()
+    {
+        require_once 'views/auth/confirmcode.php';
+    }
+    public function checkCode() {
+        if(isset($_POST['codigo'])){
+            if(strlen($_POST['codigo']) >= 32) {
+                $codigo = trim($_POST['codigo']);
+                $this->modelo->chequearCodigo($codigo);
+            }
+            else{
+                echo "
+                <script>alert('Los campos debe ser mayores a 3 digitos');
+                setTimeout(()=>{
+                    window.location.href = './'
+                },500)
+                </script>";
+            }
+        }
+    }
+    public function changePassw() {
+        require 'views/auth/changep.php';
+    }
+    public function submitNewPassw()
+    {
+        if(isset($_POST['init'])){
+            if(strlen($_POST['passw']) >= 3 && strlen($_POST['passw2']) >= 3) {
+                $password = trim($_POST['id']);
+                $password1 = trim($_POST['passw']);
+                $password2 = trim($_POST['passw2']);
+                $this->modelo->changePassw($password1, $password2);
+            }
+            else{
+                echo "
+                <script>alert('Los campos debe ser mayores a 3 digitos');
+                setTimeout(()=>{
+                    window.location.href = './'
+                },500)
+                </script>";
+            }
+        }
     }
 }

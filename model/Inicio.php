@@ -1,4 +1,12 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/phpmailer/phpmailer/src/Exception.php';
+require 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require 'vendor/phpmailer/phpmailer/src/SMTP.php';
+
+
 class Inicio 
 {
     private $db; 
@@ -46,7 +54,6 @@ class Inicio
                 header("Location: ?action=inicio&method=login&error=1");
                 exit();
             }
-
             $stmt->close();
             
         } catch (Exception $e) {
@@ -59,12 +66,13 @@ class Inicio
         try {
             // Validar parámetros
             if (empty($credencial)) {
-                echo "<script>alert('Colocar su cedula o usuario es obligatorio');</script>";
-                return false;
+                echo "<script>alert('Colocar su cedula, correo o usuario es obligatorio');</script>";
+                header("Location: ?action=inicio&method=forgotPassw&error=1");
+                exit();
             }
 
             // Consulta preparada para prevenir inyección SQL
-            $consulta = "SELECT correo FROM inf_usuarios WHERE cedula = ? OR correo = ?";
+            $consulta = "SELECT correo, id FROM inf_usuarios WHERE cedula = ? OR correo = ?";
             $stmt = $this->db->prepare($consulta);
             
             if (!$stmt) {
@@ -77,12 +85,80 @@ class Inicio
 
             if ($fila = $result->fetch_array()) {
                 $correo = $fila[0];
-                $this->sendPasswRequest($correo);
+                $id = $fila[1];
+                $this->sendPasswRequest($correo, $id);
             } else {
-                header("Location: ?action=inicio&method=forgotPassw&error=1");
+                header("Location: ?action=inicio&method=forgotPassw&error=2");
                 exit();
             }
 
+            $stmt->close();
+            
+        } catch (Exception $e) {
+            error_log("Error chequeando si existe tu cuenta: " . $e->getMessage());
+            echo "<script>alert('Ocurrió un error al chequear tu solicitud. Por favor, inténtelo de nuevo más tarde.');</script>";
+        }
+    }
+    private function subirCodigoRecuperacion($id, $codigo)
+    {
+        try
+        {
+            $consulta = "INSERT INTO codigos_recuperacion VALUES(?, ?)";
+            $stmt = $this->db->prepare($consulta);
+            if (!$stmt) {
+                throw new Exception("Error preparando consulta: " . ($this->db->error));
+            }
+            $stmt->bind_param("is", $id, $codigo);
+            if ($stmt->execute()) 
+            {
+                header("Location: ?action=inicio&method=confirmCode");
+                exit();
+
+            } else 
+            {
+                header("Location: ?action=inicio&method=forgotPassw&error=2");
+                exit();
+            }
+            $stmt->close();
+        } catch (Exception $e) {
+            error_log("Error en la recuperacion de contraseña: " . $e->getMessage());
+            echo "<script>alert('Ocurrió un error al recuperar la contraseña. Por favor, inténtelo de nuevo más tarde.');</script>";
+        }
+    }
+    private function generarCodigoRecuperacion($longitud, $id)      
+    {
+        $codigo = bin2hex(random_bytes($longitud / 2));
+        $this->subirCodigoRecuperacion($id, $codigo);
+        return $codigo;
+    }
+    public function chequearCodigo($codigo)
+    {
+        try {
+            // Validar parámetros
+            if (empty($codigo)) {
+                echo "<script>alert('Usuario y contraseña son obligatorios');</script>";
+                return false;
+            }
+
+            // Consulta preparada para prevenir inyección SQL
+            $consulta = "SELECT * FROM codigos_recuperacion WHERE codigo = ?";
+            $stmt = $this->db->prepare($consulta);
+            
+            if (!$stmt) {
+                throw new Exception("Error preparando consulta: " . ($this->db->error));
+            }
+
+            $stmt->bind_param("s", $codigo);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($fila = $result->fetch_array()) {
+                header("Location: ?action=inicio&method=changePassw");
+                exit();
+            } else {
+                header("Location: ?action=inicio&method=confirmCode&error=1");
+                exit();
+            }
             $stmt->close();
             
         } catch (Exception $e) {
@@ -90,10 +166,59 @@ class Inicio
             echo "<script>alert('Ocurrió un error al iniciar sesión. Por favor, inténtelo de nuevo más tarde.');</script>";
         }
     }
-    private function sendPasswRequest($correo)
+    private function sendPasswRequest($correo, $id)
     {
-        echo $correo;
-        echo "jaja";
+        $codigo = $this->generarCodigoRecuperacion(32, $id);
+        $mail = new PHPMailer();
+        $mail->isSMTP();
+        $mail->Host = 'sandbox.smtp.mailtrap.io';
+        $mail->SMTPAuth = true;
+        $mail->Username = '5b70b234403b01';
+        $mail->Password = '87f37005a895f3';
+        $mail->Port = 2525;
+
+        $mail->setFrom('noreply@demo.com', 'Sistema UPEL');
+        $mail->addAddress(strtolower($correo));
+        $mail->Subject = 'Recuperacion de contraseña';
+        $mail->Body = 'Coloca este codigo en la pagina para restablecer tu contrasenia: ' . $codigo;
+
+        $mail->send();
+    }
+    public function changePassw($password1, $password2, $codigo)
+    {
+        echo 'lol';
+        /*try {
+            // Validar parámetros
+            if (empty($codigo)) {
+                echo "<script>alert('Usuario y contraseña son obligatorios');</script>";
+                return false;
+            }
+
+            // Consulta preparada para prevenir inyección SQL
+            $consulta = "UPDATE clave FROM inf_usuarios WHERE codigo = ?";
+            $stmt = $this->db->prepare($consulta);
+            
+            if (!$stmt) {
+                throw new Exception("Error preparando consulta: " . ($this->db->error));
+            }
+
+            $stmt->bind_param("s", $codigo);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($fila = $result->fetch_array()) {
+                header("Location: ?action=inicio&method=changePassw");
+                exit();
+            } else {
+                header("Location: ?action=inicio&method=confirmCode&error=1");
+                exit();
+            }
+            $stmt->close();
+            
+        } catch (Exception $e) {
+            error_log("Error en loginAuthenticate: " . $e->getMessage());
+            echo "<script>alert('Ocurrió un error al iniciar sesión. Por favor, inténtelo de nuevo más tarde.');</script>";
+        }*/
     }
 
     private function establecerSesionUsuario($datosUsuario)
