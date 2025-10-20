@@ -56,10 +56,10 @@
                 $nombre = trim($_POST['nombre_usuario']);
                 $cedula = trim($_POST['cedula']);
                 $clave = trim($_POST['clave_usuario']);
+                $correo = trim($_POST['correo']);
                 $id_cargo = (int)$_POST['id_cargo'];
 
-                $resultado = $this->config->addUsuario($cedula, $nombre, $clave, $id_cargo);
-                
+                $resultado = $this->config->addUsuario($cedula, $nombre, $clave, $id_cargo, $correo);
                 $_SESSION['mensaje'] = $resultado['message'];
                 $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
                 

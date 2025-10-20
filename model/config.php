@@ -112,7 +112,7 @@ class Config {
         }
         $stmtCheck->close();
     }
-    public function addUsuario($cedula, $nombre, $clave_usuario, $id_cargo) {
+    public function addUsuario($cedula, $nombre, $clave_usuario, $id_cargo, $correo) {
         // Validaciones básicas
         if (!preg_match('/^[0-9]{7,10}$/', $cedula)) {
             return [
@@ -126,9 +126,9 @@ class Config {
             return $verificacion;
         }
         // Insertar nuevo usuario
-        $sql = "INSERT INTO inf_usuarios (cedula, nombre, clave, id_cargo) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO inf_usuarios (cedula, nombre, clave, id_cargo, correo) VALUES (?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("sssi", $cedula, $nombre, $clave_usuario, $id_cargo);
+        $stmt->bind_param("sssis", $cedula, $nombre, $clave_usuario, $id_cargo, $correo);
 
         if ($stmt->execute()) {
             return [

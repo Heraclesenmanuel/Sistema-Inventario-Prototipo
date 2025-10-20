@@ -202,6 +202,13 @@
                         <input type="text" id="nombre_usuario" name="nombre_usuario" 
                             placeholder="Ingrese el nombre completo" required maxlength="100">
                     </div>
+                    <div class="form-group">
+                        <label for="correo">
+                            Correo electrónico<span class="required">*</span>
+                        </label>
+                        <input type="email" id="correo" name="correo" 
+                            placeholder="Ingrese el correo electrónico" required maxlength="200">
+                    </div>
 
                     <div class="form-group">
                         <label for="clave_usuario">
@@ -213,7 +220,11 @@
                             <i class="fas fa-eye toggle-password" data-target="clave_usuario"></i>
                         </div>
                     </div>
-                    <input type="hidden" name="id_cargo" value="1">
+                    <select name="id_cargo">
+                        <option value="1">Administrador</option>
+                        <option value="2">Usuario</option>
+                    </select> <---prototipo
+                    <br>
                     <button type="submit" name="bandera_agregar_usuario">
                         <i class="fas fa-user-plus"></i> Agregar Usuario
                     </button>
