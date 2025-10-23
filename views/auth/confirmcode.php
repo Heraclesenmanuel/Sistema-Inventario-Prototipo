@@ -27,6 +27,11 @@
                         <i class="bi bi-exclamation-circle"></i>
                         <span>Error accediendo a nuestros servidores, por favor intentelo de nuevo en un momento.</span>
                     </div>
+                <?php elseif (isset($_GET['msg'])): ?>
+                    <div class="alert alert-success">
+                        <i class="bi bi-shield-lock"></i>
+                        <span>Te hemos enviado el codigo a tu correo anteriormente, por favor revise y coloquelo en esta pagina.</span>
+                    </div>
                 <?php endif; ?>
                 
                 <div class="form-group">
@@ -34,7 +39,7 @@
                         <i class="bi bi-person icon"></i>
                         <span>Código</span>
                     </label>
-                    <input type="text" id="codigo" name="codigo" placeholder="Ingrese el codigo enviado a su correo" required>
+                    <input type="text" id="codigo" name="codigo" placeholder="Ingrese el codigo enviado a su correo" required minlength="32">
                 </div>
                 <button type="submit" name="init" class="btn-submit">
                     <i class="bi bi-box-arrow-in-right"></i>

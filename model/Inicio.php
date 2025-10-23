@@ -64,9 +64,11 @@ class Inicio
     {
         try {
             // Validar parámetros
-            if (empty($credencial)) {
-                echo "<script>alert('Colocar su cedula, correo o usuario es obligatorio');</script>";
-                header("Location: ?action=inicio&method=forgotPassw&error=1");
+            if (strlen(trim($credencial))==0) {
+                echo "<script>
+                    alert('Debe ingresar su cedula, correo o nombre de usuario para solicitar el código de verificación.');
+                    window.location.href = '?action=inicio&method=forgotPassw&error=1';
+                </script>";
                 exit();
             }
 
@@ -87,34 +89,78 @@ class Inicio
                 $id = $fila[1];
                 $_SESSION['id'] = $id;
                 $this->sendPasswRequest($correo, $id);
-            } else {
-                header("Location: ?action=inicio&method=forgotPassw&error=2");
+                $stmt->close();
+            } 
+            else if($result->num_rows == 0)
+            {
+                header("Location: ?action=inicio&method=forgotPassw&error=1");
+                $stmt->close();
                 exit();
             }
-
-            $stmt->close();
+            else {
+                header("Location: ?action=inicio&method=forgotPassw&error=2");
+                $stmt->close();
+                exit();
+            }
             
         } catch (Exception $e) {
             error_log("Error chequeando si existe tu cuenta: " . $e->getMessage());
             echo "<script>alert('Ocurrió un error al chequear tu solicitud. Por favor, inténtelo de nuevo más tarde.');</script>";
         }
     }
-    private function eliminarCodigoAnterior($id)
+        private function sendPasswRequest($correo, $id)
+    {
+        $codigo = $this->generarCodigoRecuperacion(32, $id);
+        $mail = new PHPMailer();
+        $mail->isSMTP();
+        $mail->Host = 'sandbox.smtp.mailtrap.io';
+        $mail->SMTPAuth = true;
+        $mail->Username = '5b70b234403b01';
+        $mail->Password = '87f37005a895f3';
+        $mail->Port = 2525;
+
+        $mail->setFrom('noreply@demo.com', 'Sistema UPEL');
+        $mail->addAddress(strtolower($correo));
+        $mail->Subject = 'Recuperacion de contrasenia';
+        $mail->Body = 'Coloca este codigo en la pagina para restablecer tu contrasenia: ' . $codigo;
+
+        $mail->send();
+    }
+        private function generarCodigoRecuperacion($longitud, $id)      
+    {
+        $codigo = bin2hex(random_bytes($longitud / 2));
+        $this->verificarCodigoAnterior($id, $codigo);
+        return $codigo;
+    }
+    private function verificarCodigoAnterior($id, $codigo)
     {
         try
         {
-            $consulta = "DELETE FROM codigos_recuperacion WHERE id=?";
+            $consulta = "SELECT * FROM codigos_recuperacion WHERE id=?";
             $stmt = $this->db->prepare($consulta);
             if (!$stmt) {
                 throw new Exception("Error preparando consulta: " . ($this->db->error));
             }
             $stmt->bind_param("i", $id);
-            if (!($stmt->execute())) 
+            $ejecucion = $stmt->execute();
+            $stmt->store_result();
+            if (!$ejecucion) 
             {
                 header("Location: ?action=inicio&method=forgotPassw&error=2");
                 $stmt->close();
                 exit();
             }
+            else if ($stmt->num_rows > 0)
+            {
+                header("Location: ?action=inicio&method=confirmCode&msg=1");
+                $stmt->close();
+                exit();
+            }
+            else
+            {
+                $this->subirCodigoRecuperacion($id, $codigo);
+            }
+            exit($stmt->num_rows);
         } catch (Exception $e) {
             error_log("Error en la recuperacion de contraseña: " . $e->getMessage());
             echo "<script>alert('Ocurrió un error al recuperar la contraseña. Por favor, inténtelo de nuevo más tarde.');</script>";
@@ -122,7 +168,6 @@ class Inicio
     }
     private function subirCodigoRecuperacion($id, $codigo)
     {
-        $this->eliminarCodigoAnterior($id);
         try
         {
             $consulta = "INSERT INTO codigos_recuperacion VALUES(?, ?)";
@@ -134,22 +179,18 @@ class Inicio
             if ($stmt->execute()) 
             {
                 header("Location: ?action=inicio&method=confirmCode");
+                $stmt->close();
             } else 
             {
                 header("Location: ?action=inicio&method=forgotPassw&error=2");
+                $stmt->close();
                 exit();
             }
-            $stmt->close();
+            
         } catch (Exception $e) {
             error_log("Error en la recuperacion de contraseña: " . $e->getMessage());
             echo "<script>alert('Ocurrió un error al recuperar la contraseña. Por favor, inténtelo de nuevo más tarde.');</script>";
         }
-    }
-    private function generarCodigoRecuperacion($longitud, $id)      
-    {
-        $codigo = bin2hex(random_bytes($longitud / 2));
-        $this->subirCodigoRecuperacion($id, $codigo);
-        return $codigo;
     }
     public function chequearCodigo($codigo)
     {
@@ -172,10 +213,13 @@ class Inicio
             $stmt->execute();
             $result = $stmt->get_result();
 
-            if ($fila = $result->fetch_array()) {
+            if ($result->fetch_array()) {
                 header("Location: ?action=inicio&method=changePassw");             
-            } else {
+            } else if ($result->num_rows == 0){
                 header("Location: ?action=inicio&method=confirmCode&error=1");
+            }
+            else{
+                header("Location: ?action=inicio&method=confirmCode&error=2");                
             }
             $stmt->close();
             exit();
@@ -183,24 +227,6 @@ class Inicio
             error_log("Error en chequeo de codigo: " . $e->getMessage());
             echo "<script>alert('Ocurrió un error al chequear el codigo. Por favor, inténtelo de nuevo más tarde.');</script>";
         }
-    }
-    private function sendPasswRequest($correo, $id)
-    {
-        $codigo = $this->generarCodigoRecuperacion(32, $id);
-        $mail = new PHPMailer();
-        $mail->isSMTP();
-        $mail->Host = 'sandbox.smtp.mailtrap.io';
-        $mail->SMTPAuth = true;
-        $mail->Username = '5b70b234403b01';
-        $mail->Password = '87f37005a895f3';
-        $mail->Port = 2525;
-
-        $mail->setFrom('noreply@demo.com', 'Sistema UPEL');
-        $mail->addAddress(strtolower($correo));
-        $mail->Subject = 'Recuperacion de contrasenia';
-        $mail->Body = 'Coloca este codigo en la pagina para restablecer tu contrasenia: ' . $codigo;
-
-        $mail->send();
     }
     public function changePassw($password1, $password2, $codigo)
     {

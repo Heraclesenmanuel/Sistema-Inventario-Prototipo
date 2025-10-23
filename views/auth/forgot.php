@@ -34,7 +34,7 @@
                         <i class="bi bi-person icon"></i>
                         <span>Credenciales</span>
                     </label>
-                    <input type="text" id="user" name="user" placeholder="Ingresa su correo, cedula o usuario" required>
+                    <input type="text" id="user" name="user" placeholder="Ingresa su correo, cedula o usuario" required minlength="7">
                 </div>
                 <button type="submit" name="init" class="btn-submit">
                     <i class="bi bi-box-arrow-in-right"></i>

@@ -52,7 +52,7 @@ class InicioController
             }
             else{
                 echo "
-                <script>alert('Los campos debe ser mayores a 3 digitos');
+                <script>alert('El codigo de recuperacion debe ser de 32 digitos');
                 setTimeout(()=>{
                     window.location.href = './'
                 },500)
