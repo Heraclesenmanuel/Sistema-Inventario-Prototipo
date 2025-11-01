@@ -32,7 +32,7 @@ class Proveedores{
     }
 
     public function agregarProveedor($data) {
-        $query = "INSERT INTO proveedores (nombre_proveedor, email, telefono, direccion, nombre_encargado, estado, nota) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO proveedores (nombre, email, telefono, direccion, nombre_encargado, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -40,14 +40,15 @@ class Proveedores{
             return false;
         }
         
-        $stmt->bind_param("sssssss", 
+        $stmt->bind_param("ssssssss", 
             $data['nombre_proveedor'],
             $data['email'],
             $data['telefono'],
             $data['direccion'],
             $data['nombre_encargado'],
             $data['estado'],
-            $data['nota']
+            $data['nota'],
+            $data['rif']
         );
         
         $resultado = $stmt->execute();

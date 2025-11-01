@@ -743,3 +743,11 @@
   background: linear-gradient(to right, #f1f5f9 4%, #e2e8f0 25%, #f1f5f9 36%);
   background-size: 1000px 100%;
 }
+.phone-link {
+    text-decoration: none;
+    color: inherit;
+    }
+
+.phone-link:hover {
+    text-decoration: underline;
+    }

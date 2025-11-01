@@ -1,11 +1,12 @@
 <?php
+//Esto es de PROVEEDORES. Solo que sigue llamando clientes internamente
 class ClienteController extends AdminController
 {
     protected $clientes;
 // Función de Clientes
     public function users(){
         $this->validarSesion();
-        $titulo = 'Clientes';
+        $titulo = 'Oficinas';
         $Clientes = $this->clientes->obtenerUsuarios();
 
         if (isset($_POST['btn-add'])) {
@@ -29,7 +30,7 @@ class ClienteController extends AdminController
                         Swal.fire({
                             icon: "success",
                             title: "¡Éxito!",
-                            text: "Cliente agregado correctamente",
+                            text: "Oficina agregada correctamente",
                             confirmButtonColor: "#3498db",
                             timer: 2000,
                             timerProgressBar: true
@@ -60,7 +61,7 @@ class ClienteController extends AdminController
                     Swal.fire({
                         icon: "error",
                         title: "Error",
-                        text: "ID del cliente no encontrado",
+                        text: "ID de la oficina no encontrada",
                         confirmButtonColor: "#e74c3c"
                     }).then(() => {
                         window.location.href = "?action=cliente&method=users";
@@ -77,7 +78,7 @@ class ClienteController extends AdminController
                     Swal.fire({
                         icon: "success",
                         title: "¡Eliminado!",
-                        text: "Cliente eliminado exitosamente",
+                        text: "Oficina eliminada exitosamente",
                         confirmButtonColor: "#3498db",
                         timer: 2000,
                         timerProgressBar: true
@@ -90,7 +91,7 @@ class ClienteController extends AdminController
                     Swal.fire({
                         icon: "error",
                         title: "Error",
-                        text: "No se pudo eliminar el cliente. Verifique que exista.",
+                        text: "No se pudo eliminar la oficina. Verifique que exista.",
                         confirmButtonColor: "#e74c3c"
                     }).then(() => {
                         window.location.href = "?action=cliente&method=users";

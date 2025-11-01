@@ -117,7 +117,7 @@ class Inicio
         $mail->SMTPAuth = true;
         $mail->Username = '5b70b234403b01';
         $mail->Password = '87f37005a895f3';
-        $mail->Port = 2525;
+        $mail->Port = 465;
 
         $mail->setFrom('noreply@demo.com', 'Sistema UPEL');
         $mail->addAddress(strtolower($correo));
@@ -288,7 +288,7 @@ class Inicio
     {
         switch ($idCargo) {
             case 1:
-                header("Location: ?action=admin");
+                header("Location: ?action=admin&method=home");
                 break;
             default:
                 echo "<script>alert('Rol de usuario no válido');</script>";

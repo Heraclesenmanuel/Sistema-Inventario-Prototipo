@@ -8,52 +8,6 @@
     <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
     <link rel="stylesheet" href="public/css/admin.css">
     <link rel="stylesheet" href="public/css/config.css">
-    <style>
-        /* Estilos para alertas modernas */
-        .swal2-popup {
-            font-family: Arial, sans-serif;
-        }
-        
-        /* Estilos para el botón eliminar */
-        .btn-eliminar {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .btn-eliminar:hover {
-            background-color: #c0392b;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
-        }
-        
-        .btn-eliminar:active {
-            transform: translateY(0);
-        }
-        
-        .btn-eliminar i {
-            font-size: 12px;
-        }
-        
-        .btn-eliminar:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        
-        .btn-eliminar:disabled:hover {
-            transform: none;
-            box-shadow: none;
-        }
-    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -220,10 +174,13 @@
                             <i class="fas fa-eye toggle-password" data-target="clave_usuario"></i>
                         </div>
                     </div>
-                    <select name="id_cargo">
+                    <div>
+                        
+                    </div>
+                    <select name="id_cargo" class="form-select-sm">
                         <option value="1">Administrador</option>
                         <option value="2">Usuario</option>
-                    </select> <---prototipo
+                    </select>
                     <br>
                     <button type="submit" name="bandera_agregar_usuario">
                         <i class="fas fa-user-plus"></i> Agregar Usuario

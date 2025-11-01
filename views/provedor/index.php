@@ -10,16 +10,6 @@
     <link rel="stylesheet" href="public/css/admin.css">
     <link rel="stylesheet" href="public/css/proveedores.css">
 </head>
-<style>
-    .phone-link {
-    text-decoration: none;
-    color: inherit;
-    }
-
-    .phone-link:hover {
-    text-decoration: underline;
-    }
-</style>
 <body>
     <div class="dashboard">
         <?php include_once 'views/inc/heder.php' ?>
@@ -64,6 +54,7 @@
                             <th>Teléfono</th>
                             <th>Encargado</th>
                             <th>Estado</th>
+                            <th>RIF</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -71,7 +62,7 @@
                         <?php if(!empty($proveedores)): ?>
                             <?php foreach($proveedores as $proveedor): ?>
                                 <tr data-status="<?= htmlspecialchars($proveedor['estado']) ?>">
-                                    <td><?= htmlspecialchars($proveedor['nombre_proveedor']) ?></td>
+                                    <td><?= htmlspecialchars($proveedor['nombre']) ?></td>
                                     <td><?= htmlspecialchars($proveedor['email']) ?></td>
                                     <td>
                                         <a href="https://wa.me/<?= $proveedor['telefono'] ?>" target="_blank" class="phone-link">
@@ -84,6 +75,7 @@
                                             <?= htmlspecialchars($proveedor['estado']) ?>
                                         </span>
                                     </td>
+                                    <td><?= htmlspecialchars($proveedor['rif']) ?></td>
                                     <td>
                                         <button class="edit action-btn" onclick="editProvider(<?= $proveedor['id_proveedor'] ?>)">
                                             <i class="fas fa-edit"></i>
@@ -92,6 +84,7 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
+                                    
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -148,6 +141,11 @@
                     <div class="form-group">
                         <label for="providerContact">Persona de Contacto *</label>
                         <input type="text" id="providerContact" name="nombre_encargado" required placeholder="Ej: Juan Pérez">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="providerContact">RIF *</label>
+                        <input type="text" id="rif" name="rif" required placeholder="Ej: J-12345678">
                     </div>
 
                     <div class="form-group">
@@ -253,13 +251,14 @@
                     console.log('Proveedor encontrado:', provider);
                     
                     document.getElementById('providerId').value = provider.id_proveedor;
-                    document.getElementById('providerName').value = provider.nombre_proveedor || '';
+                    document.getElementById('providerName').value = provider.nombre || '';
                     document.getElementById('providerEmail').value = provider.email || '';
                     document.getElementById('providerPhone').value = provider.telefono || '';
                     document.getElementById('providerContact').value = provider.nombre_encargado || '';
                     document.getElementById('providerStatus').value = provider.estado || 'Activo';
                     document.getElementById('providerAddress').value = provider.direccion || '';
                     document.getElementById('providerNotes').value = provider.nota || '';
+                    document.getElementById('rif').value = provider.rif || '';
                 } else {
                     console.error('Proveedor no encontrado con ID:', providerId);
                     Swal.fire({
@@ -295,6 +294,7 @@
             formData.append('estado', document.getElementById('providerStatus').value);
             formData.append('direccion', document.getElementById('providerAddress').value);
             formData.append('nota', document.getElementById('providerNotes').value);
+            formData.append('rif', document.getElementById('rif').value);
             
             try {
                 let response;

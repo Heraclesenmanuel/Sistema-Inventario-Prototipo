@@ -88,7 +88,8 @@ class ProveedorController extends AdminController
                 'nombre_encargado' => trim($_POST['nombre_encargado']),
                 'estado' => trim($_POST['estado']),
                 'direccion' => isset($_POST['direccion']) ? trim($_POST['direccion']) : '',
-                'nota' => isset($_POST['nota']) ? trim($_POST['nota']) : ''
+                'nota' => isset($_POST['nota']) ? trim($_POST['nota']) : '',
+                'rif' => isset($_POST['rif']) ? trim($_POST['rif']) : ''
             ];
 
             // Validar formato de email

@@ -10,7 +10,7 @@ class AdminController
 {
     protected $bdatos;
     protected $pos;
-    protected $clientes;
+    protected $clientes; //Esto es de PROVEEDORES. Solo que sigue llamando clientes internamente
     public function __construct() 
     {
         $this->iniciarSesion();

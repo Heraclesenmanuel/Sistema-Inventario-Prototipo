@@ -15,7 +15,50 @@ body {
     display: flex;
     min-height: 100vh;
 }
+ /* ESTILOS PARA EL ENCABEZADO */
+        .welcome-container {
+            display: flex;
+            align-items: flex-start; /* Alinea los elementos al inicio (izquierda) */
+            justify-content: flex-start;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .welcome-image-container {
+    position: relative; /* Permite superposición */
+    width: 100%; /* Abarca todo el ancho */
+    height: 400px; /* Ajusta la altura según necesites */
+    overflow: hidden; /* Evita que elementos sobresalgan */
+}
 
+@keyframes fadeIn {
+    from {
+        opacity: 0; /* Empieza invisible */
+    }
+    to {
+        opacity: 1; /* Se vuelve visible */
+    }
+}
+
+.welcome-image {
+    width: 100%; /* Hace que la imagen ocupe toda la anchura */
+    height: 100%; /* Ajusta la altura según el contenedor */
+    object-fit: cover; /* Asegura que la imagen se cubra sin distorsión */
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+.welcome-text {
+    position: absolute;
+    top: 10%; /* Ajusta el texto al centro vertical */
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centrado exacto */
+    color: #000000;
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    animation: fadeIn 1.8s ease-in-out; /* Aplica la animación */
+}
 /* Navbar superior */
 .navbar {
     background-color: #fff;
@@ -44,11 +87,105 @@ body {
     color: #555;
 }
 
-
 .navbar-right {
     display: flex;
     align-items: center;
 }
+/* ESTILOS PARA ACCESOS RÁPIDOS - 3 POR FILA */
+        .quick-access-container {
+            margin-top: 40px;
+            width: 100%;
+            text-align: center; /* Centra el título */
+        }
+        
+        .quick-access-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #333;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+        
+        .quick-access-title:after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(to right, #FFC107, #BBDEF8);
+            bottom: 0;
+            left: 25%;
+        }
+        
+        .quick-access-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columnas */
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .quick-access-item {
+            background: white;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,77,77,0.2);
+            text-decoration: none;
+        }
+        
+        .quick-access-item i {
+            font-size: 3rem;
+            color: #2ECC71;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-access-item h3 {
+            font-size: 1.3rem;
+            color: #333;
+            margin: 0;
+            transition: all 0.3s ease;
+        }
+            .logo-upel {
+            width: 80px;   /* ajusta el ancho */
+            height: auto;   /* mantiene la proporción */
+            }
+        .quick-access-item:hover {
+            background: #2ECC71;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .quick-access-item:hover i,
+        .quick-access-item:hover h3 {
+            color: white;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            .quick-access-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 columnas en tablets */
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .welcome-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .welcome-image {
+                margin: 20px 0 0 0;
+            }
+            
+            .quick-access-grid {
+                grid-template-columns: 1fr; /* 1 columna en móviles */
+                gap: 15px;
+            }
+        }
 
 /* Sidebar */
 .sidebar {
@@ -255,7 +392,7 @@ tr:hover {
     .sidebar {
         width: 70px;
     }
-    
+
     .logo{
         display: none;
     }

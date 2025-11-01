@@ -1,3 +1,4 @@
+<!-- Esto es de PROVEEDORES. Solo que sigue llamando clientes internamente -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -380,23 +381,23 @@ tbody tr:last-child td:last-child {
 
             <div class="add">
                 <form action="" method="post">
-                    <h3>Agregar Nuevo Cliente</h3>
-                    <input type="text" id="name" name="name" placeholder="Ingrese el nombre del cliente" required>
-                    <input type="text" id="cedula" name="cedula" placeholder="Ingrese la cédula del cliente" required>
-                    <input type="text" id="cel" name="cel" placeholder="Ingrese el teléfono del cliente">
+                    <h3>Agregar Nueva Oficina</h3>
+                    <input type="text" id="name" name="name" placeholder="Ingrese el nombre de esta oficina" required>
+                    <input type="text" id="cedula" name="cedula" placeholder="Ingrese la cédula del director de esta oficina" required>
+                    <input type="text" id="cel" name="cel" placeholder="Ingrese el teléfono del director">
                     <button type="submit" id="btn-add" name="btn-add">
-                        <i class="fas fa-plus"></i> Agregar Cliente
+                        <i class="fas fa-plus"></i> Agregar Oficina
                     </button>
                 </form>
             </div>
             
             <div class="viewsUser">
-                <h3>Clientes Registrados</h3>
+                <h3>Oficinas Registradas</h3>
                 
                 <div class="table-controls">
                     <div class="search-wrapper">
                         <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="buscar" placeholder="Buscar cliente por nombre, cédula o teléfono...">
+                        <input type="text" id="buscar" placeholder="Buscar por nombre de la oficina, cédula o teléfono del director...">
                     </div>
                     <div class="entries-control">
                         <label for="entries-select">Mostrar:</label>
@@ -413,9 +414,9 @@ tbody tr:last-child td:last-child {
                     <table id="tabla-clientes">
                         <thead>
                             <tr>
-                                <th>Nombre Cliente</th>
-                                <th>Cédula Cliente</th>
-                                <th>Teléfono Cliente</th>
+                                <th>Nombre Oficina</th>
+                                <th>Cédula Director</th>
+                                <th>Teléfono Director</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -429,7 +430,7 @@ tbody tr:last-child td:last-child {
                                         <td>
                                             <button 
                                                 class="btn btn-sm btn-danger btn-delete"
-                                                title="Eliminar cliente" 
+                                                title="Eliminar oficina" 
                                                 data-id="<?php echo $info['id_cliente']; ?>">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
@@ -441,8 +442,8 @@ tbody tr:last-child td:last-child {
                                     <td colspan="4">
                                         <div class="text-muted">
                                             <i class="fas fa-users fa-3x"></i>
-                                            <h5>No hay Clientes registrados</h5>
-                                            <p>Comienza agregando tu primer cliente.</p>
+                                            <h5>No hay Oficinas registradas</h5>
+                                            <p>¡Comienza agregando tu primera oficina!</p>
                                         </div>
                                     </td>
                                 </tr>

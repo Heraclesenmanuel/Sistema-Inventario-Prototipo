@@ -1,5 +1,5 @@
 <?php
-class Inventario {
+class Notificaciones {
     private $db;
 
     public function __construct(){
@@ -7,7 +7,7 @@ class Inventario {
     }
 
     public function obtenerDatos(){
-        $sql = 'SELECT * FROM inventario';
+        $sql = 'SELECT * FROM notificaciones';
         $resultado = $this->db->query($sql);
 
         if(!$resultado) {
@@ -33,7 +33,7 @@ class Inventario {
         return $stmt;
     }
     public function guardarDatos($datos) {
-        $stmt = $this->db->prepare("INSERT INTO inventario (codigo, nombre, un_disponibles, medida, tipo_p, fecha_r) VALUES (?, ?, ?, ?, ?, NOW())");
+        $stmt = $this->db->prepare("INSERT INTO notificaciones (codigo, nombre, un_disponibles, medida, tipo_p, fecha_r) VALUES (?, ?, ?, ?, ?, NOW())");
         if (!$stmt) {
             $this->db->close();
             die('Error en la preparación de la consulta SQL');
@@ -47,7 +47,7 @@ class Inventario {
         return $result;
     }
         public function eliminarDatos($id) {
-            $stmt = $this->db->prepare("DELETE FROM inventario WHERE id_producto = ?");
+            $stmt = $this->db->prepare("DELETE FROM notificaciones WHERE id_producto = ?");
             if (!$stmt) {
                 throw new Exception("Error al preparar la consulta: " . $this->db->error);
             }
@@ -64,7 +64,7 @@ class Inventario {
             }
         }
     public function obtenerProductoPorId($id) {
-        $stmt = $this->db->prepare("SELECT * FROM inventario WHERE id_producto = ?");
+        $stmt = $this->db->prepare("SELECT * FROM notificaciones WHERE id_producto = ?");
         
         if (!$stmt) {
             throw new Exception("Error al preparar la consulta: " . $this->db->error);
@@ -78,7 +78,7 @@ class Inventario {
     }
 
     public function actualizarProducto($datos) {
-        $stmt = $this->db->prepare("UPDATE inventario SET 
+        $stmt = $this->db->prepare("UPDATE notificaciones SET 
             codigo = ?, 
             nombre = ?, 
             medida = ?, 
@@ -106,7 +106,7 @@ class Inventario {
                         nombre, 
                         SUM(un_disponibles) as cantidad,
                         ROUND(SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM inventario), 2) as porcentaje
-                        FROM inventario
+                        FROM notificaciones
                         GROUP BY nombre";
         
         $resultEstados = $this->db->query($sqlEstados);

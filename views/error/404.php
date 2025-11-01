@@ -6,36 +6,7 @@
     <title>Página No Encontrada - 404</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="<?= APP_Logo?>" type="image/x-icon">
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f8f9fa;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-        }
-        .error-code {
-            font-size: 10rem;
-            color: #007bff;
-        }
-        .error-message {
-            font-size: 2rem;
-            color: #333;
-        }
-        .back-link {
-            margin-top: 20px;
-            font-size: 1.2rem;
-            color: #007bff;
-            text-decoration: none;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="public/css/error.css">
 </head>
 <body>
     <div class="container">

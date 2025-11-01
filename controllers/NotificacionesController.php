@@ -1,18 +1,19 @@
 <?php
-class InventarioController extends AdminController
+require_once __DIR__ . '/../model/Notificaciones.php';
+class NotificacionesController extends AdminController
 {
-    private $inventario;
+    private $notif;
 
     public function __construct()
     {
         parent::__construct();
-        $this->inventario = new Inventario();
+        $this->notif = new Notificaciones();
     }
-     //FUNCIONES DEL INVETARIO
+     //FUNCIONES DE NOTIF
     public function home() {
         $this->validarSesion();
-        $titulo = 'Inventario';
-        $datosInven = $this->inventario->obtenerDatos();
+        $titulo = 'Notificaciones';
+        $datosInven = $this->notif->obtenerDatos();
 
         if (isset($_POST['add'])) {
             // Sanitizar y validar datos antes de guardar
@@ -28,14 +29,14 @@ class InventarioController extends AdminController
                 echo '<script>alert("El código del producto no puede estar vacío")</script>';
             } 
             else if ($this->inventario->guardarDatos($datos)) {
-                header('Location: ?action=inventario&method=home&mensaje=exito');
+                header('Location: ?action=notifiacciones&method=home&mensaje=exito');
                 exit();
             } 
             else {
                 echo '<script>alert("Error al guardar el producto. Intente nuevamente.")</script>';
             }
         }
-        require_once 'views/inventario/index.php';
+        require_once 'views/notificaciones/index.php';
     }
     public function eliminarProducto() {
         try{
@@ -74,30 +75,4 @@ class InventarioController extends AdminController
             echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
         }
     }
-    public function actualizarProducto() {
-        try {
-            if(!isset($_POST['id'])) {
-                echo '<script>alert("ID del producto no encontrado")</script>';
-                return;
-            }
-            $datos = [
-                'id_producto' => $_POST['id'],
-                'codigo' => $_POST['productCode'],
-                'nombre' => $_POST['nombre'],
-                'medida' => $_POST['medida'],
-                'un_disponibles' => $_POST['un_disponibles'],
-                'tipo_p' => $_POST['tipo_p']
-            ];
-            if($this->inventario->actualizarProducto($datos)) {
-                echo '<script>alert("Producto actualizado correctamente")</script>';
-            } else {
-                echo '<script>alert("Error al actualizar el producto")</script>';
-            }
-        } catch(Exception $e) {
-            echo '<script>alert("Error en el servidor")</script>';
-        }
-        header('Location: ?action=inventario&method=home');
-        exit();
-    }
-
 }

@@ -63,7 +63,6 @@ function crearBaseDeDatos($datosIniciales) {
                 `id` int NOT NULL AUTO_INCREMENT,
                 `claveSuper` varchar(100) NOT NULL,
                 `NombreAPP` varchar(100) NOT NULL,
-                `precio_dollar` double(10,2) NOT NULL,
                 PRIMARY KEY (`id`)
             )",
             "DROP TABLE IF EXISTS `clientes`;", 
@@ -74,7 +73,7 @@ function crearBaseDeDatos($datosIniciales) {
                 `telefono` varchar(100) NOT NULL,
                 PRIMARY KEY (`id_cliente`)
             )",
-            // Tabla cuentascobrar
+            /* Tabla cuentascobrar
             "DROP TABLE IF EXISTS `cuentascobrar`;",
             "CREATE TABLE `cuentascobrar` (
                 `id_historial` int NOT NULL AUTO_INCREMENT,
@@ -87,7 +86,7 @@ function crearBaseDeDatos($datosIniciales) {
                 PRIMARY KEY (`id_historial`)
             )",
 
-            // Tabla historial
+             Tabla historial
             "DROP TABLE IF EXISTS `historial`;",
             "CREATE TABLE `historial` (
                 `id_historial` int NOT NULL AUTO_INCREMENT,
@@ -98,7 +97,7 @@ function crearBaseDeDatos($datosIniciales) {
                 `total_usd` decimal(10,2) NOT NULL,
                 `productos_vendidos` json NOT NULL,
                 PRIMARY KEY (`id_historial`)
-            )",
+            )",*/
             // Tabla inf_usuarios
             "DROP TABLE IF EXISTS `inf_usuarios`;",
             "CREATE TABLE `inf_usuarios` (
@@ -119,12 +118,12 @@ function crearBaseDeDatos($datosIniciales) {
                 `email` varchar(100) NOT NULL,
                 `telefono` varchar(100) NOT NULL,
                 `direccion` varchar(255) NOT NULL,
-                `nombre_encargado` varchar(100) NOT NULL,
+                `ced_encargado` varchar(12) NOT NULL,
                 `estado` varchar(100) NOT NULL,
                 `nota` varchar(100) NOT NULL,
+                `rif` varchar(13) NOT NULL,
                 PRIMARY KEY (`id_proveedor`)
             )",
-
             // Tabla inventario
             "DROP TABLE IF EXISTS `inventario`;",
             "CREATE TABLE `inventario` (
@@ -132,11 +131,18 @@ function crearBaseDeDatos($datosIniciales) {
                 `codigo` int NOT NULL,
                 `nombre` varchar(100) NOT NULL,
                 `un_disponibles` int DEFAULT 0,
-                `precio_compra` decimal(10,2) NOT NULL,
-                `precio_venta` decimal(10,2) NOT NULL,
                 `medida` varchar(100) DEFAULT NULL,
+                `tipo_p` varchar(30) DEFAULT NULL,
+                `fecha_r` DATE NOT NULL,
                 PRIMARY KEY (`id_producto`),
                 UNIQUE KEY `codigo` (`codigo`)
+            )",
+            "DROP TABLE IF EXISTS `notificaciones`;",
+            "CREATE TABLE `notificaciones` (
+                `id_notif` int NOT NULL AUTO_INCREMENT,
+                `tipo` int NOT NULL,
+                `fecha_notif` DATE NOT NULL,
+                PRIMARY KEY (`id_notif`)
             )",
             "DROP TABLE IF EXISTS `codigos_recuperacion`;",
             "CREATE TABLE `codigos_recuperacion` (
@@ -153,7 +159,7 @@ function crearBaseDeDatos($datosIniciales) {
         }
         // Insertar datos en admin con la clave proporcionada
         $claveSuper = $conn->real_escape_string($datosIniciales['claveSuper']);
-        $conn->query("INSERT INTO `admin` (`id`, `claveSuper`, `NombreAPP`, `precio_dollar`) VALUES (1, '$claveSuper', 'App', 0.00)");
+        $conn->query("INSERT INTO `admin` (`id`, `claveSuper`, `NombreAPP`) VALUES (1, '$claveSuper', 'App')");
 
         // Insertar usuario con los datos proporcionados
         $cedula = $conn->real_escape_string($datosIniciales['cedula']);
@@ -235,216 +241,11 @@ if (!verificarBaseDeDatosExiste()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración Inicial - Sistema de Bodega</title>
     <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
+    <link rel="stylesheet" href="public/css/first_config.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #ffffff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            color: #2d3748;
-        }
-        
-        .container {
-            background: #ffffff;
-            padding: 50px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 10px 20px rgba(0, 0, 0, 0.05);
-            max-width: 580px;
-            width: 100%;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 30px;
-            border-bottom: 2px solid #f7fafc;
-        }
-        
-        .logo-container {
-            width: 70px;
-            height: 70px;
-            background: #22c55e;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-        }
-        
-        .logo-container i {
-            font-size: 36px;
-            color: white;
-        }
-        
-        h1 {
-            color: #1a202c;
-            margin-bottom: 8px;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        
-        .subtitle {
-            color: #718096;
-            font-size: 15px;
-            font-weight: 400;
-            line-height: 1.5;
-        }
-        
-        .form-section {
-            margin-bottom: 35px;
-        }
-        
-        .section-title {
-            color: #1a202c;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .section-title i {
-            color: #22c55e;
-            font-size: 18px;
-            width: 24px;
-            text-align: center;
-        }
-        
-        .form-group {
-            margin-bottom: 24px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #374151;
-            font-weight: 500;
-            font-size: 14px;
-        }
-        
-        label .required {
-            color: #ef4444;
-            margin-left: 2px;
-        }
-        
-        input[type="text"],
-        input[type="email"],
-        input[type="number"],
-        input[type="password"] {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1.5px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 15px;
-            font-family: inherit;
-            background: #ffffff;
-            color: #1f2937;
-        }
-        
-        input[type="text"]:focus,
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #22c55e;
-            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-        }
-        
-        .help-text {
-            font-size: 13px;
-            color: #6b7280;
-            margin-top: 6px;
-            line-height: 1.4;
-        }
-        
-        .btn-primary {
-            width: 100%;
-            background: #22c55e;
-            color: white;
-            padding: 14px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: inherit;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .btn-primary i {
-            font-size: 16px;
-        }
-        
-        .btn-primary:hover {
-            background: #16a34a;
-        }
-        
-        .btn-primary:active {
-            background: #15803d;
-        }
-        
-        .divider {
-            height: 1px;
-            background: #f1f5f9;
-            margin: 30px 0;
-        }
-        
-        .info-box {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 30px;
-        }
-        
-        .info-box-title {
-            color: #15803d;
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .info-box-title i {
-            font-size: 16px;
-        }
-        
-        .info-box-text {
-            color: #166534;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        @media (max-width: 640px) {
-            .container {
-                padding: 30px 24px;
-            }
-            
-            h1 {
-                font-size: 24px;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="container animate__animated animate__fadeIn">
@@ -698,7 +499,7 @@ function sendJsonError($message, $code = 400) {
 // Enrutamiento 
 $action = $_GET['action'] ?? 'Inicio';
 $actionName = ucfirst($action) . 'Controller';
-$method = $_GET['method'] ?? 'home';
+$method = $_GET['method'] ?? 'inicio';
 $controllerFile = 'controllers/' . $actionName . '.php';
 
 if (file_exists($controllerFile)) {

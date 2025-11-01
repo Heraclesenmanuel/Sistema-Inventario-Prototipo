@@ -8,6 +8,9 @@ class InicioController
     {
         $this->modelo = new Inicio();
     }
+    public function inicio() {
+        require_once 'views/home/inicio.php';
+    }
     public function home() {
         require_once 'views/home/index.php';
     }
