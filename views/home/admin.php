@@ -71,7 +71,7 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
                     <i class="fas fa-chart-bar"></i>
                     <h3>Estadísticas</h3>
 
-                <a href="?action=nada&method=users" class="quick-access-item">
+                <a href="?action=solicitudes&method=home" class="quick-access-item">
                     <i class="	fas fa-receipt"></i>
                     <h3>Solicitudes</h3>
                 </a>

@@ -74,6 +74,12 @@
                     <span>Estadísticas</span>
                 </a>
             </li>
+            <li>
+                <a href="?action=solicitudes&method=home">
+                    <i class="fas fa-receipt"></i>
+                    <span>Solicitudes</span>
+                </a>
+            </li>
         </ul>
     </div>
 </aside>
