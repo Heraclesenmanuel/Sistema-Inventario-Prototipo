@@ -8,7 +8,7 @@ class Usuarios {
 
     public function obtenerUsuarios(){
         try {
-            $sql = 'SELECT * FROM clientes ORDER BY id_cliente DESC';
+            $sql = 'SELECT * FROM cliente ORDER BY id_cliente DESC';
             $resul = $this->db->query($sql);
 
             if (!$resul) {
@@ -30,7 +30,7 @@ class Usuarios {
     {
         try {
         // Verificar si la cédula ya existe
-            $sqlCheck = "SELECT id_cliente FROM clientes WHERE cedula = ?";
+            $sqlCheck = "SELECT id_cliente FROM cliente WHERE cedula = ?";
             $stmtCheck = $this->db->prepare($sqlCheck);
             
             if ($stmtCheck) {
@@ -55,7 +55,7 @@ class Usuarios {
     public function agregarUsuario($nombre, $cedula, $telefono){
         try {
             $this->verificarCliente( $cedula);
-            $sql = "INSERT INTO clientes (nombre_apellido, cedula, telefono) VALUES (?, ?, ?)";
+            $sql = "INSERT INTO cliente (nombre_apellido, cedula, telefono) VALUES (?, ?, ?)";
             $stmt = $this->db->prepare($sql);
             
             if ($stmt) {
@@ -79,7 +79,7 @@ class Usuarios {
     public function deleteCliente($id){
         try {
             // CORRECCIÓN: El campo en la base de datos se llama id_cliente, no id
-            $sql = "DELETE FROM clientes WHERE id_cliente = ?";
+            $sql = "DELETE FROM cliente WHERE id_cliente = ?";
             $stmt = $this->db->prepare($sql);
             
             if ($stmt) {
@@ -110,7 +110,7 @@ class Usuarios {
 
     public function obtenerClientePorId($id){
         try {
-            $sql = "SELECT * FROM clientes WHERE id_cliente = ?";
+            $sql = "SELECT * FROM cliente WHERE id_cliente = ?";
             $stmt = $this->db->prepare($sql);
             
             if ($stmt) {
@@ -131,7 +131,7 @@ class Usuarios {
 
     public function actualizarCliente($id, $nombre, $cedula, $telefono){
         try {
-            $sql = "UPDATE clientes SET nombre_apellido = ?, cedula = ?, telefono = ? WHERE id_cliente = ?";
+            $sql = "UPDATE cliente SET nombre_apellido = ?, cedula = ?, telefono = ? WHERE id_cliente = ?";
             $stmt = $this->db->prepare($sql);
             
             if ($stmt) {

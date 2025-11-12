@@ -65,8 +65,8 @@ function crearBaseDeDatos($datosIniciales) {
                 `NombreAPP` varchar(100) NOT NULL,
                 PRIMARY KEY (`id`)
             )",
-            "DROP TABLE IF EXISTS `clientes`;", 
-            "CREATE TABLE `clientes` (
+            "DROP TABLE IF EXISTS `cliente`;", 
+            "CREATE TABLE `cliente` (
                 `id_cliente` int NOT NULL AUTO_INCREMENT,
                 `nombre_apellido` varchar(100) NOT NULL,
                 `cedula` varchar(100) NOT NULL,
@@ -98,21 +98,22 @@ function crearBaseDeDatos($datosIniciales) {
                 `productos_vendidos` json NOT NULL,
                 PRIMARY KEY (`id_historial`)
             )",*/
-            // Tabla inf_usuarios
-            "DROP TABLE IF EXISTS `inf_usuarios`;",
-            "CREATE TABLE `inf_usuarios` (
+            // Tabla inf_usuario
+            "DROP TABLE IF EXISTS `inf_usuario`;",
+            "CREATE TABLE `inf_usuario` (
                 `id` int NOT NULL AUTO_INCREMENT,
                 `cedula` varchar(100) NOT NULL,
                 `clave` varchar(100) NOT NULL,
                 `id_cargo` int NOT NULL,
                 `correo` varchar(200) NOT NULL,
                 `nombre` varchar(100) NOT NULL,
+                `dpto` varchar(100) NOT NULL,
                 PRIMARY KEY (`id`)
             )",
 
-            // Tabla proveedores
-            "DROP TABLE IF EXISTS `proveedores`;",
-            "CREATE TABLE `proveedores` (
+            // Tabla proveedor
+            "DROP TABLE IF EXISTS `proveedor`;",
+            "CREATE TABLE `proveedor` (
                 `id_proveedor` int NOT NULL AUTO_INCREMENT,
                 `nombre` varchar(100) NOT NULL,
                 `email` varchar(100) NOT NULL,
@@ -137,15 +138,23 @@ function crearBaseDeDatos($datosIniciales) {
                 PRIMARY KEY (`id_producto`),
                 UNIQUE KEY `codigo` (`codigo`)
             )",
-            "DROP TABLE IF EXISTS `notificaciones`;",
-            "CREATE TABLE `notificaciones` (
+            "DROP TABLE IF EXISTS `solicitud`;",
+            "CREATE TABLE `solicitud` (
+                `id_solicitud` int NOT NULL AUTO_INCREMENT,
+                `id_solicitante` int NOT NULL,
+                `fecha_solic` DATE NOT NULL,
+                `fecha_deseo` DATE NOT NULL,
+                PRIMARY KEY (`id_solicitud`),
+            )",
+            "DROP TABLE IF EXISTS `notificacion`;",
+            "CREATE TABLE `notificacion` (
                 `id_notif` int NOT NULL AUTO_INCREMENT,
                 `tipo` int NOT NULL,
                 `fecha_notif` DATE NOT NULL,
                 PRIMARY KEY (`id_notif`)
             )",
-            "DROP TABLE IF EXISTS `codigos_recuperacion`;",
-            "CREATE TABLE `codigos_recuperacion` (
+            "DROP TABLE IF EXISTS `codigo_recuperacion`;",
+            "CREATE TABLE `codigo_recuperacion` (
                 `id` int NOT NULL AUTO_INCREMENT,
                 `codigo` varchar(100) NOT NULL,
                 PRIMARY KEY (`id`)
@@ -167,8 +176,9 @@ function crearBaseDeDatos($datosIniciales) {
         $id_cargo = (int)$datosIniciales['id_cargo'];
         $nombre = $conn->real_escape_string($datosIniciales['nombre']);
         $correo = strtolower($conn->real_escape_string($datosIniciales['correo']));
+        $oficina = ($conn->real_escape_string($datosIniciales['oficina']));
         
-        $conn->query("INSERT INTO `inf_usuarios` (`id`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`) VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo')");
+        $conn->query("INSERT INTO `inf_usuario` (`id`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`) VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo')");
 
         return true;
 
@@ -196,7 +206,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_bd'])) {
         'clave' => trim($_POST['clave'] ?? ''),
         'id_cargo' => 1, // Valor por defecto
         'nombre' => trim($_POST['nombre'] ?? ''),
-        'correo' => trim($_POST['correo'] ?? '')
+        'correo' => trim($_POST['correo'] ?? ''),
+        'oficina' => $_POST['oficina']
     ];
 
     // Validaciones
@@ -328,7 +339,14 @@ if (!verificarBaseDeDatosExiste()) {
                     >
                     <div class="help-text">Este será su nombre de usuario para iniciar sesión.</div>
                 </div>
-
+                <select name="oficina" class="form-select-sm">
+                        <option value="Biblioteca">Biblioteca</option>
+                        <option value="Informatica">Informatica</option>
+                        <option value="Cuentas">Cuentas</option>
+                        <option value="Deportes">Deportes</option>
+                        <option value="Consejeria/Orientacion">Consejeria/Orientacion</option>
+                        <option value="Servicios Generales">Servicios Generales</option>
+                    </select>
                 <div class="form-group">
                     <label for="correo">
                         Correo electrónico <span class="required">*</span>

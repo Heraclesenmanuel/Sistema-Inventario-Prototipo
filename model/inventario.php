@@ -116,7 +116,7 @@ class Inventario {
         }
         
         // Estadísticas mensuales (para tabla)
-        $sqlMensual = "SELECT * FROM inf_usuarios";
+        $sqlMensual = "SELECT * FROM inf_usuario";
         
         $resultMensual = $this->db->query($sqlMensual);
         

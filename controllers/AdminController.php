@@ -67,10 +67,10 @@ class AdminController
 
         if(isset($_POST['uptade'])){
             $precio = trim($_POST['dollar']);
-            $resultado = (new Config())->updateDollar($precio);
+            //$resultado = (new Config())->updateDollar($precio);
             
-            $_SESSION['mensaje'] = $resultado['message'];
-            $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
+            //$_SESSION['mensaje'] = $resultado['message'];
+           // $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
             
             header('Location: ?action=admin');
             exit();

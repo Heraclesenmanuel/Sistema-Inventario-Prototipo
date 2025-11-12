@@ -58,8 +58,9 @@
                 $clave = trim($_POST['clave_usuario']);
                 $correo = trim($_POST['correo']);
                 $id_cargo = (int)$_POST['id_cargo'];
+                $oficina = trim($_POST['oficina']);
 
-                $resultado = $this->config->addUsuario($cedula, $nombre, $clave, $id_cargo, $correo);
+                $resultado = $this->config->addUsuario($cedula, $nombre, $clave, $id_cargo, $correo, $oficina);
                 $_SESSION['mensaje'] = $resultado['message'];
                 $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
                 

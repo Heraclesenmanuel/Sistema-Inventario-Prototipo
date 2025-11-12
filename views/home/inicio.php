@@ -24,14 +24,13 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--azul-cielo) 0%, var(--blanco) 50%, var(--gris-fondo) 100%);
+            background: var(--blanco);
             color: var(--texto-oscuro);
             overflow-x: hidden;
         }
 
         .container {
             width: 100%;
-            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -43,13 +42,16 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, var(--azul-anil) 0%, var(--verde-esmeralda) 50%, var(--azul-cielo) 100%);
+            background: linear-gradient(135deg, var(--azul-anil) 0%, #5C6BC0 50%, var(--azul-cielo) 100%);
+            padding: 2rem;
         }
 
         .hero-content {
             text-align: center;
             z-index: 2;
             animation: fadeInUp 1s ease;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         @keyframes fadeInUp {
@@ -66,35 +68,8 @@
         .glitch {
             font-size: 5rem;
             font-weight: 900;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             color: var(--blanco);
-            text-shadow: 
-                3px 3px 0px var(--amarillo-ambar),
-                -2px -2px 0px var(--azul-cielo);
-            animation: glitch 3s infinite;
-        }
-
-        @keyframes glitch {
-            0%, 100% {
-                text-shadow: 
-                    3px 3px 0px var(--amarillo-ambar),
-                    -2px -2px 0px var(--azul-cielo);
-            }
-            25% {
-                text-shadow: 
-                    -2px 2px 0px var(--rojo-vibrante),
-                    2px -2px 0px var(--verde-esmeralda);
-            }
-            50% {
-                text-shadow: 
-                    2px -2px 0px var(--amarillo-ambar),
-                    -2px 2px 0px var(--azul-cielo);
-            }
-            75% {
-                text-shadow: 
-                    -2px -2px 0px var(--verde-esmeralda),
-                    2px 2px 0px var(--rojo-vibrante);
-            }
         }
 
         .subtitle {
@@ -153,15 +128,13 @@
         }
 
         .btn-primary {
-            background: var(--amarillo-ambar);
-            color: var(--texto-oscuro);
-            box-shadow: 0 10px 40px rgba(255, 193, 7, 0.4);
+            background: var(--azul-anil);
+            color: var(--blanco);
         }
 
         .btn-primary:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 50px rgba(255, 193, 7, 0.6);
-            background: #FFD54F;
+            background: #5C6BC0;
         }
 
         .btn-secondary {
@@ -174,7 +147,6 @@
             background: var(--azul-cielo);
             color: var(--azul-anil);
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(187, 222, 251, 0.5);
         }
 
         /* Decoracion de presentacion */
@@ -198,8 +170,8 @@
             height: 300px;
             top: 10%;
             left: 10%;
-            background: rgba(46, 204, 113, 0.2);
-            border: 3px solid var(--verde-esmeralda);
+            background: rgba(187, 222, 251, 0.2);
+            border: 3px solid var(--azul-cielo);
             animation: float 6s ease-in-out infinite;
         }
 
@@ -208,8 +180,8 @@
             height: 200px;
             bottom: 20%;
             right: 15%;
-            background: rgba(255, 193, 7, 0.2);
-            border: 3px solid var(--amarillo-ambar);
+            background: rgba(63, 81, 181, 0.2);
+            border: 3px solid var(--azul-anil);
             animation: float 8s ease-in-out infinite reverse;
         }
 
@@ -242,16 +214,15 @@
             text-align: center;
             font-size: 3rem;
             margin-bottom: 3rem;
-            background: linear-gradient(135deg, var(--azul-anil) 0%, var(--verde-esmeralda) 50%, var(--amarillo-ambar) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--azul-anil);
         }
 
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 0 1rem;
         }
 
@@ -263,17 +234,16 @@
             height: 350px;
             animation: fadeIn 0.8s ease forwards;
             opacity: 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             border: 3px solid transparent;
             transition: all 0.4s ease;
         }
 
         .gallery-item:nth-child(6n+1) { border-color: var(--azul-anil); }
-        .gallery-item:nth-child(6n+2) { border-color: var(--verde-esmeralda); }
-        .gallery-item:nth-child(6n+3) { border-color: var(--amarillo-ambar); }
-        .gallery-item:nth-child(6n+4) { border-color: var(--rojo-vibrante); }
-        .gallery-item:nth-child(6n+5) { border-color: var(--azul-cielo); }
-        .gallery-item:nth-child(6n+6) { border-color: var(--azul-anil); }
+        .gallery-item:nth-child(6n+2) { border-color: #5C6BC0; }
+        .gallery-item:nth-child(6n+3) { border-color: var(--azul-cielo); }
+        .gallery-item:nth-child(6n+4) { border-color: var(--azul-anil); }
+        .gallery-item:nth-child(6n+5) { border-color: #5C6BC0; }
+        .gallery-item:nth-child(6n+6) { border-color: var(--azul-cielo); }
 
         @keyframes fadeIn {
             to { opacity: 1; }
@@ -288,7 +258,6 @@
 
         .gallery-item:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
         }
 
         .gallery-item:hover img {
@@ -319,8 +288,8 @@
         .category {
             display: inline-block;
             padding: 0.5rem 1rem;
-            background: var(--amarillo-ambar);
-            color: var(--texto-oscuro);
+            background: var(--azul-cielo);
+            color: var(--azul-anil);
             border-radius: 20px;
             font-size: 0.9rem;
             font-weight: 600;
@@ -329,7 +298,7 @@
         /* Seccion de informacion*/
         .info-section {
             padding: 5rem 2rem;
-            background: linear-gradient(135deg, var(--blanco) 0%, var(--azul-cielo) 100%);
+            background: var(--blanco);
         }
 
         .info-cards {
@@ -341,14 +310,14 @@
         }
 
         .info-card {
-            background: var(--blanco);
+            background: var(--gris-fondo);
             padding: 2.5rem;
             border-radius: 20px;
             text-align: center;
             transition: all 0.4s ease;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
             position: relative;
             overflow: hidden;
+            border: 2px solid var(--azul-cielo);
         }
 
         .info-card::before {
@@ -358,27 +327,12 @@
             left: 0;
             width: 100%;
             height: 5px;
-            background: linear-gradient(90deg, var(--azul-anil), var(--verde-esmeralda), var(--amarillo-ambar), var(--rojo-vibrante));
-        }
-
-        .info-card:nth-child(1):hover {
-            box-shadow: 0 20px 60px rgba(63, 81, 181, 0.3);
-        }
-
-        .info-card:nth-child(2):hover {
-            box-shadow: 0 20px 60px rgba(46, 204, 113, 0.3);
-        }
-
-        .info-card:nth-child(3):hover {
-            box-shadow: 0 20px 60px rgba(255, 193, 7, 0.3);
-        }
-
-        .info-card:nth-child(4):hover {
-            box-shadow: 0 20px 60px rgba(228, 67, 54, 0.3);
+            background: var(--azul-anil);
         }
 
         .info-card:hover {
             transform: translateY(-10px);
+            background: var(--azul-cielo);
         }
 
         .card-icon {
@@ -407,7 +361,7 @@
         /* seccion de estadisticas */
         .stats-section {
             padding: 5rem 2rem;
-            background: linear-gradient(135deg, var(--azul-anil) 0%, var(--verde-esmeralda) 100%);
+            background: linear-gradient(135deg, var(--azul-anil) 0%, #5C6BC0 100%);
         }
 
         .stats-container {
@@ -432,15 +386,14 @@
         .stat-item:hover {
             background: rgba(255,255,255,0.2);
             transform: scale(1.05);
-            border-color: var(--amarillo-ambar);
+            border-color: var(--azul-cielo);
         }
 
         .stat-number {
             font-size: 3.5rem;
             font-weight: 900;
             margin-bottom: 0.5rem;
-            color: var(--amarillo-ambar);
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            color: var(--blanco);
         }
 
         .stat-label {
@@ -473,7 +426,7 @@
         }
 
         .footer-links a {
-            color: var(--amarillo-ambar);
+            color: var(--azul-cielo);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
@@ -488,7 +441,7 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: var(--verde-esmeralda);
+            background: var(--blanco);
             transition: width 0.3s ease;
         }
 
@@ -497,11 +450,15 @@
         }
 
         .footer-links a:hover {
-            color: var(--azul-cielo);
+            color: var(--blanco);
         }
 
         /* Responsive */
         @media (max-width: 768px) {
+            .hero {
+                padding: 1rem;
+            }
+
             .glitch {
                 font-size: 3rem;
             }
@@ -515,16 +472,33 @@
                 align-items: center;
             }
             
+            .gallery {
+                padding: 3rem 1rem;
+            }
+
             .gallery-grid {
                 grid-template-columns: 1fr;
+                padding: 0;
             }
             
             .section-title {
                 font-size: 2rem;
             }
+
+            .info-section {
+                padding: 3rem 1rem;
+            }
+
+            .stats-section {
+                padding: 3rem 1rem;
+            }
             
             .stat-number {
                 font-size: 2.5rem;
+            }
+
+            .footer {
+                padding: 2rem 1rem;
             }
         }
     </style>
@@ -556,116 +530,94 @@
         <section class="gallery" id="gallery">
             <h2 class="section-title">Galería de Materiales</h2>
             <div class="gallery-grid">
-                <?php
-                //  aca se puede cambiar las URLs de las  imágenes
-                $images = [
-                    [
-                        "url" => "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&h=500&fit=crop",
-                        "title" => "Tecnología",
-                        "category" => "Tech"
-                    ],
-                    [
-                        "url" => "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&h=500&fit=crop",
-                        "title" => "Desarrollo",
-                        "category" => "Code"
-                    ],
-                    [
-                        "url" => "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=500&h=500&fit=crop",
-                        "title" => "Innovación",
-                        "category" => "Innovation"
-                    ],
-                    [
-                        "url" => "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&h=500&fit=crop",
-                        "title" => "Código",
-                        "category" => "Programming"
-                    ],
-                    [
-                        "url" => "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&h=500&fit=crop",
-                        "title" => "Laptop",
-                        "category" => "Work"
-                    ],
-                    [
-                        "url" => "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&h=500&fit=crop",
-                        "title" => "Setup",
-                        "category" => "Workspace"
-                    ]
-                ];
-
-                foreach ($images as $index => $image) {
-                    echo '<div class="gallery-item" style="animation-delay: ' . ($index * 0.1) . 's">';
-                    echo '<img src="' . $image["url"] . '" alt="' . $image["title"] . '">';
-                    echo '<div class="gallery-overlay">';
-                    echo '<h3>' . $image["title"] . '</h3>';
-                    echo '<span class="category">' . $image["category"] . '</span>';
-                    echo '</div>';
-                    echo '</div>';
-                }
-                ?>
+                <div class="gallery-item" style="animation-delay: 0s">
+                    <img src="public/img/entraipb.jpg" alt="">
+                    <div class="gallery-overlay">
+                        <h3></h3>
+                        <span class="category">UPEL IPB</span>
+                    </div>
+                </div>
+                <div class="gallery-item" style="animation-delay: 0.1s">
+                    <img src="public/img/Nosotros.jfif" alt="">
+                    <div class="gallery-overlay">
+                        <h3></h3>
+                        <span class="category">Logo</span>
+                    </div>
+                </div>
+                <div class="gallery-item" style="animation-delay: 0.2s">
+                    <img src="public/img/Laboratorios.jfif" alt="">
+                    <div class="gallery-overlay">
+                        <h3></h3>
+                        <span class="category">Laboratorio</span>
+                    </div>
+                </div>
+                <div class="gallery-item" style="animation-delay: 0.3s">
+                    <img src="public/img/Espacios.jfif" alt="">
+                    <div class="gallery-overlay">
+                        <h3></h3>
+                        <span class="category">Espacios</span>
+                    </div>
+                </div>
+                <div class="gallery-item" style="animation-delay: 0.4s">
+                    <img src="public/img/Personal.jfif" alt="">
+                    <div class="gallery-overlay">
+                        <h3></h3>
+                        <span class="category">Personal</span>
+                    </div>
+                </div>
+                <div class="gallery-item" style="animation-delay: 0.5s">
+                    <img src="public/img/Egresados.jfif" alt="">
+                    <div class="gallery-overlay">
+                        <h3></h3>
+                        <span class="category">Egresados</span>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- Cartas de  informacion -->
+        <!-- Cartas de informacion -->
         <section class="info-section">
             <div class="info-cards">
-                <?php
-                $cards = [
-                    [
-                        "icon" => "💡",
-                        "title" => "Innovación",
-                        "description" => "Creando soluciones únicas y personalizadas"
-                    ],
-                    [
-                        "icon" => "⚡",
-                        "title" => "Velocidad",
-                        "description" => "Rendimiento optimizado al máximo"
-                    ],
-                    [
-                        "icon" => "🎯",
-                        "title" => "Precisión",
-                        "description" => "Atención a cada detalle de la solicitud"
-                    ],
-                    [
-                        "icon" => "🔒",
-                        "title" => "Seguridad",
-                        "description" => "Protección de datos garantizada"
-                    ]
-                ];
-
-                foreach ($cards as $card) {
-                    echo '<div class="info-card">';
-                    echo '<div class="card-icon">' . $card["icon"] . '</div>';
-                    echo '<h3>' . $card["title"] . '</h3>';
-                    echo '<p>' . $card["description"] . '</p>';
-                    echo '</div>';
-                }
-                ?>
+                <div class="info-card">
+                    <div class="card-icon">💡</div>
+                    <h3>Solicitudes de Productos</h3>
+                    <p></p>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">⚡</div>
+                    <h3>Despachos por Oficina</h3>
+                    <p></p>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">🎯</div>
+                    <h3>Gestion de Inventario</h3>
+                    <p></p>
+                </div>
+                <div class="info-card">
+                    <div class="card-icon">🔒</div>
+                    <h3>Consultas entre departamentos</h3>
+                    <p></p>
+                </div>
             </div>
         </section>
 
         <!-- Seccion de estadisticas -->
         <section class="stats-section">
             <div class="stats-container">
-                <?php
-                $stats = [
-                    ["number" => "100+", "label" => "Peticiones completadas"],
-                    ["number" => "50+", "label" => "Aliados"],
-                    ["number" => "100%", "label" => "Del personal esta capasitado"],
-                    ["number" => "99%", "label" => "De eficacia"]
-                ];
-
-                foreach ($stats as $stat) {
-                    echo '<div class="stat-item">';
-                    echo '<h2 class="stat-number">' . $stat["number"] . '</h2>';
-                    echo '<p class="stat-label">' . $stat["label"] . '</p>';
-                    echo '</div>';
-                }
-                ?>
+                <div class="stat-item">
+                    <h2 class="stat-number">100+</h2>
+                    <p class="stat-label">Peticiones completadas</p>
+                </div>
+                <div class="stat-item">
+                    <h2 class="stat-number">50+</h2>
+                    <p class="stat-label">Aliados</p>
+                </div>
             </div>
         </section>
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Hecho por Ezequiel para mi amigo Heracles ❤️ | <?php echo date("Y"); ?></p>
+            <p>Hecho por Ezequiel para mi amigo Heracles ❤️ | 2025</p>
             <div class="footer-links">
                 <a href="?action=inicio&method=home">Inicio</a>
                 <a href="#gallery">Galería</a>

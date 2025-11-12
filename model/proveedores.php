@@ -7,7 +7,7 @@ class Proveedores{
     }
 
     public function obtenerProveedores() {
-        $sql = 'SELECT * FROM proveedores';
+        $sql = 'SELECT * FROM proveedor';
         $stmt = $this->db->prepare($sql);
         
         if (!$stmt) {
@@ -32,7 +32,7 @@ class Proveedores{
     }
 
     public function agregarProveedor($data) {
-        $query = "INSERT INTO proveedores (nombre, email, telefono, direccion, nombre_encargado, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO proveedor (nombre, email, telefono, direccion, nombre_encargado, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -63,7 +63,7 @@ class Proveedores{
     }
 
     public function actualizarProveedor($id, $data) {
-        $query = "UPDATE proveedores SET nombre_proveedor = ?, email = ?, telefono = ?, direccion = ?, nombre_encargado = ?, estado = ?, nota = ? WHERE id_proveedor = ?";
+        $query = "UPDATE proveedor SET nombre_proveedor = ?, email = ?, telefono = ?, direccion = ?, nombre_encargado = ?, estado = ?, nota = ? WHERE id_proveedor = ?";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -94,7 +94,7 @@ class Proveedores{
     }
 
     public function eliminarProveedor($id) {
-        $query = "DELETE FROM proveedores WHERE id_proveedor = ?";
+        $query = "DELETE FROM proveedor WHERE id_proveedor = ?";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -110,7 +110,7 @@ class Proveedores{
     }
 
     public function obtenerProveedorPorId($id) {
-        $query = "SELECT * FROM proveedores WHERE id_proveedor = ?";
+        $query = "SELECT * FROM proveedor WHERE id_proveedor = ?";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {

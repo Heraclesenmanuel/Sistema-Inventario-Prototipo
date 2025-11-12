@@ -110,7 +110,7 @@
     const btnAlternarVisibilidad = document.getElementById('alternadorVisibilidad');
     const inputClave = document.getElementById('campoClaveSeguridad');
     const iconoVisibilidad = document.getElementById('iconoOjo');
-    const claveSeguridad = "<?= addslashes(APP_Password) ?>";
+    const claveSeguridad = "<?=APP_Password?>";
 
     // Abrir modal
     btnAbrirConfig.addEventListener("click", () => {
@@ -146,6 +146,7 @@
     // Verificación de clave y redirección a configuración
     document.getElementById('formularioVerificacion').addEventListener('submit', function(evento){
         evento.preventDefault();
+        console.log(claveSeguridad)
         if(inputClave.value === claveSeguridad){
             window.location.href = "?action=config&method=home";
         } else {

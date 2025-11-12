@@ -35,7 +35,7 @@ class Inicio
             }
 
             // Consulta preparada para prevenir inyección SQL
-            $consulta = "SELECT * FROM inf_usuarios WHERE cedula = ? AND clave = ?";
+            $consulta = "SELECT * FROM inf_usuario WHERE cedula = ? AND clave = ?";
             $stmt = $this->db->prepare($consulta);
             
             if (!$stmt) {
@@ -73,7 +73,7 @@ class Inicio
             }
 
             // Consulta preparada para prevenir inyección SQL
-            $consulta = "SELECT correo, id FROM inf_usuarios WHERE cedula = ? OR correo = ?";
+            $consulta = "SELECT correo, id FROM inf_usuario WHERE cedula = ? OR correo = ?";
             $stmt = $this->db->prepare($consulta);
             
             if (!$stmt) {
@@ -136,7 +136,7 @@ class Inicio
     {
         try
         {
-            $consulta = "SELECT * FROM codigos_recuperacion WHERE id=?";
+            $consulta = "SELECT * FROM codigo_recuperacion WHERE id=?";
             $stmt = $this->db->prepare($consulta);
             if (!$stmt) {
                 throw new Exception("Error preparando consulta: " . ($this->db->error));
@@ -170,7 +170,7 @@ class Inicio
     {
         try
         {
-            $consulta = "INSERT INTO codigos_recuperacion VALUES(?, ?)";
+            $consulta = "INSERT INTO codigo_recuperacion VALUES(?, ?)";
             $stmt = $this->db->prepare($consulta);
             if (!$stmt) {
                 throw new Exception("Error preparando consulta: " . ($this->db->error));
@@ -202,7 +202,7 @@ class Inicio
             }
 
             // Consulta preparada para prevenir inyección SQL
-            $consulta = "SELECT * FROM codigos_recuperacion WHERE codigo = ?";
+            $consulta = "SELECT * FROM codigo_recuperacion WHERE codigo = ?";
             $stmt = $this->db->prepare($consulta);
             
             if (!$stmt) {
@@ -238,7 +238,7 @@ class Inicio
             }
 
             // Consulta preparada para prevenir inyección SQL
-            $consulta = "UPDATE inf_usuarios set clave=? WHERE id=?";
+            $consulta = "UPDATE inf_usuario set clave=? WHERE id=?";
             $stmt = $this->db->prepare($consulta);
             
             if (!$stmt) {
@@ -264,11 +264,12 @@ class Inicio
     private function establecerSesionUsuario($datosUsuario)
     {
         $_SESSION['nombre'] = $datosUsuario['nombre'];
+        $_SESSION['dpto'] = $datosUsuario['dpto'];
     }
 
     public function obtenerNombreUsuario($nombre)
     {
-        $consulta = "SELECT nombre FROM inf_usuarios WHERE nombre = ?";
+        $consulta = "SELECT nombre FROM inf_usuario WHERE nombre = ?";
         $stmt = $this->db->prepare($consulta);
 
         if (!$stmt) {

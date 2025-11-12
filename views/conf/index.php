@@ -181,6 +181,14 @@
                         <option value="1">Administrador</option>
                         <option value="2">Usuario</option>
                     </select>
+                    <select name="oficina" class="form-select-sm">
+                        <option value="Biblioteca">Biblioteca</option>
+                        <option value="Informatica">Informatica</option>
+                        <option value="Cuentas">Cuentas</option>
+                        <option value="Deportes">Deportes</option>
+                        <option value="Consejeria/Orientacion">Consejeria/Orientacion</option>
+                        <option value="Servicios Generales">Servicios Generales</option>
+                    </select>
                     <br>
                     <button type="submit" name="bandera_agregar_usuario">
                         <i class="fas fa-user-plus"></i> Agregar Usuario
@@ -198,6 +206,7 @@
                             <th>Cédula</th>
                             <th>Nombre</th>
                             <th>Cargo</th>
+                            <th>Oficina</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
@@ -209,6 +218,7 @@
                                     <td><?= htmlspecialchars($usuario['cedula']) ?></td>
                                     <td><?= htmlspecialchars($usuario['nombre']) ?></td>
                                     <td><?= $usuario['id_cargo'] == 1 ? 'Administrador' : 'Usuario' ?></td>
+                                    <td><?=htmlspecialchars($usuario['dpto']) ?></td>
                                     <td>
                                         <?php if(isset($_SESSION['cedula']) && $_SESSION['cedula'] == $usuario['cedula']): ?>
                                             <button class="btn-eliminar" disabled title="No puedes eliminar tu propia cuenta">
