@@ -5,7 +5,7 @@ class BaseDatos {
         $host = "localhost";
         $root = "root";
         $pass = "";
-        $bd = "bodega";
+        $bd = "upel_inventario";
         
         // Conectar especificando la base de datos
         $conexion = @mysqli_connect($host, $root, $pass, $bd);

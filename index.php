@@ -6,7 +6,7 @@ function verificarBaseDeDatosExiste() {
     $servername = "localhost";
     $username = "root";
     $password = "";
-    $dbname = "bodega";
+    $dbname = "upel_inventario";
 
     try {
         $conn = new mysqli($servername, $username, $password);
@@ -33,7 +33,7 @@ function crearBaseDeDatos($datosIniciales) {
     $servername = "localhost";
     $username = "root";
     $password = "";
-    $dbname = "bodega";
+    $dbname = "upel_inventario";
 
     try {
         // Crear conexión sin seleccionar base de datos
@@ -79,9 +79,9 @@ function crearBaseDeDatos($datosIniciales) {
                 ('Cuentas', '29543222', '04245432222'), 
                 ('Deportes', '34566777', '04124326789'), 
                 ('Consejeria/Orientacion', '25000423', '04165348900'), 
-                ('Servicios Generales', '25000423', '04165348900'),
-                ('Josue Suarez', '20423456', '04168954320')
+                ('Servicios Generales', '25000423', '04165348900')
                 ",
+
             /* Tabla cuentascobrar
             "DROP TABLE IF EXISTS `cuentascobrar`;",
             "CREATE TABLE `cuentascobrar` (
@@ -116,8 +116,10 @@ function crearBaseDeDatos($datosIniciales) {
                 `id_cargo` int NOT NULL,
                 `correo` varchar(200) NOT NULL,
                 `nombre` varchar(100) NOT NULL,
-                `id_ofic` INT(11) NOT NULL REFERENCES oficina(id_oficina),
-                PRIMARY KEY (`id`)
+                `id_ofic` INT(11) NOT NULL,
+                PRIMARY KEY (`id`),
+                CONSTRAINT `id_ofic_fk` FOREIGN KEY (`id_ofic`) 
+                REFERENCES `oficina`(`id_oficina`) ON UPDATE CASCADE
             )",
 
             // Tabla proveedor
@@ -158,13 +160,15 @@ function crearBaseDeDatos($datosIniciales) {
             )",
             "DROP TABLE IF EXISTS `prod_solic`;",
             "CREATE TABLE `prod_solic` (
-                `id_solic` int(11) NOT NULL REFERENCES solicitud(id_solicitud), 
+                `id_solic` int(11) NOT NULL, 
                 `num_linea` int(11) NOT NULL, 
                 `nombre` varchar(100) NOT NULL, 
                 `un_deseadas` int DEFAULT 0, 
                 `medida` varchar(100) DEFAULT NULL, 
                 `tipo_p` varchar(30) DEFAULT NULL, 
-                PRIMARY KEY (`id_solic`, `num_linea`) 
+                PRIMARY KEY (`id_solic`, `num_linea`),
+                CONSTRAINT `id_solic_fk` FOREIGN KEY (`id_solic`) 
+                REFERENCES solicitud(id_solicitud)
             );",
             "DROP TABLE IF EXISTS `notificacion`;",
             "CREATE TABLE `notificacion` (
@@ -173,7 +177,9 @@ function crearBaseDeDatos($datosIniciales) {
                 `fecha_notif` DATE NOT NULL,
                 `leido` tinyint(1) DEFAULT 0,
                 `id_usuario` int(11) REFERENCES inf_usuario(id),
-                PRIMARY KEY (`id_notif`)
+                PRIMARY KEY (`id_notif`),
+                CONSTRAINT `id_usuario_fk` FOREIGN KEY (`id_usuario`) 
+                REFERENCES inf_usuario(id)
             )",
             "DROP TABLE IF EXISTS `codigo_recuperacion`;",
             "CREATE TABLE `codigo_recuperacion` (
@@ -200,7 +206,7 @@ function crearBaseDeDatos($datosIniciales) {
         $correo = strtolower($conn->real_escape_string($datosIniciales['correo']));
         $oficina = ($conn->real_escape_string($datosIniciales['oficina']));
         
-        $conn->query("INSERT INTO `inf_usuario` (`id`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`) VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo')");
+        $conn->query("INSERT INTO `inf_usuario` (`id`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`, `id_ofic`) VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo', '$oficina')");
         
 
         return true;
@@ -273,7 +279,7 @@ if (!verificarBaseDeDatosExiste()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuración Inicial - Sistema de Bodega</title>
+    <title>Configuración Inicial - Sistema de Inventario UPEL</title>
     <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
     <link rel="stylesheet" href="public/css/first_config.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -288,7 +294,7 @@ if (!verificarBaseDeDatosExiste()) {
                 <i class="fas fa-warehouse"></i>
             </div>
             <h1>Configuración Inicial</h1>
-            <p class="subtitle">Configure los datos de acceso para su sistema de gestión de bodega</p>
+            <p class="subtitle">Configure los datos de acceso para su sistema de gestión de inventario</p>
         </div>
 
         <div class="info-box animate__animated animate__fadeInUp">
@@ -297,7 +303,7 @@ if (!verificarBaseDeDatosExiste()) {
                 Información Importante
             </div>
             <div class="info-box-text">
-                Este proceso creará la base de datos "bodega22" con todas las tablas necesarias. 
+                Este proceso creará la base de datos "upel_inventario" con todas las tablas necesarias. 
                 Los datos que ingrese serán sus credenciales de acceso al sistema.
             </div>
         </div>
@@ -362,13 +368,13 @@ if (!verificarBaseDeDatosExiste()) {
                     >
                     <div class="help-text">Este será su nombre de usuario para iniciar sesión.</div>
                 </div>
-                <select name="oficina" class="form-select-sm">
-                        <option value="Biblioteca">Biblioteca</option>
-                        <option value="Informatica">Informatica</option>
-                        <option value="Cuentas">Cuentas</option>
-                        <option value="Deportes">Deportes</option>
-                        <option value="Consejeria/Orientacion">Consejeria/Orientacion</option>
-                        <option value="Servicios Generales">Servicios Generales</option>
+                <select name="oficina" id="oficina" class="form-select-sm">
+                        <option value=1>Biblioteca</option>
+                        <option value=2>Informatica</option>
+                        <option value=3>Cuentas</option>
+                        <option value=4>Deportes</option>
+                        <option value=5>Consejeria/Orientacion</option>
+                        <option value=6>Servicios Generales</option>
                     </select>
                 <div class="form-group">
                     <label for="correo">
