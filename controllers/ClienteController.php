@@ -1,13 +1,12 @@
 <?php
-//Esto es de PROVEEDORES. Solo que sigue llamando clientes internamente
+//Esto es de OFICINAS. Solo que sigue llamando clientes internamente
 class ClienteController extends AdminController
 {
     protected $clientes;
-// Función de Clientes
+// Función de Oficina
     public function users(){
         $this->validarSesion();
         $titulo = 'Oficinas';
-        $Clientes = $this->clientes->obtenerUsuarios();
 
         if (isset($_POST['btn-add'])) {
             $nombre = trim($_POST['name']);

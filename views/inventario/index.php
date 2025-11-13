@@ -96,8 +96,15 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="productMeasure">Unidad de Medida:</label>
-                                <input type="text" id="productMeasure" name="productMeasure" required>
+                                <select id="productMeasure" name="unidad_medida" required>
+                                <option value="">Seleccionar unidad</option>
+                                <option value="Unidades">Unidades</option>
+                                <option value="Kilogramos">Kilogramos</option>
+                                <option value="Litros">Litros</option>
+                                <option value="Cajas">Cajas</option>
+                                <option value="Paquetes">Paquetes</option>
+                                <option value="Otro">Otro</option>
+                            </select>
                             </div>
                             
                             <div class="form-group">

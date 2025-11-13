@@ -65,14 +65,23 @@ function crearBaseDeDatos($datosIniciales) {
                 `NombreAPP` varchar(100) NOT NULL,
                 PRIMARY KEY (`id`)
             )",
-            "DROP TABLE IF EXISTS `cliente`;", 
-            "CREATE TABLE `cliente` (
-                `id_cliente` int NOT NULL AUTO_INCREMENT,
+            "DROP TABLE IF EXISTS `oficina`;", 
+            "CREATE TABLE `oficina` (
+                `id_oficina` int(11) NOT NULL AUTO_INCREMENT,
                 `nombre_apellido` varchar(100) NOT NULL,
                 `cedula` varchar(100) NOT NULL,
                 `telefono` varchar(100) NOT NULL,
-                PRIMARY KEY (`id_cliente`)
+                PRIMARY KEY (`id_oficina`)
             )",
+            "INSERT INTO oficina(`nombre_apellido`, `cedula`, `telefono`) VALUES 
+                ('Biblioteca', '30000000', '04245354900'), 
+                ('Informatica', '31466704', '04125555555'), 
+                ('Cuentas', '29543222', '04245432222'), 
+                ('Deportes', '34566777', '04124326789'), 
+                ('Consejeria/Orientacion', '25000423', '04165348900'), 
+                ('Servicios Generales', '25000423', '04165348900'),
+                ('Josue Suarez', '20423456', '04168954320')
+                ",
             /* Tabla cuentascobrar
             "DROP TABLE IF EXISTS `cuentascobrar`;",
             "CREATE TABLE `cuentascobrar` (
@@ -107,7 +116,7 @@ function crearBaseDeDatos($datosIniciales) {
                 `id_cargo` int NOT NULL,
                 `correo` varchar(200) NOT NULL,
                 `nombre` varchar(100) NOT NULL,
-                `dpto` varchar(100) NOT NULL,
+                `id_ofic` INT(11) NOT NULL REFERENCES oficina(id_oficina),
                 PRIMARY KEY (`id`)
             )",
 
@@ -144,13 +153,26 @@ function crearBaseDeDatos($datosIniciales) {
                 `id_solicitante` int NOT NULL,
                 `fecha_solic` DATE NOT NULL,
                 `fecha_deseo` DATE NOT NULL,
-                PRIMARY KEY (`id_solicitud`),
+                `comentarios` VARCHAR(500) NOT NULL,
+                PRIMARY KEY (`id_solicitud`)
             )",
+            "DROP TABLE IF EXISTS `prod_solic`;",
+            "CREATE TABLE `prod_solic` (
+                `id_solic` int(11) NOT NULL REFERENCES solicitud(id_solicitud), 
+                `num_linea` int(11) NOT NULL, 
+                `nombre` varchar(100) NOT NULL, 
+                `un_deseadas` int DEFAULT 0, 
+                `medida` varchar(100) DEFAULT NULL, 
+                `tipo_p` varchar(30) DEFAULT NULL, 
+                PRIMARY KEY (`id_solic`, `num_linea`) 
+            );",
             "DROP TABLE IF EXISTS `notificacion`;",
             "CREATE TABLE `notificacion` (
                 `id_notif` int NOT NULL AUTO_INCREMENT,
                 `tipo` int NOT NULL,
                 `fecha_notif` DATE NOT NULL,
+                `leido` tinyint(1) DEFAULT 0,
+                `id_usuario` int(11) REFERENCES inf_usuario(id),
                 PRIMARY KEY (`id_notif`)
             )",
             "DROP TABLE IF EXISTS `codigo_recuperacion`;",
@@ -179,6 +201,7 @@ function crearBaseDeDatos($datosIniciales) {
         $oficina = ($conn->real_escape_string($datosIniciales['oficina']));
         
         $conn->query("INSERT INTO `inf_usuario` (`id`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`) VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo')");
+        
 
         return true;
 

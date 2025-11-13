@@ -265,6 +265,7 @@ class Inicio
     {
         $_SESSION['nombre'] = $datosUsuario['nombre'];
         $_SESSION['dpto'] = $datosUsuario['dpto'];
+        $_SESSION['ofic_id'] = $datosUsuario[''];
     }
 
     public function obtenerNombreUsuario($nombre)

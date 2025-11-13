@@ -163,31 +163,37 @@
                 </button>
             </div>
             
-            <form id="requestForm" novalidate>
+            <form id="requestForm" name="requestForm" novalidate>
                 <input type="hidden" id="requestId">
-                
                 <div class="modal-body">
                     <div class="form-grid">
                         <?php
-                        $departamento = $_SESSION['dpto']; // valor que viene de tu lógica local
+                        $departamento = $_SESSION['dpto'];
                         ?>
                         <div class="form-group">
                         Departamento que lo solicita <br>
                         <select name="oficina" class="form-select-sm">
-                            <option value="Biblioteca" <?= $departamento == "Biblioteca" ? "selected" : "" ?>>Biblioteca</option>
-                            <option value="Informatica" <?= $departamento == "Informatica" ? "selected" : "" ?>>Informatica</option>
-                            <option value="Cuentas" <?= $departamento == "Cuentas" ? "selected" : "" ?>>Cuentas</option>
-                            <option value="Deportes" <?= $departamento == "Deportes" ? "selected" : "" ?>>Deportes</option>
-                            <option value="Consejeria/Orientacion" <?= $departamento == "Consejeria/Orientacion" ? "selected" : "" ?>>Consejeria/Orientacion</option>
-                            <option value="Servicios Generales" <?= $departamento == "Servicios Generales" ? "selected" : "" ?>>Servicios Generales</option>
+                            <option value=1 <?= $departamento == "Biblioteca" ? "selected" : "" ?>>Biblioteca</option>
+                            <option value=2 <?= $departamento == "Informatica" ? "selected" : "" ?>>Informatica</option>
+                            <option value=3 <?= $departamento == "Cuentas" ? "selected" : "" ?>>Cuentas</option>
+                            <option value=4 <?= $departamento == "Deportes" ? "selected" : "" ?>>Deportes</option>
+                            <option value=5 <?= $departamento == "Consejeria/Orientacion" ? "selected" : "" ?>>Consejeria/Orientacion</option>
+                            <option value=0 <?= $departamento == "Servicios Generales" ? "selected" : "" ?>>Servicios Generales</option>
                         </select>
                         </div>
-
-
-                        <div class="form-group full-width section-divider">
+                        <div class="form-grid">
                             <h3 class="section-title">Información del Producto</h3>
                         </div>
-
+                        <select class="filter-select" name="producto" id="producto">
+                            <option value="">-- Ingresar nuevo producto --</option>
+                            <?php
+                            if ($resultado->num_rows > 0) {
+                                while($fila = $resultado->fetch_assoc()) {
+                                    echo "<option value='" . $fila['id_producto'] . "'>" . $fila['nombre'] . "</option>";
+                                }
+                            }
+                            ?>
+                        </select>
                         <div class="form-group">
                             <label for="productName" class="required">Nombre del Producto</label>
                             <input type="text" id="productName" name="nombre_producto" required 
@@ -237,7 +243,7 @@
                                    min="<?= date('Y-m-d') ?>">
                             <div class="form-error" id="dateError"></div>
                         </div>
-
+                        <!--  Etiqueta para fecha de entrega -->
                         <div class="form-group full-width">
                             <label for="requestNotes">Notas Adicionales</label>
                             <textarea id="requestNotes" name="notas" rows="3" 
@@ -249,7 +255,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!--  Cancelar y Guardar Solicitud -->
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
@@ -264,7 +269,6 @@
             </form>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         class RequestManager {

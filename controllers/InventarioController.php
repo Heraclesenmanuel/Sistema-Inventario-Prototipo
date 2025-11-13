@@ -28,7 +28,7 @@ class InventarioController extends AdminController
                 echo '<script>alert("El código del producto no puede estar vacío")</script>';
             } 
             else if ($this->inventario->guardarDatos($datos)) {
-                header('Location: ?action=inventario&method=home&mensaje=exito');
+                header('Location: ?action=proveedor&method=home&mensaje=exito'); //implementar mensaje exito
                 exit();
             } 
             else {

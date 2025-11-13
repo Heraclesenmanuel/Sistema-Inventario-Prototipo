@@ -509,7 +509,7 @@
         <section class="hero">
             <div class="hero-content">
                 <h1 class="glitch" data-text="Bienvenido">Bienvenido</h1>
-                <p class="subtitle">Ezequiel, tu espacio personal</p>
+                <p class="subtitle">Al sistema de gestion de inventario de la UPEL-BQTO</p>
                 <div class="hero-buttons">
                     <a href="?action=inicio&method=home" class="btn btn-primary">
                         <span>🚀</span> Ir al Sistema
@@ -617,7 +617,7 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Hecho por Ezequiel para mi amigo Heracles ❤️ | 2025</p>
+            <p>Para la profesora Magda Perozo| 2025</p>
             <div class="footer-links">
                 <a href="?action=inicio&method=home">Inicio</a>
                 <a href="#gallery">Galería</a>
