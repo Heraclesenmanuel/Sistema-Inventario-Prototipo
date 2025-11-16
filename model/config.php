@@ -1,10 +1,6 @@
 <?php
-class Config {
-    private $db;
-
-    public function __construct() {
-        $this->db = (new BaseDatos())->conectar();
-    }
+require_once 'model/base.php';
+class Config extends Base{
 
     /*public function updateDollar($nuevoValor) {
         // Validación básica
@@ -42,7 +38,7 @@ class Config {
             ];
         }
 
-        $sql = "UPDATE admin SET nombreAPP = ? WHERE id = 1";
+        $sql = "UPDATE config_pag SET nombreAPP = ? WHERE id_config = 1";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("s", $nuevoValor);
         
@@ -77,9 +73,9 @@ class Config {
             ];
         }
 
-        $sql = 'UPDATE admin SET claveSuper = ? WHERE id = 1';
+        $sql = 'UPDATE usuario_super SET claveSuper = ? WHERE id_usuario = ?';
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("s", $nuevoValor);
+        $stmt->bind_param("si", $nuevoValor, $_SESSION['id']);
 
         if ($stmt->execute()) {
             return [
@@ -97,7 +93,7 @@ class Config {
     public function verificarUsuario($cedula)
     {
         // Verificar si la cédula ya existe
-        $sqlCheck = "SELECT id FROM inf_usuario WHERE cedula = ?";
+        $sqlCheck = "SELECT id_usuario FROM usuario WHERE cedula = ?";
         $stmtCheck = $this->db->prepare($sqlCheck);
         $stmtCheck->bind_param("s", $cedula);
         $stmtCheck->execute();
@@ -126,7 +122,7 @@ class Config {
             return $verificacion;
         }
         // Insertar nuevo usuario
-        $sql = "INSERT INTO inf_usuario (cedula, nombre, clave, id_cargo, correo, dpto) VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO usuario (cedula, nombre, clave, id_cargo, correo, num_oficina) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("sssiss", $cedula, $nombre, $clave_usuario, $id_cargo, $correo, $dpto);
 
@@ -152,7 +148,7 @@ class Config {
             ];
         }
 
-        $sql = "DELETE FROM inf_usuario WHERE id = ?";
+        $sql = "DELETE FROM usuario WHERE id_usuario = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $id_usuario);
 
@@ -177,7 +173,8 @@ class Config {
     }
 
     public function mostrarUsuarios() {
-        $sql = "SELECT id, cedula, nombre, id_cargo, dpto FROM inf_usuario";
+        $sql = "SELECT id_usuario, cedula, u.nombre, id_cargo, u.num_oficina, o.nombre as nombre_oficina
+        FROM usuario u INNER JOIN oficina o ON u.num_oficina=o.num_oficina";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();

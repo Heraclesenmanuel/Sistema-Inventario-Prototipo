@@ -58,30 +58,47 @@ function crearBaseDeDatos($datosIniciales) {
         // Array con todas las consultas SQL
         $queries = [
             // Tabla admin
-            "DROP TABLE IF EXISTS `admin`;",
-            "CREATE TABLE `admin` (
-                `id` int NOT NULL AUTO_INCREMENT,
-                `claveSuper` varchar(100) NOT NULL,
+            "DROP TABLE IF EXISTS `config_pag`;",
+            //CAMBIAR CONSULTAS QUE LLAMEN A SU CLAVE
+            "CREATE TABLE `config_pag` (
+                `id_config` int NOT NULL AUTO_INCREMENT,
                 `NombreAPP` varchar(100) NOT NULL,
-                PRIMARY KEY (`id`)
+                PRIMARY KEY (`id_config`)
             )",
+            "DROP TABLE IF EXISTS `director`;",
+            "CREATE TABLE `director` (
+                `ced_dir` VARCHAR(100) NOT NULL,
+                `nombre` varchar(100) NOT NULL,
+                `telf` VARCHAR(15) NOT NULL,
+                PRIMARY KEY (`ced_dir`)
+            )",
+            "INSERT INTO `director` VALUES
+                ('30000000', 'Ezequiel Angulo', '04245354900'), 
+                ('31466704', 'Juanito Pulga', '04125555555'), 
+                ('29543222', 'Adam Sandler', '04245432222'), 
+                ('34566777', 'Jose Jose', '04124326789'), 
+                ('25000623', 'Maria Jose', '04165348900'), 
+                ('25000423', 'Magda Perozo', '04165348900')
+                ",
             "DROP TABLE IF EXISTS `oficina`;", 
             "CREATE TABLE `oficina` (
-                `id_oficina` int(11) NOT NULL AUTO_INCREMENT,
-                `nombre_apellido` varchar(100) NOT NULL,
-                `cedula` varchar(100) NOT NULL,
+                `num_oficina` VARCHAR(10) NOT NULL,
+                `nombre` varchar(100) NOT NULL,
+                `ced_dir` varchar(100) NOT NULL,
                 `telefono` varchar(100) NOT NULL,
-                PRIMARY KEY (`id_oficina`)
+                PRIMARY KEY (`num_oficina`),
+                CONSTRAINT `ced_dir_fk` FOREIGN KEY (`ced_dir`)
+                REFERENCES `director`(`ced_dir`)
+                ON UPDATE CASCADE
             )",
-            "INSERT INTO oficina(`nombre_apellido`, `cedula`, `telefono`) VALUES 
-                ('Biblioteca', '30000000', '04245354900'), 
-                ('Informatica', '31466704', '04125555555'), 
-                ('Cuentas', '29543222', '04245432222'), 
-                ('Deportes', '34566777', '04124326789'), 
-                ('Consejeria/Orientacion', '25000423', '04165348900'), 
-                ('Servicios Generales', '25000423', '04165348900')
+            "INSERT INTO `oficina` VALUES
+                ('313', 'Biblioteca', '30000000', '04245354900'), 
+                ('212', 'Informatica', '31466704', '04125555555'), 
+                ('143', 'Cuentas', '29543222', '04245432222'), 
+                ('204', 'Deportes', '34566777', '04124326789'), 
+                ('305', 'Consejeria/Orientacion', '25000423', '04165348900'), 
+                ('205', 'Servicios Generales', '25000423', '04165348900')
                 ",
-
             /* Tabla cuentascobrar
             "DROP TABLE IF EXISTS `cuentascobrar`;",
             "CREATE TABLE `cuentascobrar` (
@@ -107,25 +124,37 @@ function crearBaseDeDatos($datosIniciales) {
                 `productos_vendidos` json NOT NULL,
                 PRIMARY KEY (`id_historial`)
             )",*/
-            // Tabla inf_usuario
-            "DROP TABLE IF EXISTS `inf_usuario`;",
-            "CREATE TABLE `inf_usuario` (
-                `id` int NOT NULL AUTO_INCREMENT,
+            // Tabla usuario
+            "DROP TABLE IF EXISTS `usuario`;",
+            //CAMBIAR CONSULTAS QUE LLAMEN A SU "ID" O A "INF_USUARIO"
+            //CAMBIAR CONSULTAS QUE LLAMEN A "ID_OFIC_INA"
+            "CREATE TABLE `usuario` (
+                `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
                 `cedula` varchar(100) NOT NULL,
                 `clave` varchar(100) NOT NULL,
                 `id_cargo` int NOT NULL,
                 `correo` varchar(200) NOT NULL,
                 `nombre` varchar(100) NOT NULL,
-                `id_ofic` INT(11) NOT NULL,
-                PRIMARY KEY (`id`),
-                CONSTRAINT `id_ofic_fk` FOREIGN KEY (`id_ofic`) 
-                REFERENCES `oficina`(`id_oficina`) ON UPDATE CASCADE
+                `num_oficina` VARCHAR(10) NOT NULL,
+                PRIMARY KEY (`id_usuario`),
+                CONSTRAINT `num_oficina_fk` FOREIGN KEY (`num_oficina`) 
+                REFERENCES `oficina`(`num_oficina`) ON UPDATE CASCADE
+            )",
+            "DROP TABLE IF EXISTS `usuario_super`;",
+            //IMPLEMENTARLA PARA USUARIOS ADMIN
+            "CREATE TABLE `usuario_super` (
+                `id_usuario` int NOT NULL,
+                `claveSuper` varchar(100) NOT NULL,
+                PRIMARY KEY (`id_usuario`),
+                CONSTRAINT `id_user_fk` FOREIGN KEY (`id_usuario`)
+                REFERENCES `usuario`(`id_usuario`) ON UPDATE CASCADE
             )",
 
             // Tabla proveedor
             "DROP TABLE IF EXISTS `proveedor`;",
+            //TAL VEZ QUITARRR CED_ENCARGADO.
             "CREATE TABLE `proveedor` (
-                `id_proveedor` int NOT NULL AUTO_INCREMENT,
+                `rif` varchar(13) NOT NULL,
                 `nombre` varchar(100) NOT NULL,
                 `email` varchar(100) NOT NULL,
                 `telefono` varchar(100) NOT NULL,
@@ -133,59 +162,90 @@ function crearBaseDeDatos($datosIniciales) {
                 `ced_encargado` varchar(12) NOT NULL,
                 `estado` varchar(100) NOT NULL,
                 `nota` varchar(100) NOT NULL,
-                `rif` varchar(13) NOT NULL,
-                PRIMARY KEY (`id_proveedor`)
+                PRIMARY KEY (`rif`)
+            )",
+            //IMPLEMENTAR
+            "DROP TABLE IF EXISTS `tipo_prod`;",
+            "CREATE TABLE `tipo_prod` (
+                `id_tipo` INT(11) NOT NULL AUTO_INCREMENT,
+                `nombre` varchar(100) NOT NULL,
+                `telf` VARCHAR(15) NOT NULL,
+                PRIMARY KEY (`id_tipo`)
+            )",
+            //IMPLEMENTAR
+            "DROP TABLE IF EXISTS `servicio_proveedor`;",
+            "CREATE TABLE `servicio_proveedor` (
+                `id_tipo` INT(11) NOT NULL,
+                `rif_prov` varchar(13) NOT NULL,
+                PRIMARY KEY (`id_tipo`, `rif_prov`),
+                CONSTRAINT `id_tipo_serv_fk` FOREIGN KEY (`id_tipo`)
+                REFERENCES `tipo_prod`(`id_tipo`),
+                CONSTRAINT `rif_prov_serv_fk` FOREIGN KEY (`rif_prov`)
+                REFERENCES `proveedor`(`rif`)
+                ON UPDATE CASCADE
             )",
             // Tabla inventario
-            "DROP TABLE IF EXISTS `inventario`;",
-            "CREATE TABLE `inventario` (
+            "DROP TABLE IF EXISTS `producto`;",
+            //CAMBIAR LLAMADOS DE 'INVENTARIO' A "PRODUCTO"
+            "CREATE TABLE `producto` (
                 `id_producto` int NOT NULL AUTO_INCREMENT,
-                `codigo` int NOT NULL,
                 `nombre` varchar(100) NOT NULL,
                 `un_disponibles` int DEFAULT 0,
                 `medida` varchar(100) DEFAULT NULL,
-                `tipo_p` varchar(30) DEFAULT NULL,
+                `id_tipo` INT(11) DEFAULT NULL,
                 `fecha_r` DATE NOT NULL,
                 PRIMARY KEY (`id_producto`),
-                UNIQUE KEY `codigo` (`codigo`)
+                CONSTRAINT `id_tipo_fk` FOREIGN KEY (`id_tipo`)
+                REFERENCES `tipo_prod`(`id_tipo`)
             )",
             "DROP TABLE IF EXISTS `solicitud`;",
+            //CAMBIAR LLAMADOS A "ID_OFIC"
             "CREATE TABLE `solicitud` (
-                `id_solicitud` int NOT NULL AUTO_INCREMENT,
-                `id_solicitante` int NOT NULL,
+                `id_solicitud` int(11) NOT NULL AUTO_INCREMENT,
+                `id_solicitante` int(11) NOT NULL,
                 `fecha_solic` DATE NOT NULL,
                 `fecha_deseo` DATE NOT NULL,
                 `comentarios` VARCHAR(500) NOT NULL,
-                PRIMARY KEY (`id_solicitud`)
+                `num_oficina` VARCHAR(10),
+                `estado` VARCHAR(20) DEFAULT 'Pendiente',
+                PRIMARY KEY (`id_solicitud`),
+                CONSTRAINT `num_oficina_solic_fk` FOREIGN KEY (`num_oficina`)
+                REFERENCES `oficina`(`num_oficina`)
+                ON UPDATE CASCADE
             )",
             "DROP TABLE IF EXISTS `prod_solic`;",
+            //CAMBIAR REFERENCIAS DE "ID_SOLIC" A ID_SOLICITUD
+            //CAMBIAR REFERENCIAS DE "TIPO_P" A ID_TIPO
             "CREATE TABLE `prod_solic` (
-                `id_solic` int(11) NOT NULL, 
+                `id_solicitud` int(11) NOT NULL, 
                 `num_linea` int(11) NOT NULL, 
                 `nombre` varchar(100) NOT NULL, 
                 `un_deseadas` int DEFAULT 0, 
                 `medida` varchar(100) DEFAULT NULL, 
-                `tipo_p` varchar(30) DEFAULT NULL, 
-                PRIMARY KEY (`id_solic`, `num_linea`),
-                CONSTRAINT `id_solic_fk` FOREIGN KEY (`id_solic`) 
-                REFERENCES solicitud(id_solicitud)
+                `id_tipo` INT(11) DEFAULT NULL, 
+                PRIMARY KEY (`id_solicitud`, `num_linea`),
+                CONSTRAINT `id_solic_fk` FOREIGN KEY (`id_solicitud`) 
+                REFERENCES solicitud(id_solicitud),
+                CONSTRAINT `id_tipo_solic_fk` FOREIGN KEY (`id_tipo`)
+                REFERENCES `tipo_prod`(`id_tipo`)
             );",
             "DROP TABLE IF EXISTS `notificacion`;",
             "CREATE TABLE `notificacion` (
-                `id_notif` int NOT NULL AUTO_INCREMENT,
-                `tipo` int NOT NULL,
+                `id_notif` int(11) NOT NULL AUTO_INCREMENT,
+                `tipo` int(11) NOT NULL,
                 `fecha_notif` DATE NOT NULL,
                 `leido` tinyint(1) DEFAULT 0,
-                `id_usuario` int(11) REFERENCES inf_usuario(id),
+                `id_usuario` int(11) NOT NULL,
                 PRIMARY KEY (`id_notif`),
                 CONSTRAINT `id_usuario_fk` FOREIGN KEY (`id_usuario`) 
-                REFERENCES inf_usuario(id)
+                REFERENCES `usuario`(`id_usuario`)
             )",
             "DROP TABLE IF EXISTS `codigo_recuperacion`;",
+            //CAMBIAR REFERENCIAS DE ID A ID_USUARIO
             "CREATE TABLE `codigo_recuperacion` (
-                `id` int NOT NULL AUTO_INCREMENT,
+                `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
                 `codigo` varchar(100) NOT NULL,
-                PRIMARY KEY (`id`)
+                PRIMARY KEY (`id_usuario`)
             )"
         ];
         // Ejecutar consultas de creación de tablas
@@ -196,7 +256,7 @@ function crearBaseDeDatos($datosIniciales) {
         }
         // Insertar datos en admin con la clave proporcionada
         $claveSuper = $conn->real_escape_string($datosIniciales['claveSuper']);
-        $conn->query("INSERT INTO `admin` (`id`, `claveSuper`, `NombreAPP`) VALUES (1, '$claveSuper', 'App')");
+        $conn->query("INSERT INTO `config_pag` (`id_config`, `NombreAPP`) VALUES (1, 'App')");
 
         // Insertar usuario con los datos proporcionados
         $cedula = $conn->real_escape_string($datosIniciales['cedula']);
@@ -206,8 +266,10 @@ function crearBaseDeDatos($datosIniciales) {
         $correo = strtolower($conn->real_escape_string($datosIniciales['correo']));
         $oficina = ($conn->real_escape_string($datosIniciales['oficina']));
         
-        $conn->query("INSERT INTO `inf_usuario` (`id`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`, `id_ofic`) VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo', '$oficina')");
-        
+        $conn->query("INSERT INTO `usuario` (`id_usuario`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`, `num_oficina`)
+                            VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo', '$oficina')");
+        $conn->query("INSERT INTO `usuario_super` (`id_usuario`, `claveSuper`)
+                        VALUES (1, '$claveSuper')");
 
         return true;
 
@@ -369,12 +431,12 @@ if (!verificarBaseDeDatosExiste()) {
                     <div class="help-text">Este será su nombre de usuario para iniciar sesión.</div>
                 </div>
                 <select name="oficina" id="oficina" class="form-select-sm">
-                        <option value=1>Biblioteca</option>
-                        <option value=2>Informatica</option>
-                        <option value=3>Cuentas</option>
-                        <option value=4>Deportes</option>
-                        <option value=5>Consejeria/Orientacion</option>
-                        <option value=6>Servicios Generales</option>
+                        <option value="313">Biblioteca</option>
+                        <option value="212">Informatica</option>
+                        <option value="143">Cuentas</option>
+                        <option value="204">Deportes</option>
+                        <option value="305">Consejeria/Orientacion</option>
+                        <option value="205">Servicios Generales</option>
                     </select>
                 <div class="form-group">
                     <label for="correo">

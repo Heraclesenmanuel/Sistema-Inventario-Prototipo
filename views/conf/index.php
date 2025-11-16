@@ -182,12 +182,18 @@
                         <option value="2">Usuario</option>
                     </select>
                     <select name="oficina" class="form-select-sm">
-                        <option value="Biblioteca">Biblioteca</option>
-                        <option value="Informatica">Informatica</option>
-                        <option value="Cuentas">Cuentas</option>
-                        <option value="Deportes">Deportes</option>
-                        <option value="Consejeria/Orientacion">Consejeria/Orientacion</option>
-                        <option value="Servicios Generales">Servicios Generales</option>
+                        <?php if(isset($oficinas['success']) && $usuarios['success'] && !empty($usuarios['data'])): ?>
+                            <?php foreach($oficinas['data'] as $oficina): ?>
+                                <option value=<?php echo $oficina['num_oficina']?>><?php echo $oficina['nombre']?></option>
+                                <?php endforeach; ?>
+                        <?php else: ?>
+                            <option value="Biblioteca">Biblioteca</option>
+                            <option value="Informatica">Informatica</option>
+                            <option value="Cuentas">Cuentas</option>
+                            <option value="Deportes">Deportes</option>
+                            <option value="Consejeria/Orientacion">Consejeria/Orientacion</option>
+                            <option value="Servicios Generales">Servicios Generales</option>
+                        <?php endif; ?>
                     </select>
                     <br>
                     <button type="submit" name="bandera_agregar_usuario">
@@ -214,18 +220,18 @@
                         <?php if(isset($usuarios['success']) && $usuarios['success'] && !empty($usuarios['data'])): ?>
                             <?php foreach($usuarios['data'] as $usuario): ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($usuario['id']) ?></td>
+                                    <td><?= htmlspecialchars($usuario['id_usuario']) ?></td>
                                     <td><?= htmlspecialchars($usuario['cedula']) ?></td>
                                     <td><?= htmlspecialchars($usuario['nombre']) ?></td>
                                     <td><?= $usuario['id_cargo'] == 1 ? 'Administrador' : 'Usuario' ?></td>
-                                    <td><?=htmlspecialchars($usuario['dpto']) ?></td>
+                                    <td> <?=htmlspecialchars($usuario['nombre_oficina'])?><br>(<?=htmlspecialchars($usuario['num_oficina'])?>)</td>
                                     <td>
                                         <?php if(isset($_SESSION['cedula']) && $_SESSION['cedula'] == $usuario['cedula']): ?>
                                             <button class="btn-eliminar" disabled title="No puedes eliminar tu propia cuenta">
                                                 <i class="fas fa-trash"></i> Eliminar
                                             </button>
                                         <?php else: ?>
-                                            <button class="btn-eliminar" onclick="eliminarUsuario(<?= $usuario['id'] ?>, '<?= htmlspecialchars($usuario['nombre']) ?>')">
+                                            <button class="btn-eliminar" onclick="eliminarUsuario(<?= $usuario['id_usuario'] ?>, '<?= htmlspecialchars($usuario['nombre']) ?>')">
                                                 <i class="fas fa-trash"></i> Eliminar
                                             </button>
                                         <?php endif; ?>

@@ -5,17 +5,14 @@ use PHPMailer\PHPMailer\Exception;
 require 'vendor/phpmailer/phpmailer/src/Exception.php';
 require 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
 require 'vendor/phpmailer/phpmailer/src/SMTP.php';
+require_once 'model/base.php';
 
-
-class Inicio 
+class Inicio extends Base
 {
-    private $db; 
-    private $modeloDB;
     
     public function __construct() 
     {
-        $this->modeloDB = new BaseDatos();
-        $this->db = $this->modeloDB->conectar();
+        parent::__construct();
         $this->iniciarSesion();
     }
 
@@ -23,6 +20,25 @@ class Inicio
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+        }
+    }
+    public function obtenerClaveSuper()
+    {
+        $id_usuario = $_SESSION['id'];
+        try 
+        {
+            $sql = "SELECT claveSuper FROM `usuario_super` WHERE id_usuario = '$id_usuario'";
+            $resul = @mysqli_query($this->db, $sql);
+
+            if($resul && mysqli_num_rows($resul) > 0){
+                if($row = mysqli_fetch_assoc($resul)){
+                    $clave = $row['claveSuper'];
+                    return $clave;
+                }
+                mysqli_free_result($resul);
+            }
+        } catch (Exception $e) {
+            error_log("Error al obtener datos de configuración: " . $e->getMessage());
         }
     }
     public function loginAuthenticate($usuario, $password)
@@ -35,7 +51,7 @@ class Inicio
             }
 
             // Consulta preparada para prevenir inyección SQL
-            $consulta = "SELECT * FROM inf_usuario WHERE cedula = ? AND clave = ?";
+            $consulta = "SELECT * FROM usuario WHERE cedula = ? AND clave = ?";
             $stmt = $this->db->prepare($consulta);
             
             if (!$stmt) {
@@ -48,6 +64,7 @@ class Inicio
 
             if ($fila = $result->fetch_array()) {
                 $this->establecerSesionUsuario($fila);
+                
                 $this->redirigirSegunRol($fila['id_cargo']);
             } else {
                 header("Location: ?action=inicio&method=login&error=1");
@@ -73,7 +90,7 @@ class Inicio
             }
 
             // Consulta preparada para prevenir inyección SQL
-            $consulta = "SELECT correo, id FROM inf_usuario WHERE cedula = ? OR correo = ?";
+            $consulta = "SELECT correo, id_usuario FROM usuario WHERE cedula = ? OR correo = ?";
             $stmt = $this->db->prepare($consulta);
             
             if (!$stmt) {
@@ -87,7 +104,6 @@ class Inicio
             if ($fila = $result->fetch_array()) {
                 $correo = $fila[0];
                 $id = $fila[1];
-                $_SESSION['id'] = $id;
                 $this->sendPasswRequest($correo, $id);
                 $stmt->close();
             } 
@@ -136,7 +152,7 @@ class Inicio
     {
         try
         {
-            $consulta = "SELECT * FROM codigo_recuperacion WHERE id=?";
+            $consulta = "SELECT * FROM codigo_recuperacion WHERE id_usuario=?";
             $stmt = $this->db->prepare($consulta);
             if (!$stmt) {
                 throw new Exception("Error preparando consulta: " . ($this->db->error));
@@ -238,7 +254,7 @@ class Inicio
             }
 
             // Consulta preparada para prevenir inyección SQL
-            $consulta = "UPDATE inf_usuario set clave=? WHERE id=?";
+            $consulta = "UPDATE usuario set clave=? WHERE id_usuario=?";
             $stmt = $this->db->prepare($consulta);
             
             if (!$stmt) {
@@ -265,12 +281,13 @@ class Inicio
     {
         $_SESSION['nombre'] = $datosUsuario['nombre'];
         $_SESSION['dpto'] = $datosUsuario['dpto'];
-        $_SESSION['ofic_id'] = $datosUsuario[''];
+        $_SESSION['num_oficina'] = $datosUsuario['num_oficina'];
+        $_SESSION['id'] = $datosUsuario['id_usuario'];
     }
 
     public function obtenerNombreUsuario($nombre)
     {
-        $consulta = "SELECT nombre FROM inf_usuario WHERE nombre = ?";
+        $consulta = "SELECT nombre FROM usuario WHERE nombre = ?";
         $stmt = $this->db->prepare($consulta);
 
         if (!$stmt) {
@@ -288,6 +305,8 @@ class Inicio
     }
     private function redirigirSegunRol($idCargo)
     {
+        //$clave = $this->obtenerClaveSuper();
+        //define('APP_Password', '1234');
         switch ($idCargo) {
             case 1:
                 header("Location: ?action=admin&method=home");

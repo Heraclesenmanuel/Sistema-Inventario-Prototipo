@@ -10,22 +10,8 @@
     <link rel="stylesheet" href="public/css/admin.css">
     <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
 </head>
-
-<body>
     <div class="dashboard">
         <?=  require_once 'views/inc/heder.php'; ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de <?= APP_NAME ?? 'Inicio' ?></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="public/css/admin.css">
-    <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
-</head>
 
 <?php
 if (session_status() === PHP_SESSION_NONE) {
@@ -62,7 +48,7 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
                     <i class="fas fa-truck"></i>
                     <h3>Proveedores</h3>
 
-                <a href="?action=cliente&method=users" class="quick-access-item">
+                <a href="?action=oficinas&method=home" class="quick-access-item">
                     <i class="fas fa-users"></i>
                     <h3>Oficinas</h3>
                 </a>

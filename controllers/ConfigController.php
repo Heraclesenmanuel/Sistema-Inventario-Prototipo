@@ -12,6 +12,7 @@
             $this->validarSesion();
             $titulo = 'Configuracion';
             $usuarios = $this->config->mostrarUsuarios();
+            $oficinas = $this->config->cargarOficinas();
 
             require_once 'views/conf/index.php';
         }

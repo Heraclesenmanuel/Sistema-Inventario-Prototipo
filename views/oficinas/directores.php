@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= APP_NAME ?? 'APP' ?> - Proveedores</title>
+    <title><?= APP_NAME ?? 'APP' ?> - Directores de Oficinas</title>
     <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -17,14 +17,14 @@
         <main class="main-content">
             <div class="page-header">
                 <div class="header-content">
-                    <h2>Gestión de Proveedores</h2>
-                    <p class="subtitle">Administra y organiza tu red de proveedores</p>
+                    <h2>Gestión de Directores</h2>
+                    <p class="subtitle">Administra y organiza tu red de directores</p>
                 </div>
                 <button class="btn-primary" onclick="openModal('add')">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
-                    Nuevo Proveedor
+                    Nuevo Director
                 </button>
             </div>
 
@@ -33,7 +33,7 @@
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
-                    <input type="text" id="searchInput" placeholder="Buscar proveedores..." onkeyup="filterProviders()">
+                    <input type="text" id="searchInput" placeholder="Buscar directores..." onkeyup="filterProviders()">
                 </div>
                 
                 <div class="filter-group">
@@ -49,38 +49,27 @@
                 <table class="providers-table" id="providersTable">
                     <thead>
                         <tr>
-                            <th>Proveedor</th>
-                            <th>Email</th>
+                            <th>Director</th>
                             <th>Teléfono</th>
-                            <th>Dirección</th>
-                            <th>Estado</th>
                             <th>RIF</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="providersTableBody">
-                        <?php if(!empty($proveedores)): ?>
-                            <?php foreach($proveedores as $proveedor): ?>
-                                <tr data-status="<?= htmlspecialchars($proveedor['estado']) ?>">
-                                    <td><?= htmlspecialchars($proveedor['nombre']) ?></td>
-                                    <td><?= htmlspecialchars($proveedor['email']) ?></td>
+                        <?php if(!empty($directores)): ?>
+                            <?php foreach($directores['data'] as $director): ?>
+                                    <td><?= htmlspecialchars($director['nombre']) ?></td>
                                     <td>
-                                        <a href="https://wa.me/<?= $proveedor['telefono'] ?>" target="_blank" class="phone-link">
-                                            <?= htmlspecialchars($proveedor['telefono']) ?>
+                                        <a href="https://wa.me/<?= $director['telf'] ?>" target="_blank" class="phone-link">
+                                            <?= htmlspecialchars($director['telf']) ?>
                                         </a>
                                     </td>
-                                    <td><?= htmlspecialchars($proveedor['direccion']) ?></td>
+                                    <td><?= htmlspecialchars($director['ced_dir']) ?></td>
                                     <td>
-                                        <span class="status-badge status-<?= strtolower($proveedor['estado']) ?>">
-                                            <?= htmlspecialchars($proveedor['estado']) ?>
-                                        </span>
-                                    </td>
-                                    <td><?= htmlspecialchars($proveedor['rif']) ?></td>
-                                    <td>
-                                        <button class="edit action-btn" onclick="editProvider('<?= $proveedor['rif'] ?>')">
+                                        <button class="edit action-btn" onclick="editProvider('<?= $director['ced_dir'] ?>')">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button class="delete action-btn" onclick="deleteProvider('<?= $proveedor['rif'] ?>')">
+                                        <button class="delete action-btn" onclick="deleteProvider('<?= $director['ced_dir'] ?>')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -88,20 +77,20 @@
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" class="text-center">No hay proveedores disponibles</td>
+                                <td colspan="7" class="text-center">No hay directores disponibles</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
                 
-                <div id="emptyState" class="empty-state" style="display: <?= empty($proveedores) ? 'block' : 'none' ?>;">
+                <div id="emptyState" class="empty-state" style="display: <?= empty($directores) ? 'block' : 'none' ?>;">
                     <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
                         <path d="M32 8v48M8 32h48" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
                         <circle cx="32" cy="32" r="24" stroke="currentColor" stroke-width="2" opacity="0.3"/>
                     </svg>
-                    <h3>No hay proveedores</h3>
-                    <p>Comienza agregando tu primer proveedor</p>
-                    <button class="btn-primary" onclick="openModal('add')">Agregar Proveedor</button>
+                    <h3>No hay directores</h3>
+                    <p>Comienza agregando tu primer director</p>
+                    <button class="btn-primary" onclick="openModal('add')">Agregar Director</button>
                 </div>
             </div>
         </main>
@@ -110,7 +99,7 @@
     <div id="providerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Nuevo Proveedor</h2>
+                <h2 id="modalTitle">Nuevo Director</h2>
                 <button class="close-btn" onclick="closeModal()">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -119,17 +108,12 @@
             </div>
             
             <form id="providerForm" method="post" onsubmit="saveProvider(event)">
-                <input type="hidden" id="providerRif" name="rif_original">
+                <input type="hidden" id="providerCed" name="ced_original">
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="providerName">Nombre del Proveedor *</label>
+                        <label for="providerName">Nombre del Director *</label>
                         <input type="text" id="providerName" name="nombre" required placeholder="Ej: Distribuidora ABC">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="providerEmail">Email *</label>
-                        <input type="email" id="providerEmail" name="email" required placeholder="contacto@proveedor.com">
                     </div>
 
                     <div class="form-group">
@@ -138,32 +122,15 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="rif">RIF *</label>
-                        <input type="text" id="rif" name="rif" required placeholder="Ej: J-12345678">
+                        <label for="rif">Cédula *</label>
+                        <input type="text" id="cedula" name="cedula" required placeholder="Ej: 12345678">
                     </div>
 
-                    <div class="form-group">
-                        <label for="providerStatus">Estado *</label>
-                        <select id="providerStatus" name="estado" required>
-                            <option value="Activo">Activo</option>
-                            <option value="Inactivo">Inactivo</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="providerAddress">Dirección</label>
-                        <input type="text" id="providerAddress" name="direccion" placeholder="Calle, Ciudad, País">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="providerNotes">Notas</label>
-                        <textarea id="providerNotes" name="nota" rows="3" placeholder="Información adicional sobre el proveedor..."></textarea>
-                    </div>
                 </div>
 
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar Proveedor</button>
+                    <button type="submit" class="btn-primary">Guardar Director</button>
                 </div>
             </form>
         </div>
@@ -171,11 +138,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        let providers = <?= json_encode($proveedores ?? []) ?>;
+        let directors = <?= json_encode($directores ?? []) ?>;
 
         // Inicializar la aplicación
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Proveedores cargados:', providers);
+            console.log('Directores cargados:', directors);
             updateEmptyState();
         });
 
@@ -220,12 +187,12 @@
         }
 
         // Editar proveedor
-        function editProvider(providerRif) {
-            openModal('edit', providerRif);
+        function editProvider(providerCed) {
+            openModal('edit', providerCed);
         }
 
         // Abrir modal
-        function openModal(mode, providerRif = null) {
+        function openModal(mode, providerCed = null) {
             const modal = document.getElementById('providerModal');
             const modalTitle = document.getElementById('modalTitle');
             const form = document.getElementById('providerForm');
@@ -233,32 +200,28 @@
             form.reset();
             
             if (mode === 'add') {
-                modalTitle.textContent = 'Nuevo Proveedor';
-                document.getElementById('providerRif').value = '';
-            } else if (mode === 'edit' && providerRif) {
-                modalTitle.textContent = 'Editar Proveedor';
+                modalTitle.textContent = 'Nuevo Director';
+                document.getElementById('providerCed').value = '';
+            } else if (mode === 'edit' && providerCed) {
+                modalTitle.textContent = 'Editar Director';
                 
                 // Buscar proveedor por RIF
-                const provider = providers.find(p => p.rif === providerRif);
+                const director = providers.find(p => p.ced === providerCed);
                 
-                if (provider) {
-                    console.log('Proveedor encontrado:', provider);
+                if (director) {
+                    console.log('Director encontrado:', director);
                     
-                    document.getElementById('providerRif').value = provider.rif;
-                    document.getElementById('providerName').value = provider.nombre || '';
-                    document.getElementById('providerEmail').value = provider.email || '';
-                    document.getElementById('providerPhone').value = provider.telefono || '';
-                    document.getElementById('providerStatus').value = provider.estado || 'Activo';
-                    document.getElementById('providerAddress').value = provider.direccion || '';
-                    document.getElementById('providerNotes').value = provider.nota || '';
-                    document.getElementById('rif').value = provider.rif || '';
+                    document.getElementById('providerCed').value = director.ced;
+                    document.getElementById('providerName').value = director.nombre || '';
+                    document.getElementById('providerPhone').value = director.telefono || '';
+                    document.getElementById('cedula').value = director.ced || '';
                     // Hacer el campo RIF de solo lectura en edición
                 } else {
-                    console.error('Proveedor no encontrado con RIF:', providerRif);
+                    console.error('Director no encontrado con cedula:', providerCed);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'No se pudo cargar la información del proveedor'
+                        text: 'No se pudo cargar la información del director'
                     });
                     return;
                 }
@@ -278,31 +241,27 @@
             event.preventDefault();
             
             const formData = new FormData();
-            const providerRif = document.getElementById('providerRif').value;
-            const isEdit = !!providerRif;
+            const providerCed = document.getElementById('providerCed').value;
+            const isEdit = !!providerCed;
             
             // Agregar datos del formulario
             formData.append('nombre', document.getElementById('providerName').value);
-            formData.append('email', document.getElementById('providerEmail').value);
             formData.append('telefono', document.getElementById('providerPhone').value);
-            formData.append('estado', document.getElementById('providerStatus').value);
-            formData.append('direccion', document.getElementById('providerAddress').value);
-            formData.append('nota', document.getElementById('providerNotes').value);
-            formData.append('rif', document.getElementById('rif').value);
+            formData.append('cedula', document.getElementById('cedula').value);
             if (isEdit) {
-                formData.append('rif_original', providerRif);
+                formData.append('ced_original', providerCed);
             }
             try {
                 let response;
                 if (isEdit) {
                     // Editar proveedor existente\
-                    response = await fetch('?action=proveedor&method=updateProveedor', {
+                    response = await fetch('?action=oficinas&method=updateDirector', {
                         method: 'POST',
                         body: formData
                     });
                 } else {
                     // Agregar nuevo proveedor
-                    response = await fetch('?action=proveedor&method=addProveedor', {
+                    response = await fetch('?action=oficinas&method=addDirector', {
                         method: 'POST',
                         body: formData
                     });
@@ -319,7 +278,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: '¡Éxito!',
-                        text: isEdit ? 'Proveedor actualizado correctamente' : 'Proveedor agregado correctamente',
+                        text: isEdit ? 'Director actualizado correctamente' : 'Director agregado correctamente',
                         timer: 2000,
                         showConfirmButton: false
                     });
@@ -327,7 +286,7 @@
                     // Recargar la página para ver los cambios
                     setTimeout(() => window.location.reload(), 2000);
                 } else {
-                    throw new Error(result.message || 'Error al guardar el proveedor');
+                    throw new Error(result.message || 'Error al guardar el director');
                 }
                 
             } catch (error) {
@@ -335,7 +294,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: error.message || 'Error al guardar el proveedor'
+                    text: error.message || 'Error al guardar el director'
                 });
             }
         }
@@ -364,7 +323,7 @@
                         }
                     });
                     
-                    const response = await fetch(`?action=proveedor&method=eliminarProveedor&rif=${encodeURIComponent(rif)}`, {
+                    const response = await fetch(`?action=oficinas&method=eliminarDirector&rif=${encodeURIComponent(rif)}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -390,13 +349,13 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Eliminado',
-                            text: 'Proveedor eliminado correctamente',
+                            text: 'Director eliminado correctamente',
                             timer: 2000,
                             showConfirmButton: false
                         });
                         setTimeout(() => window.location.reload(), 2000);
                     } else {
-                        throw new Error(result.message || 'Error al eliminar el proveedor');
+                        throw new Error(result.message || 'Error al eliminar el director');
                     }
                     
                 } catch (error) {
@@ -404,7 +363,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: error.message || 'Error al eliminar el proveedor'
+                        text: error.message || 'Error al eliminar el director'
                     });
                 }
             }

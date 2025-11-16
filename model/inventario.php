@@ -1,13 +1,10 @@
 <?php
-class Inventario {
-    private $db;
-
-    public function __construct(){
-        $this->db = (new BaseDatos())->conectar();
-    }
+require_once 'model/base.php';
+class Inventario extends Base {
 
     public function obtenerDatos(){
-        $sql = 'SELECT * FROM inventario';
+        $sql = 'SELECT p.*, tp.nombre as tipo
+                FROM producto p INNER JOIN tipo_prod tp ON p.id_tipo=tp.id_tipo';
         $resultado = $this->db->query($sql);
 
         if(!$resultado) {
@@ -28,12 +25,12 @@ class Inventario {
         $tipo_p = $datos['tipo_p'];
         $medida = $datos['medida'];
 
-        $stmt->bind_param('ssiss', $codigo, $nombre, $un_disponibles, $medida, $tipo_p);
+        $stmt->bind_param('sisi', $nombre, $un_disponibles, $medida, $tipo_p);
         
         return $stmt;
     }
     public function guardarDatos($datos) {
-        $stmt = $this->db->prepare("INSERT INTO inventario (codigo, nombre, un_disponibles, medida, tipo_p, fecha_r) VALUES (?, ?, ?, ?, ?, NOW())");
+        $stmt = $this->db->prepare("INSERT INTO producto (nombre, un_disponibles, medida, id_tipo, fecha_r) VALUES (?, ?, ?, ?, NOW())");
         if (!$stmt) {
             $this->db->close();
             die('Error en la preparación de la consulta SQL');
@@ -47,7 +44,7 @@ class Inventario {
         return $result;
     }
         public function eliminarDatos($id) {
-            $stmt = $this->db->prepare("DELETE FROM inventario WHERE id_producto = ?");
+            $stmt = $this->db->prepare("DELETE FROM producto WHERE id_producto = ?");
             if (!$stmt) {
                 throw new Exception("Error al preparar la consulta: " . $this->db->error);
             }
@@ -64,7 +61,7 @@ class Inventario {
             }
         }
     public function obtenerProductoPorId($id) {
-        $stmt = $this->db->prepare("SELECT * FROM inventario WHERE id_producto = ?");
+        $stmt = $this->db->prepare("SELECT * FROM producto WHERE id_producto = ?");
         
         if (!$stmt) {
             throw new Exception("Error al preparar la consulta: " . $this->db->error);
@@ -78,12 +75,11 @@ class Inventario {
     }
 
     public function actualizarProducto($datos) {
-        $stmt = $this->db->prepare("UPDATE inventario SET 
-            codigo = ?, 
+        $stmt = $this->db->prepare("UPDATE producto SET  
             nombre = ?, 
             medida = ?, 
             un_disponibles = ?, 
-            tipo_p = ?,
+            id_tipo = ?,
             WHERE id_producto = ?");
         
         if (!$stmt) {
@@ -91,10 +87,10 @@ class Inventario {
         }
         
         $stmt->bind_param("sssis", 
-            $datos['codigo'],
             $datos['nombre'],
             $datos['medida'],
             $datos['un_disponibles'],
+            $datos['tipo_p'],
             $datos['id_producto']
         );
         
@@ -105,8 +101,8 @@ class Inventario {
         $sqlEstados = "SELECT 
                         nombre, 
                         SUM(un_disponibles) as cantidad,
-                        ROUND(SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM inventario), 2) as porcentaje
-                        FROM inventario
+                        ROUND(SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM producto), 2) as porcentaje
+                        FROM producto
                         GROUP BY nombre";
         
         $resultEstados = $this->db->query($sqlEstados);
@@ -116,7 +112,7 @@ class Inventario {
         }
         
         // Estadísticas mensuales (para tabla)
-        $sqlMensual = "SELECT * FROM inf_usuario";
+        $sqlMensual = "SELECT * FROM usuario";
         
         $resultMensual = $this->db->query($sqlMensual);
         

@@ -57,7 +57,7 @@
                 </a>
             </li>
             <li>
-                <a href="?action=cliente&method=users">
+                <a href="?action=oficinas&method=home">
                     <i class="fas fa-users"></i>
                     <span>Oficinas</span>
                 </a>

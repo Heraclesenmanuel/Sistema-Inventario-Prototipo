@@ -13,13 +13,13 @@ function obtenerDatos(){
         $conexion = new BaseDatos();
         $db = $conexion->conectar();
 
-        $sql = "SELECT claveSuper, NombreAPP FROM `admin` LIMIT 1";
+        $sql = "SELECT NombreAPP FROM `config_pag` LIMIT 1";
         $resul = @mysqli_query($db, $sql);
 
         if($resul && mysqli_num_rows($resul) > 0){
             if($row = mysqli_fetch_assoc($resul)){
-                $config['Clave'] = $row['claveSuper'];
                 $config['NombreApp'] = $row['NombreAPP'];
+                //Tal vez añadir más funcionalidad como colores y demás.
             }
             mysqli_free_result($resul);
         }

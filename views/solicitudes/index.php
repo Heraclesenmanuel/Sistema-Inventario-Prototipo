@@ -20,7 +20,7 @@
                     <h1>Gestión de Solicitudes</h1>
                     <p class="subtitle">Administra y organiza las solicitudes de productos por departamento</p>
                 </div>
-                <button class="btn-primary" onclick="openModal('add')" id="newRequestBtn">
+                <button class="btn-primary" onclick="openModal()" id="newRequestBtn">
                     <i class="fas fa-plus"></i>
                     Nueva Solicitud
                 </button>
@@ -48,11 +48,9 @@
                     <table class="requests-table" id="requestsTable" aria-label="Lista de solicitudes">
                         <thead>
                             <tr>
-                                <th scope="col">ID Solicitud</th>
                                 <th scope="col">Departamento</th>
-                                <th scope="col">Producto</th>
-                                <th scope="col">Cantidad</th>
-                                <th scope="col">Fecha requerida</th>
+                                <th scope="col">Solicitante</th>
+                                <th scope="col">Fecha deseada</th>
                                 <th scope="col">Estado</th>
                                 <th scope="col">Acciones</th>
                             </tr>
@@ -62,15 +60,11 @@
                             // Datos de ejemplo para desarrollo
                             $solicitudes_ejemplo = [
                                 [
-                                    'id_solicitud' => 'SOL-2023-001',
-                                    'departamento' => 'Recursos Humanos',
-                                    'producto' => 'Lapiceros azules',
-                                    'cantidad' => 50,
-                                    'fecha_requerida' => '2025-11-20',
+                                    'id_solicitud' => 1,
+                                    'nombre_oficina' => 'Recursos Humanos',
+                                    'fecha_deseo' => '2025-11-20',
                                     'estado' => 'Pendiente',
-                                    'nombre_producto' => 'Lapiceros azules',
-                                    'unidad_medida' => 'Unidades',
-                                    'tipo_producto' => 'Oficina',
+                                    'nombre_solicitante' => 'Heracles',
                                     'notas' => 'Para entrega a nuevo personal'
                                 ]
                             ];
@@ -78,15 +72,14 @@
                             $solicitudes = !empty($solicitudes) ? $solicitudes : $solicitudes_ejemplo;
                             ?>
                             
-                            <?php if(!empty($solicitudes)): ?>
+                            <?php if($solicts_no_en_rev > 0): ?>
                                 <?php foreach($solicitudes as $solicitud): ?>
+                                    <?php if($solicitud['estado'] !== 'En revision'): ?>
                                     <tr data-status="<?= htmlspecialchars($solicitud['estado']) ?>" 
                                         data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>">
-                                        <td><?= htmlspecialchars($solicitud['id_solicitud']) ?></td>
-                                        <td><?= htmlspecialchars($solicitud['departamento']) ?></td>
-                                        <td><?= htmlspecialchars($solicitud['producto']) ?></td>
-                                        <td><?= htmlspecialchars($solicitud['cantidad']) ?></td>
-                                        <td><?= htmlspecialchars($solicitud['fecha_requerida']) ?></td>
+                                        <td><?= htmlspecialchars($solicitud['nombre_oficina']) ?></td>
+                                        <td><?= htmlspecialchars($solicitud['nombre_solicitante']) ?></td>
+                                        <td><?= htmlspecialchars($solicitud['fecha_deseo']) ?></td>
 
                                         <td>
                                             <span class="status-badge status-<?= strtolower($solicitud['estado']) ?>">
@@ -111,6 +104,7 @@
                                                         <span>Rechazar</span>
                                                     </button>
                                                 <?php endif; ?>
+                                            <?php endif; ?>
                                                 <button type="button" class="btn-action view" 
                                                         data-action="view"
                                                         data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
@@ -136,7 +130,7 @@
                         <i class="fas fa-inbox empty-icon"></i>
                         <h3>No hay solicitudes</h3>
                         <p>Comienza agregando tu primera solicitud</p>
-                        <button class="btn-primary" onclick="openModal('add')">
+                        <button class="btn-primary" onclick="openModal()">
                             <i class="fas fa-plus"></i>
                             Agregar Solicitud
                         </button>
@@ -154,7 +148,6 @@
 
     <!-- Modal para Solicitudes -->
     <div id="requestModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
-        <div class="modal-backdrop" onclick="closeModal()"></div>
         <div class="modal-content" role="document">
             <div class="modal-header">
                 <h2 id="modalTitle">Nueva Solicitud</h2>
@@ -163,90 +156,118 @@
                 </button>
             </div>
             
-            <form id="requestForm" name="requestForm" novalidate>
-                <input type="hidden" id="requestId">
+            <form id="requestForm" name="requestForm" method="POST" action="?action=solicitudes&method=home" novalidate>
+                <input type="hidden" id="requestId" name="request_id">
                 <div class="modal-body">
                     <div class="form-grid">
                         <?php
-                        $departamento = $_SESSION['dpto'];
+                        $departamento = $_SESSION['num_oficina'];
                         ?>
                         <div class="form-group">
-                        Departamento que lo solicita <br>
-                        <select name="oficina" class="form-select-sm">
-                            <option value=1 <?= $departamento == "Biblioteca" ? "selected" : "" ?>>Biblioteca</option>
-                            <option value=2 <?= $departamento == "Informatica" ? "selected" : "" ?>>Informatica</option>
-                            <option value=3 <?= $departamento == "Cuentas" ? "selected" : "" ?>>Cuentas</option>
-                            <option value=4 <?= $departamento == "Deportes" ? "selected" : "" ?>>Deportes</option>
-                            <option value=5 <?= $departamento == "Consejeria/Orientacion" ? "selected" : "" ?>>Consejeria/Orientacion</option>
-                            <option value=0 <?= $departamento == "Servicios Generales" ? "selected" : "" ?>>Servicios Generales</option>
-                        </select>
-                        </div>
-                        <div class="form-grid">
-                            <h3 class="section-title">Información del Producto</h3>
-                        </div>
-                        <select class="filter-select" name="producto" id="producto">
-                            <option value="">-- Ingresar nuevo producto --</option>
-                            <?php
-                            if ($resultado->num_rows > 0) {
-                                while($fila = $resultado->fetch_assoc()) {
-                                    echo "<option value='" . $fila['id_producto'] . "'>" . $fila['nombre'] . "</option>";
-                                }
-                            }
-                            ?>
-                        </select>
-                        <div class="form-group">
-                            <label for="productName" class="required">Nombre del Producto</label>
-                            <input type="text" id="productName" name="nombre_producto" required 
-                                   placeholder="Ingrese el nombre del producto">
-                            <div class="form-error" id="productNameError"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="productMeasure" class="required">Unidad de Medida</label>
-                            <select id="productMeasure" name="unidad_medida" required>
-                                <option value="">Seleccionar unidad</option>
-                                <option value="Unidades">Unidades</option>
-                                <option value="Kilogramos">Kilogramos</option>
-                                <option value="Litros">Litros</option>
-                                <option value="Cajas">Cajas</option>
-                                <option value="Paquetes">Paquetes</option>
-                                <option value="Otro">Otro</option>
+                            <label for="departamento" class="required">Departamento que lo solicita</label>
+                            <select id="departamento" name="departamento" class="form-select" required>
+                                <?php if(isset($oficinas['success']) && $oficinas['success'] && !empty($oficinas['data'])): ?>
+                                    <?php foreach($oficinas['data'] as $oficina): ?>
+                                        <option value="<?php echo $oficina['num_oficina']?>" <?php echo $departamento==$oficina['num_oficina'] ? "selected" : "" ?>><?php echo $oficina['nombre']?></option>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <option value="313" <?= $departamento == "Biblioteca" ? "selected" : "" ?>>Biblioteca</option>
+                                    <option value="212" <?= $departamento == "Informatica" ? "selected" : "" ?>>Informatica</option>
+                                    <option value="143" <?= $departamento == "Cuentas" ? "selected" : "" ?>>Cuentas</option>
+                                    <option value="204" <?= $departamento == "Deportes" ? "selected" : "" ?>>Deportes</option>
+                                    <option value="305" <?= $departamento == "Consejeria/Orientacion" ? "selected" : "" ?>>Consejeria/Orientacion</option>
+                                    <option value="205" <?= $departamento == "Servicios Generales" ? "selected" : "" ?>>Servicios Generales</option>
+                                <?php endif; ?>
                             </select>
-                            <div class="form-error" id="measureError"></div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="requestQuantity" class="required">Cantidad</label>
-                            <input type="number" id="requestQuantity" name="cantidad" required 
-                                   placeholder="Ej: 10" min="1" max="9999">
-                            <div class="form-error" id="quantityError"></div>
-                        </div>
+                        
+                        <!-- Contenedor para grupos de campos de productos -->
+                        <div class="product-fields-container" id="productFieldsContainer">
+                            <!-- Grupo inicial de campos de producto -->
+                            <div class="product-fields-group" data-product-index="0">
+                                <div class="product-group-title">Producto #1</div>
+                                
+                                <!-- REEMPLAZAR todo el bloque del product-fields-grid por esto: -->
+<div class="product-fields-grid">
+    <div class="form-group">
+        <label for="producto_0">Producto existente</label>
+        <select class="filter-select" name="producto_id[]" id="producto_0">
+            <option value="">-- Seleccionar producto existente --</option>
+            <?php
+            if ($resultado->num_rows > 0) {
+                while($fila = $resultado->fetch_assoc()) {
+                    echo "<option value='" . $fila['id_producto'] . "'>" . $fila['nombre'] . "</option>";
+                }
+            }
+            ?>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="nombre_producto_0" class="required">Nombre del Producto</label>
+        <input type="text" id="nombre_producto_0" name="nombre_producto[]" required
+               placeholder="Ingrese el nombre del producto" minlength="2">
+    </div>
 
-                        <div class="form-group">
-                            <label for="productType" class="required">Tipo de Producto</label>
-                            <select id="productType" name="tipo_producto" required>
-                                <option value="">Seleccionar tipo</option>
-                                <option value="Alimento">Alimento</option>
-                                <option value="Limpieza">Limpieza</option>
-                                <option value="Electronicos">Electrónicos</option>
-                                <option value="Oficina">Oficina</option>
-                                <option value="Material literario">Material literario</option>
-                                <option value="Otro">Otro</option>
-                            </select>
-                            <div class="form-error" id="typeError"></div>
-                        </div>
+    <div class="form-group">
+        <label for="unidad_medida_0" class="required">Unidad de Medida</label>
+        <select id="unidad_medida_0" name="unidad_medida[]" required minlength="2">
+            <option value="">Seleccionar unidad</option>
+            <option value="Unidades">Unidades</option>
+            <option value="Kilogramos">Kilogramos</option>
+            <option value="Litros">Litros</option>
+            <option value="Cajas">Cajas</option>
+            <option value="Paquetes">Paquetes</option>
+            <option value="Otro">Otro</option>
+        </select>
+    </div>
 
-                        <div class="form-group">
-                            <!--  Etiqueta para fecha de entrega -->
-                            <label for="requestDate" class="required">Fecha deseada de entrega del producto</label>
-                            <input type="date" id="requestDate" name="fecha_requerida" required
-                                   min="<?= date('Y-m-d') ?>">
-                            <div class="form-error" id="dateError"></div>
+    <div class="form-group">
+        <label for="cantidad_0" class="required">Cantidad</label>
+        <input type="number" id="cantidad_0" name="cantidad[]" required 
+               placeholder="Ej: 10" min="1" max="9999">
+    </div>
+
+    <div class="form-group">
+        <label for="tipo_producto_0" class="required">Tipo de Producto</label>
+        <select id="tipo_producto_0" name="tipo_producto[]" class="form-select-sm">
+            <?php if(isset($tipos_p['success']) && $tipos_p['success'] && !empty($tipos_p['data'])): ?>
+                <?php foreach($tipos_p['data'] as $tipo): ?>
+                        <option value="<?php echo $tipo['id_tipo']?>"><?php echo $tipo['nombre']?></option>
+                    <?php endforeach; ?>
+            <?php else: ?>
+                <option value="Alimento" selected>Alimento</option>
+                <option value="Limpieza">Limpieza</option>
+                <option value="Electronicos">Electronicos</option>
+                <option value="Oficina">Oficina</option>
+                <option value="Material literario">Material literario</option>
+            <?php endif; ?>
+        </select>
+    </div>
+</div>
+                            </div>
                         </div>
-                        <!--  Etiqueta para fecha de entrega -->
-                        <div class="form-group full-width">
-                            <label for="requestNotes">Notas Adicionales</label>
-                            <textarea id="requestNotes" name="notas" rows="3" 
+                        
+                        <button type="button" class="add-product-btn" id="addProductBtn">
+                            <i class="fas fa-plus"></i>
+                            Añadir otro producto
+                        </button>
+                        
+                        <div class="final-fields-container">
+                            <div class="form-group">
+                                <label for="fecha_requerida" class="required">Fecha deseada de entrega</label>
+                                <input type="date" id="fecha_requerida" name="fecha_requerida" required
+                                       min="<?= date('Y-m-d') ?>">
+                            </div>
+                            
+                            <div></div> <!-- Espacio vacío para mantener el grid -->
+                        </div>
+                        
+                        <!-- Notas Adicionales (ocupa todo el ancho) -->
+                        <div class="form-group">
+                            <label for="notas">Notas Adicionales</label>
+                            <textarea id="notas" name="notas" rows="3" 
                                       placeholder="Información adicional sobre la solicitud, justificación, urgencia, etc..."
                                       maxlength="500"></textarea>
                             <div class="char-count">
@@ -255,486 +276,266 @@
                         </div>
                     </div>
                 </div>
-                <!--  Cancelar y Guardar Solicitud -->
+                
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
                     <button type="submit" class="btn-primary" id="submitBtn">
                         <span class="btn-text">Guardar Solicitud</span>
-                        <div class="btn-loading" style="display: none;">
-                            <div class="spinner"></div>
-                            Guardando...
-                        </div>
                     </button>
                 </div>
             </form>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-        class RequestManager {
-            constructor() {
-                this.requests = <?= json_encode($solicitudes ?? []) ?>;
-                this.currentRequestId = null;
-                this.isSubmitting = false;
-                this.init();
-            }
 
-            init() {
-                this.bindEvents();
-                this.setDefaultDate();
-                this.updateEmptyState();
-            }
-
-            bindEvents() {
-                // Delegación de eventos para botones de acción
-                document.getElementById('requestsTableBody').addEventListener('click', (e) => {
-                    const button = e.target.closest('.btn-action');
-                    if (!button) return;
-
-                    const action = button.dataset.action;
-                    const requestId = button.dataset.id;
-
-                    switch(action) {
-                        case 'view':
-                            this.viewRequest(requestId);
-                            break;
-                        case 'approve':
-                            this.confirmAction(requestId, 'approve');
-                            break;
-                        case 'reject':
-                            this.confirmAction(requestId, 'reject');
-                            break;
-                    }
-                });
-
-                // Búsqueda y filtros
-                const searchInput = document.getElementById('searchInput');
-                const statusFilter = document.getElementById('statusFilter');
-                
-                let searchTimeout;
-                searchInput.addEventListener('input', (e) => {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        this.filterRequests();
-                    }, 300);
-                });
-
-                statusFilter.addEventListener('change', () => {
-                    this.filterRequests();
-                });
-
-                // Formulario
-                document.getElementById('requestForm').addEventListener('submit', (e) => {
-                    this.saveRequest(e);
-                });
-
-                // Validación en tiempo real
-                this.setupFormValidation();
-
-                // Cerrar modal
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') {
-                        this.closeModal();
-                    }
-                });
-
-                // Contador de caracteres
-                document.getElementById('requestNotes').addEventListener('input', (e) => {
-                    this.updateCharCount(e.target.value.length);
-                });
-            }
-
-            setupFormValidation() {
-                const form = document.getElementById('requestForm');
-                const fields = form.querySelectorAll('input[required], select[required]');
-                
-                fields.forEach(field => {
-                    field.addEventListener('blur', () => this.validateField(field));
-                    field.addEventListener('input', () => this.clearFieldError(field));
-                });
-            }
-
-            validateField(field) {
-                const errorElement = document.getElementById(field.id + 'Error');
-                
-                if (!field.value.trim()) {
-                    this.showFieldError(field, 'Este campo es requerido');
-                    return false;
-                }
-
-                if (field.type === 'number' && field.value <= 0) {
-                    this.showFieldError(field, 'La cantidad debe ser mayor a 0');
-                    return false;
-                }
-
-                // Cambio: Permitir fechas futuras para la entrega
-                if (field.id === 'requestDate') {
-                    const selectedDate = new Date(field.value);
-                    const today = new Date();
-                    today.setHours(0,0,0,0);
-                    if (selectedDate < today) {
-                        this.showFieldError(field, 'La fecha de entrega no puede ser en el pasado');
-                        return false;
-                    }
-                }
-
-                this.clearFieldError(field);
-                return true;
-            }
-
-            showFieldError(field, message) {
-                const errorElement = document.getElementById(field.id + 'Error');
-                errorElement.textContent = message;
-                field.classList.add('error');
-            }
-
-            clearFieldError(field) {
-                const errorElement = document.getElementById(field.id + 'Error');
-                errorElement.textContent = '';
-                field.classList.remove('error');
-            }
-
-            updateCharCount(count) {
-                document.getElementById('charCount').textContent = count;
-            }
-
-            setDefaultDate() {
-                // Establecer fecha mínima como hoy para la fecha de entrega
-                const today = new Date();
-                document.getElementById('requestDate').min = today.toISOString().split('T')[0];
-                // Opcional: establecer una fecha por defecto (ej: 7 días en el futuro)
-                const nextWeek = new Date(today);
-                nextWeek.setDate(today.getDate() + 7);
-                document.getElementById('requestDate').valueAsDate = nextWeek;
-            }
-
-            filterRequests() {
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-                const statusFilter = document.getElementById('statusFilter').value;
-                
-                const rows = document.querySelectorAll('#requestsTableBody tr');
-                let visibleCount = 0;
-
-                rows.forEach(row => {
-                    if (row.classList.contains('no-data')) return;
-
-                    const text = row.textContent.toLowerCase();
-                    const status = row.dataset.status;
-                    
-                    const matchesSearch = !searchTerm || text.includes(searchTerm);
-                    const matchesStatus = !statusFilter || status === statusFilter;
-                    
-                    if (matchesSearch && matchesStatus) {
-                        row.style.display = '';
-                        visibleCount++;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-                
-                this.updateEmptyState(visibleCount === 0);
-            }
-
-            updateEmptyState(show = false) {
-                const emptyState = document.getElementById('emptyState');
-                const table = document.getElementById('requestsTable');
-                const hasData = this.requests.length > 0;
-                
-                if (show || !hasData) {
-                    emptyState.style.display = 'flex';
-                    table.style.display = 'none';
-                } else {
-                    emptyState.style.display = 'none';
-                    table.style.display = 'table';
-                }
-            }
-
-            viewRequest(requestId) {
-                this.openModal('view', requestId);
-            }
-
-            openModal(mode, requestId = null) {
-                const modal = document.getElementById('requestModal');
-                const modalTitle = document.getElementById('modalTitle');
-                const form = document.getElementById('requestForm');
-                const footer = document.querySelector('.modal-footer');
-                
-                // Reset form
-                form.reset();
-                this.clearAllErrors();
-                this.updateCharCount(0);
-
-                if (mode === 'add') {
-                    modalTitle.textContent = 'Nueva Solicitud';
-                    document.getElementById('requestId').value = '';
-                    this.setFormEditable(true);
-                    footer.style.display = 'flex';
-                    this.setDefaultDate();
-                } else if (mode === 'view' && requestId) {
-                    modalTitle.textContent = 'Detalles de Solicitud';
-                    this.currentRequestId = requestId;
-                    
-                    const request = this.requests.find(r => r.id_solicitud == requestId);
-                    
-                    if (request) {
-                        document.getElementById('requestId').value = request.id_solicitud;
-                        document.getElementById('requestDepartment').value = request.departamento || '';
-                        document.getElementById('productName').value = request.nombre_producto || request.producto || '';
-                        document.getElementById('productMeasure').value = request.unidad_medida || '';
-                        document.getElementById('requestQuantity').value = request.cantidad || '';
-                        document.getElementById('productType').value = request.tipo_producto || '';
-                        document.getElementById('requestDate').value = request.fecha_requerida || '';
-                        document.getElementById('requestNotes').value = request.notas || '';
-                        this.updateCharCount(request.notas?.length || 0);
-                        
-                        this.setFormEditable(false);
-                        footer.style.display = 'none';
-                    } else {
-                        this.showError('No se pudo cargar la información de la solicitud');
-                        return;
-                    }
-                }
-                
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-
-            setFormEditable(editable) {
-                const formElements = document.querySelectorAll('#requestForm input, #requestForm select, #requestForm textarea');
-                formElements.forEach(el => {
-                    el.disabled = !editable;
-                    el.classList.toggle('disabled', !editable);
-                });
-            }
-
-            closeModal() {
-                const modal = document.getElementById('requestModal');
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
-                this.isSubmitting = false;
-                this.resetSubmitButton();
-            }
-
-            async saveRequest(event) {
-                event.preventDefault();
-                
-                if (this.isSubmitting) return;
-                
-                // Validar todos los campos
-                const isValid = this.validateForm();
-                if (!isValid) return;
-
-                this.setSubmitting(true);
-
-                try {
-                    const formData = new FormData();
-                    const requestId = document.getElementById('requestId').value;
-                    
-                    // Agregar datos del formulario
-                    formData.append('departamento', document.getElementById('requestDepartment').value.trim());
-                    formData.append('nombre_producto', document.getElementById('productName').value.trim());
-                    formData.append('unidad_medida', document.getElementById('productMeasure').value);
-                    formData.append('cantidad', document.getElementById('requestQuantity').value);
-                    formData.append('tipo_producto', document.getElementById('productType').value);
-                    formData.append('fecha_requerida', document.getElementById('requestDate').value);
-                    formData.append('notas', document.getElementById('requestNotes').value.trim());
-
-                    const endpoint = requestId ? 
-                        '?action=solicitud&method=updateSolicitud' : 
-                        '?action=solicitud&method=addSolicitud';
-
-                    if (requestId) {
-                        formData.append('id', requestId);
-                    }
-
-                    const response = await fetch(endpoint, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Error HTTP: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        this.showSuccess(
-                            requestId ? 'Solicitud actualizada correctamente' : 'Solicitud agregada correctamente'
-                        );
-                        this.closeModal();
-                        
-                        // Recargar después de éxito
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        throw new Error(result.message || 'Error al guardar la solicitud');
-                    }
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    this.showError(error.message || 'Error al guardar la solicitud');
-                } finally {
-                    this.setSubmitting(false);
-                }
-            }
-
-            validateForm() {
-                const requiredFields = [
-                    'requestDepartment', 'productName', 'productMeasure', 
-                    'requestQuantity', 'productType', 'requestDate'
-                ];
-                
-                let isValid = true;
-
-                requiredFields.forEach(fieldId => {
-                    const field = document.getElementById(fieldId);
-                    if (!this.validateField(field)) {
-                        isValid = false;
-                    }
-                });
-
-                return isValid;
-            }
-
-            clearAllErrors() {
-                const errorElements = document.querySelectorAll('.form-error');
-                errorElements.forEach(el => el.textContent = '');
-                
-                const fields = document.querySelectorAll('.error');
-                fields.forEach(field => field.classList.remove('error'));
-            }
-
-            setSubmitting(submitting) {
-                this.isSubmitting = submitting;
-                const submitBtn = document.getElementById('submitBtn');
-                const btnText = submitBtn.querySelector('.btn-text');
-                const btnLoading = submitBtn.querySelector('.btn-loading');
-                
-                if (submitting) {
-                    btnText.style.display = 'none';
-                    btnLoading.style.display = 'flex';
-                    submitBtn.disabled = true;
-                } else {
-                    btnText.style.display = 'block';
-                    btnLoading.style.display = 'none';
-                    submitBtn.disabled = false;
-                }
-            }
-
-            resetSubmitButton() {
-                const submitBtn = document.getElementById('submitBtn');
-                const btnText = submitBtn.querySelector('.btn-text');
-                const btnLoading = submitBtn.querySelector('.btn-loading');
-                
-                btnText.style.display = 'block';
-                btnLoading.style.display = 'none';
-                submitBtn.disabled = false;
-            }
-
-            async confirmAction(requestId, action) {
-                const actionText = action === 'approve' ? 'aprobar' : 'rechazar';
-                const result = await Swal.fire({
-                    title: `¿Estás seguro?`,
-                    text: `Vas a ${actionText} la solicitud ${requestId}`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: action === 'approve' ? '#2ecc71' : '#e74c3c',
-                    cancelButtonColor: '#95a5a6',
-                    confirmButtonText: `Sí, ${actionText}`,
-                    cancelButtonText: 'Cancelar'
-                });
-
-                if (result.isConfirmed) {
-                    await this.changeStatus(requestId, action === 'approve' ? 'Aprobado' : 'Rechazado');
-                }
-            }
-
-            async changeStatus(id, status) {
-                try {
-                    this.showLoading(true);
-                    
-                    const response = await fetch('?action=solicitud&method=changeStatus', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ id: id, status: status })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Error HTTP: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        this.showSuccess(`Solicitud ${status.toLowerCase()} correctamente`);
-                        
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        throw new Error(result.message || 'Error al cambiar el estado');
-                    }
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    this.showError(error.message || 'Error al cambiar el estado');
-                } finally {
-                    this.showLoading(false);
-                }
-            }
-
-            showLoading(show) {
-                const loadingState = document.getElementById('loadingState');
-                const tableContainer = document.querySelector('.table-container');
-                
-                if (show) {
-                    loadingState.style.display = 'flex';
-                    tableContainer.style.opacity = '0.6';
-                } else {
-                    loadingState.style.display = 'none';
-                    tableContainer.style.opacity = '1';
-                }
-            }
-
-            showSuccess(message) {
-                return Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: message,
-                    timer: 2000,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end'
-                });
-            }
-
-            showError(message) {
-                return Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: message,
-                    confirmButtonText: 'Entendido'
-                });
-            }
+        // Funciones básicas para el modal
+        function openModal() {
+            document.getElementById('requestModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Establecer fecha mínima como hoy
+            const today = new Date();
+            document.getElementById('fecha_requerida').min = today.toISOString().split('T')[0];
+            
+            // Establecer fecha por defecto (7 días en el futuro)
+            const nextWeek = new Date(today);
+            nextWeek.setDate(today.getDate() + 7);
+            document.getElementById('fecha_requerida').valueAsDate = nextWeek;
+            
+            // Inicializar contador de caracteres
+            document.getElementById('notas').addEventListener('input', function() {
+                document.getElementById('charCount').textContent = this.value.length;
+            });
         }
-
-        // Inicializar la aplicación
-        document.addEventListener('DOMContentLoaded', function() {
-            window.requestManager = new RequestManager();
-        });
-
-        // Funciones globales para compatibilidad con HTML onclick
-        function openModal(mode, requestId = null) {
-            window.requestManager.openModal(mode, requestId);
-        }
-
+        
         function closeModal() {
-            window.requestManager.closeModal();
+            document.getElementById('requestModal').classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('requestForm').reset();
+            
+            // Restablecer a un solo grupo de productos
+            const container = document.getElementById('productFieldsContainer');
+            while (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
+            
+            // Actualizar índices y contador
+            updateProductIndexes();
+            updateProductsCounter();
         }
+        
+        // Cerrar modal al hacer clic fuera del contenido
+        document.getElementById('requestModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+        
+        // Funcionalidad para añadir/duplicar campos de producto
+        document.getElementById('addProductBtn').addEventListener('click', function() {
+            addProductFields();
+        });
+        
+        function addProductFields() {
+            const container = document.getElementById('productFieldsContainer');
+            const productGroups = container.querySelectorAll('.product-fields-group');
+            const nextIndex = productGroups.length;
+            
+            // Limitar a 10 productos máximo
+            if (nextIndex >= 10) {
+                alert('Máximo 10 productos por solicitud');
+                return;
+            }
+            
+            // Crear nuevo grupo de campos
+            const newProductGroup = document.createElement('div');
+            newProductGroup.className = 'product-fields-group';
+            newProductGroup.setAttribute('data-product-index', nextIndex);
+            
+            // Crear título del grupo
+            const groupTitle = document.createElement('div');
+            groupTitle.className = 'product-group-title';
+            groupTitle.textContent = `Producto #${nextIndex + 1}`;
+            newProductGroup.appendChild(groupTitle);
+            
+            // Crear botón de eliminar (solo para grupos adicionales)
+            if (nextIndex > 0) {
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-product-btn';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.setAttribute('aria-label', 'Eliminar producto');
+                removeBtn.addEventListener('click', function() {
+                    removeProductFields(this.parentElement);
+                });
+                newProductGroup.appendChild(removeBtn);
+            }
+            
+            // Clonar campos del primer grupo
+            const firstGroup = productGroups[0];
+            const fieldsToClone = [
+                { 
+                    selector: '.form-group:has(#producto_0)',
+                    idSuffix: '_' + nextIndex,
+                    name: 'producto_id[]'
+                },
+                { 
+                    selector: '.form-group:has(#nombre_producto_0)',
+                    idSuffix: '_' + nextIndex,
+                    name: 'nombre_producto[]'
+                },
+                { 
+                    selector: '.form-group:has(#unidad_medida_0)',
+                    idSuffix: '_' + nextIndex,
+                    name: 'unidad_medida[]'
+                },
+                { 
+                    selector: '.form-group:has(#cantidad_0)',
+                    idSuffix: '_' + nextIndex,
+                    name: 'cantidad[]'
+                },
+                { 
+                    selector: '.form-group:has(#tipo_producto_0)',
+                    idSuffix: '_' + nextIndex,
+                    name: 'tipo_producto[]'
+                }
+            ];
+            
+            // Crear grid para los campos
+            const productGrid = document.createElement('div');
+            productGrid.className = 'product-fields-grid';
+            
+            fieldsToClone.forEach(fieldConfig => {
+                const originalElement = firstGroup.querySelector(fieldConfig.selector);
+                if (originalElement) {
+                    const clonedElement = originalElement.cloneNode(true);
+                    
+                    // Actualizar IDs y nombres
+                    const inputs = clonedElement.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        // Actualizar ID
+                        if (input.id) {
+                            input.id = input.id.replace(/_0$/, fieldConfig.idSuffix);
+                        }
+                        
+                        // Actualizar nombre
+                        input.name = fieldConfig.name;
+                        
+                        // Limpiar valores
+                        if (input.type === 'text' || input.type === 'number') {
+                            input.value = '';
+                        } else if (input.tagName === 'SELECT') {
+                            input.selectedIndex = 0;
+                        }
+                    });
+                    
+                    // Actualizar etiquetas
+                    const labels = clonedElement.querySelectorAll('label');
+                    labels.forEach(label => {
+                        if (label.htmlFor) {
+                            label.htmlFor = label.htmlFor.replace(/_0$/, fieldConfig.idSuffix);
+                        }
+                    });
+                    
+                    productGrid.appendChild(clonedElement);
+                }
+            });
+            
+            newProductGroup.appendChild(productGrid);
+            container.appendChild(newProductGroup);
+            updateProductIndexes();
+            updateProductsCounter();
+            
+            // Hacer scroll al nuevo producto añadido
+            newProductGroup.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function removeProductFields(productGroup) {
+            if (document.querySelectorAll('.product-fields-group').length > 1) {
+                productGroup.remove();
+                updateProductIndexes();
+                updateProductsCounter();
+            }
+        }
+        
+        function updateProductIndexes() {
+            const productGroups = document.querySelectorAll('.product-fields-group');
+            productGroups.forEach((group, index) => {
+                group.setAttribute('data-product-index', index);
+                
+                // Actualizar título
+                const title = group.querySelector('.product-group-title');
+                if (title) {
+                    title.textContent = `Producto #${index + 1}`;
+                }
+                
+                // Actualizar IDs y nombres de los campos
+                const inputs = group.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    // Actualizar ID
+                    if (input.id) {
+                        const baseId = input.id.replace(/_\d+$/, '');
+                        input.id = baseId + '_' + index;
+                    }
+                });
+                
+                // Actualizar etiquetas asociadas
+                const labels = group.querySelectorAll('label');
+                labels.forEach(label => {
+                    if (label.htmlFor && (
+                        label.htmlFor.startsWith('producto_') || 
+                        label.htmlFor.startsWith('nombre_producto_') ||
+                        label.htmlFor.startsWith('unidad_medida_') ||
+                        label.htmlFor.startsWith('cantidad_') ||
+                        label.htmlFor.startsWith('tipo_producto_')
+                    )) {
+                        const baseFor = label.htmlFor.replace(/_\d+$/, '');
+                        label.htmlFor = baseFor + '_' + index;
+                    }
+                });
+            });
+        }
+        
+        function updateProductsCounter() {
+            const count = document.querySelectorAll('.product-fields-group').length;
+            const counter = document.getElementById('productsCount');
+            const maxHint = document.getElementById('maxProductsHint');
+            const addBtn = document.getElementById('addProductBtn');
+            
+            counter.textContent = `${count} producto${count !== 1 ? 's' : ''}`;
+            
+            // Mostrar advertencia cuando se acerque al límite
+            if (count >= 8) {
+                maxHint.style.display = 'block';
+            } else {
+                maxHint.style.display = 'none';
+            }
+            
+            // Deshabilitar botón cuando se alcance el límite
+            if (count >= 10) {
+                addBtn.disabled = true;
+                addBtn.style.opacity = '0.6';
+                addBtn.style.cursor = 'not-allowed';
+            } else {
+                addBtn.disabled = false;
+                addBtn.style.opacity = '1';
+                addBtn.style.cursor = 'pointer';
+            }
+        }
+
+        // Inicializar contador al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProductsCounter();
+        });
+        
     </script>
 </body>
 </html>

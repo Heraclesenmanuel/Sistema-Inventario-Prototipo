@@ -29,7 +29,6 @@
                     <table id="tablaProductos" style="background-color: aliceblue; max-width: 95%;">
                         <thead style="background-color: aqua;">
                             <tr>
-                                <th>Codigo</th>
                                 <th>Nombre</th>
                                 <th>Presentacion</th>
                                 <th>Fecha de Registro</th>
@@ -45,11 +44,10 @@
                                     $totalUnidades = $dato['un_disponibles'];
                                     ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($dato['codigo']); ?></td>
                                         <td><?php echo htmlspecialchars($dato['nombre']); ?></td>
                                         <td><?php echo htmlspecialchars($dato['medida']); ?></td>
                                         <td><?php echo htmlspecialchars($dato['fecha_r']); ?></td>
-                                        <td><?php echo htmlspecialchars($dato['tipo_p']); ?></td>
+                                        <td><?php echo htmlspecialchars($dato['tipo']); ?></td>
                                         <td style="text-align: center;"><?php echo htmlspecialchars($dato['un_disponibles']); ?></td>
                                         <td>
                                             <button class="btn btn-sm btn-primary btn-editar" 
@@ -85,18 +83,15 @@
                     <div class="modal-content">
                         <span class="close" id="closeAddModal">&times;</span>
                         <h2>Agregar Nuevo Producto</h2>
+                        <br>
                         <form id="productForm" method="post">
-                            <div class="form-group">
-                                <label for="productCode">Código:</label>
-                                <input type="text" id="productCode" name="productCode" required>
-                            </div>
                             <div class="form-group">
                                 <label for="productName">Nombre del Producto:</label>
                                 <input type="text" id="productName" name="productName" required>
                             </div>
                             
                             <div class="form-group">
-                                <select id="productMeasure" name="unidad_medida" required>
+                                <select id="productMeasure" name="productMeasure" required>
                                 <option value="">Seleccionar unidad</option>
                                 <option value="Unidades">Unidades</option>
                                 <option value="Kilogramos">Kilogramos</option>
@@ -113,12 +108,18 @@
                             </div>
                             <div class="form-group">
                                 <label for="editStock">Tipo de producto:</label>
-                                <select name="tipo_p" id="tipo_p">
-                                    <option value="Alimento" selected>Alimento</option>
-                                    <option value="Limpieza">Limpieza</option>
-                                    <option value="Electronicos">Electronicos</option>
-                                    <option value="Oficina">Oficina</option>
-                                    <option value="Material literario">Material literario</option>
+                                <select name="tipo_p" id="tipo_p" class="form-select-sm">
+                                    <?php if(isset($tipos_p['success']) && $tipos_p['success'] && !empty($tipos_p['data'])): ?>
+                                        <?php foreach($tipos_p['data'] as $tipo): ?>
+                                            <option value=<?php echo $tipo['id_tipo']?>><?php echo $tipo['nombre']?></option>
+                                            <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <option value="Alimento" selected>Alimento</option>
+                                        <option value="Limpieza">Limpieza</option>
+                                        <option value="Electronicos">Electronicos</option>
+                                        <option value="Oficina">Oficina</option>
+                                        <option value="Material literario">Material literario</option>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                                 <button type="submit" class="submit-btn" name="add">Guardar Producto</button>
@@ -183,12 +184,6 @@
         const btnAgregar = document.getElementById("add");
         const btnCerrarAgregar = document.getElementById("closeAddModal");
         const formAgregar = document.getElementById("productForm");
-        const codigoProducto = document.getElementById('productCode');
-
-        // Config del input de codigo de producto que reciba solo numeros
-        codigoProducto.addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        });
 
         // Abrir modal de agregar
         btnAgregar.addEventListener("click", function() {

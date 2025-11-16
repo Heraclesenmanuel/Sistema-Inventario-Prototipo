@@ -1,11 +1,6 @@
 <?php
-class Notificaciones {
-    private $db;
-
-    public function __construct(){
-        $this->db = (new BaseDatos())->conectar();
-    }
-
+require_once 'model/base.php';
+class Notificaciones extends Base{
     public function obtenerDatos(){
         $sql = 'SELECT * FROM notificacion';
         $resultado = $this->db->query($sql);
@@ -28,12 +23,12 @@ class Notificaciones {
         $tipo_p = $datos['tipo_p'];
         $medida = $datos['medida'];
 
-        $stmt->bind_param('ssiss', $codigo, $nombre, $un_disponibles, $medida, $tipo_p);
+        $stmt->bind_param('ssisi', $codigo, $nombre, $un_disponibles, $medida, $tipo_p);
         
         return $stmt;
     }
     public function guardarDatos($datos) {
-        $stmt = $this->db->prepare("INSERT INTO notificacion (codigo, nombre, un_disponibles, medida, tipo_p, fecha_r) VALUES (?, ?, ?, ?, ?, NOW())");
+        $stmt = $this->db->prepare("INSERT INTO notificacion (codigo, nombre, un_disponibles, medida, id_tipo, fecha_r) VALUES (?, ?, ?, ?, ?, NOW())");
         if (!$stmt) {
             $this->db->close();
             die('Error en la preparación de la consulta SQL');
@@ -83,7 +78,7 @@ class Notificaciones {
             nombre = ?, 
             medida = ?, 
             un_disponibles = ?, 
-            tipo_p = ?,
+            id_tipo = ?,
             WHERE id_producto = ?");
         
         if (!$stmt) {
@@ -105,7 +100,7 @@ class Notificaciones {
         $sqlEstados = "SELECT 
                         nombre, 
                         SUM(un_disponibles) as cantidad,
-                        ROUND(SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM inventario), 2) as porcentaje
+                        ROUND(SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM producto), 2) as porcentaje
                         FROM notificacion
                         GROUP BY nombre";
         
@@ -116,7 +111,7 @@ class Notificaciones {
         }
         
         // Estadísticas mensuales (para tabla)
-        $sqlMensual = "SELECT * FROM inf_usuario";
+        $sqlMensual = "SELECT * FROM usuario";
         
         $resultMensual = $this->db->query($sqlMensual);
         

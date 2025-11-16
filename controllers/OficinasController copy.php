@@ -1,6 +1,6 @@
 <?php
 //Esto es de OFICINAS. Solo que sigue llamando clientes internamente
-class ClienteController extends AdminController
+class OficinaController extends AdminController
 {
     protected $clientes;
 // Función de Oficina
@@ -49,6 +49,7 @@ class ClienteController extends AdminController
                 }
             }
         }
+        $oficinas = 
         require_once 'views/usuarios/index.php';
     }
 

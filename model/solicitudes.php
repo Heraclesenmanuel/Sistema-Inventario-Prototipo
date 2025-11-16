@@ -1,13 +1,13 @@
 <?php
-class Solicitud {
-    private $db;
-
-    public function __construct(){
-        $this->db = (new BaseDatos())->conectar();
+require_once 'model/base.php';
+class Solicitud extends Base{
+    public function contarSolictsNoEnRev($solicitudes)
+    {
+        return count(array_filter($solicitudes, fn($solicitud) => $solicitud['estado'] !== "En revision"));
     }
-
-    public function obtenerDatos(){
-        $sql = 'SELECT * FROM solicitud';
+    public function obtenerSolicitudes(){
+        $sql = 'SELECT s.*, u.nombre as nombre_solicitante, f.nombre as nombre_oficina
+        FROM solicitud s INNER JOIN usuario u ON s.id_solicitante=u.id_usuario JOIN oficina f ON u.num_oficina=f.num_oficina';
         $resultado = $this->db->query($sql);
 
         if(!$resultado) {
@@ -23,16 +23,26 @@ class Solicitud {
     public function validarTiposDatos($datos, $stmt)
     {
         $id_solicitante = $_SESSION['id'];
-        $tipo_p = $datos['tipo_p'];
+        $ofic_solic = $datos['oficina_solic'];
         $fecha_deseada = $datos['fecha_deseada'];
         $comentarios = $datos['comentarios'];
 
-        $stmt->bind_param('iss', $id_solicitante, $fecha_deseada, $tipo_p);
+        $stmt->bind_param('isss', $id_solicitante, $fecha_deseada, $comentarios, $ofic_solic);
+        
+        return $stmt;
+    }
+    public function validarDatosProds($datos, $stmt, $num_linea, $id_solic)
+    {
+        $nombre_prod = $datos['nombre_producto'];
+        $unidad_medida = $datos['unidad_medida'];
+        $cantidad = $datos['cantidad'];
+        $tipo_producto = $datos['tipo_producto'];
+        $stmt->bind_param('iisisi', $id_solic, $num_linea, $nombre_prod, $cantidad, $unidad_medida, $tipo_producto);
         
         return $stmt;
     }
     public function guardarSolicitud($datos) {
-        $stmt = $this->db->prepare("INSERT INTO solicitud (id_solicitante, fecha_solic, fecha_deseo, comentarios) VALUES (?, NOW(), ?, ?)");
+        $stmt = $this->db->prepare("INSERT INTO solicitud (id_solicitante, fecha_solic, fecha_deseo, comentarios, num_oficina) VALUES (?, NOW(), ?, ?, ?)");
         if (!$stmt) {
             $this->db->close();
             die('Error en la preparación de la consulta SQL');
@@ -45,8 +55,33 @@ class Solicitud {
         
         return $result;
     }
-        public function eliminarDatos($id) {
-            $stmt = $this->db->prepare("DELETE FROM inventario WHERE id_producto = ?");
+    public function guardarProds($prods)
+    {
+        $id_solic = $this->db->insert_id;
+        if (empty($prods))
+        {
+            return false;
+        }
+        for ($i=0; $i<count($prods); $i++)
+        {
+            $stmt = $this->db->prepare("INSERT INTO prod_solic (id_solicitud, num_linea, nombre, un_deseadas, medida, id_tipo) VALUES (?, ?, ?, ?, ?, ?)");
+            if (!$stmt)
+            {
+                $this->db->close();
+                die('Error en la preparación de la consulta SQL');
+            }
+            $result = $this->validarDatosProds($prods[$i], $stmt, $i, $id_solic)->execute();
+            if (!$result) 
+            {
+                error_log("Error al ejecutar la consulta: " . $stmt->error);
+            }
+        }
+
+        $stmt->close();
+        return $result;
+    }
+        public function eliminarSolicitud($id) {
+            $stmt = $this->db->prepare("DELETE FROM producto WHERE id_producto = ?");
             if (!$stmt) {
                 throw new Exception("Error al preparar la consulta: " . $this->db->error);
             }
@@ -62,8 +97,8 @@ class Solicitud {
                 $stmt->close();
             }
         }
-    public function obtenerProductoPorId($id) {
-        $stmt = $this->db->prepare("SELECT * FROM inventario WHERE id_producto = ?");
+    public function obtenerSolicPorId($id) {
+        $stmt = $this->db->prepare("SELECT * FROM producto WHERE id_producto = ?");
         
         if (!$stmt) {
             throw new Exception("Error al preparar la consulta: " . $this->db->error);
@@ -76,13 +111,13 @@ class Solicitud {
         return $result->fetch_assoc();
     }
 
-    public function actualizarProducto($datos) {
-        $stmt = $this->db->prepare("UPDATE inventario SET 
+    public function actualizarSolic($datos) {
+        $stmt = $this->db->prepare("UPDATE producto SET 
             codigo = ?, 
             nombre = ?, 
             medida = ?, 
             un_disponibles = ?, 
-            tipo_p = ?,
+            id_tipo = ?,
             WHERE id_producto = ?");
         
         if (!$stmt) {
@@ -94,6 +129,7 @@ class Solicitud {
             $datos['nombre'],
             $datos['medida'],
             $datos['un_disponibles'],
+            $datos['tipo_producto'], //revisar si estasiendo capturado
             $datos['id_producto']
         );
         
@@ -104,8 +140,8 @@ class Solicitud {
         $sqlEstados = "SELECT 
                         nombre, 
                         SUM(un_disponibles) as cantidad,
-                        ROUND(SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM inventario), 2) as porcentaje
-                        FROM inventario
+                        ROUND(SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM producto), 2) as porcentaje
+                        FROM producto
                         GROUP BY nombre";
         
         $resultEstados = $this->db->query($sqlEstados);
@@ -115,7 +151,7 @@ class Solicitud {
         }
         
         // Estadísticas mensuales (para tabla)
-        $sqlMensual = "SELECT * FROM inf_usuario";
+        $sqlMensual = "SELECT * FROM usuario";
         
         $resultMensual = $this->db->query($sqlMensual);
         

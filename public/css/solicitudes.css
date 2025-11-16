@@ -154,7 +154,13 @@
     color: var(--text-primary);
     font-weight: 500;
 }
-
+  
+.product-group-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #495057;
+}
 .search-box input:focus {
     border-color: var(--primary-color);
     outline: none;
@@ -452,108 +458,123 @@
 }
 
 /* ===== COMPONENTE MODAL ===== */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.modal.active {
-    display: flex;
-    animation: fadeIn 0.3s;
-}
-
-.modal-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-}
-
-.modal-content {
-    background: linear-gradient(145deg, #ffffff, var(--gray-light));
-    border-radius: 16px;
-    width: 100%;
-    max-width: 700px;
-    max-height: calc(100vh - 48px);
-    overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s;
-    position: relative;
-    z-index: 1001;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #e2e8f0;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 22px;
-    border-bottom: 1px solid #f1f5f9;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-}
-
-.modal-header h2 {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--gray-dark);
-    padding: 8px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-    font-size: 18px;
-    width: 40px;
-    height: 40px;
-}
-
-.close-btn:hover {
-    color: var(--text-primary);
-    background-color: var(--gray-light);
-}
-
-.modal-body {
-    padding: 0;
-    overflow-y: auto;
-    flex: 1;
-    padding-bottom: 86px;
-    -webkit-overflow-scrolling: touch;
-}
-
-.modal-body::-webkit-scrollbar {
-    width: 10px;
-}
-.modal-body::-webkit-scrollbar-track {
-    background: transparent;
-}
-.modal-body::-webkit-scrollbar-thumb {
-    background: rgba(44,62,80,0.08);
-    border-radius: 8px;
-}
-.modal-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(44,62,80,0.12);
-}
+        /* Estilos básicos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            flex-grow: 1;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .required::after {
+            content: " *";
+            color: red;
+        }
+        
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
 
 /* ===== FORMULARIOS MEJORADOS ===== */
 .form-grid {
@@ -690,7 +711,186 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
+/* SOLO los estilos necesarios para los campos duplicados */
+        .product-fields-container {
+            margin-bottom: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .product-fields-group {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .product-fields-group:first-child {
+            background: #fff;
+        }
+        
+        .product-fields-group:not(:first-child) {
+            border-left: 4px solid #007bff;
+        }
+        
+        .remove-product-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .remove-product-btn:hover {
+            background: #c82333;
+        }
+        
+        /* Botón compacto - SOLO esto cambia */
+        .add-product-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            transition: background-color 0.2s;
+            width: 12px;
+            min-width: 140px;
+            margin-bottom: 15px;
+            height: auto !important;
+            align-self: flex-start;
+        }
+        /* AÑADIR esto para que los campos ocupen todo el ancho disponible: */
+        .product-fields-group .form-group {
+            width: 100%;
+        }
 
+        .product-fields-group .form-group input,
+        .product-fields-group .form-group select,
+        .product-fields-group .form-group textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .add-product-btn:hover {
+            background: #218838;
+        }
+        
+        .add-product-btn i {
+            font-size: 12px;
+        }
+        
+        .product-group-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        
+        /* Grid para campos de producto */
+        .product-fields-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        /* Contenedor para campos finales */
+        .final-fields-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Scroll del contenedor de productos */
+        .product-fields-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .product-fields-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .product-fields-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .product-fields-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Contador de productos */
+        .products-counter {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            /* Por esto: */
+            .product-fields-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .final-fields-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Estilos para el scroll del contenedor de productos */
+        .product-fields-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .product-fields-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .product-fields-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .product-fields-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Contador de productos */
+        .products-counter {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+      
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     .page-header {

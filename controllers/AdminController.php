@@ -3,19 +3,17 @@ require_once 'model/Conexion.php';
 require_once 'model/Inicio.php';
 require_once 'model/inventario.php';
 require_once 'model/config.php';
-require_once 'model/usuarios.php';
+require_once 'model/oficinas.php';
 require_once 'model/proveedores.php';
 
 class AdminController 
 {
     protected $bdatos;
     protected $pos;
-    protected $clientes; //Esto es de OFICINAS. Solo que sigue llamando clientes internamente
     public function __construct() 
     {
         $this->iniciarSesion();
         $this->bdatos = new Inicio();
-        $this->clientes = new Usuarios();
     }
     protected function iniciarSesion()
     {

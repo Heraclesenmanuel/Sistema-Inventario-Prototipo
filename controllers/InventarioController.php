@@ -12,23 +12,23 @@ class InventarioController extends AdminController
     public function home() {
         $this->validarSesion();
         $titulo = 'Inventario';
+        $tipos_p = $this->inventario->getTipos();
         $datosInven = $this->inventario->obtenerDatos();
 
         if (isset($_POST['add'])) {
             // Sanitizar y validar datos antes de guardar
             $datos = [
-                'codigo' => trim($_POST['productCode'] ?? 'N/A'),
                 'nombre' => trim($_POST['productName'] ?? 'N/A'),
                 'un_disponibles' => (int)(trim($_POST['productStock'] ?? 0)),
                 'tipo_p' => ($_POST['tipo_p']),
                 'medida' => trim($_POST['productMeasure'] ?? 'N/A')
             ];
 
-            if (empty($datos['codigo'])){
+            if (empty($datos['nombre'])){
                 echo '<script>alert("El código del producto no puede estar vacío")</script>';
             } 
             else if ($this->inventario->guardarDatos($datos)) {
-                header('Location: ?action=proveedor&method=home&mensaje=exito'); //implementar mensaje exito
+                header('Location: ?action=inventario&method=home&mensaje=exito'); //implementar mensaje exito
                 exit();
             } 
             else {
@@ -82,7 +82,6 @@ class InventarioController extends AdminController
             }
             $datos = [
                 'id_producto' => $_POST['id'],
-                'codigo' => $_POST['productCode'],
                 'nombre' => $_POST['nombre'],
                 'medida' => $_POST['medida'],
                 'un_disponibles' => $_POST['un_disponibles'],

@@ -1,11 +1,6 @@
 <?php
-class Proveedores{
-    private $db;
-
-    public function __construct() {
-        $this->db = (new BaseDatos())->conectar();
-    }
-
+require_once 'model/base.php';
+class Proveedores extends Base{
     public function obtenerProveedores() {
         $sql = 'SELECT * FROM proveedor';
         $stmt = $this->db->prepare($sql);
@@ -30,9 +25,36 @@ class Proveedores{
         $stmt->close();
         return $datos;
     }
+    public function chequearExistenciaRif($nuevoRif) 
+    {
+        $sql = "SELECT COUNT(*) FROM proveedor 
+                WHERE rif = ?;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('s', $nuevoRif);
+        $stmt->execute();
 
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        $stmt->close(); // muy importante
+
+        return ($count == 0);
+    }
+    public function chequearConvergenciaRif($nuevoRif, $rifOriginal) 
+    {
+        $sql = "SELECT COUNT(*) FROM proveedor 
+                WHERE rif = ? AND rif != ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("ss", $nuevoRif, $rifOriginal);
+        $stmt->execute();
+
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        $stmt->close(); // muy importante
+
+        return ($count == 0);
+    }
     public function agregarProveedor($data) {
-        $query = "INSERT INTO proveedor (nombre, email, telefono, direccion, nombre_encargado, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO proveedor (nombre, email, telefono, direccion, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -40,12 +62,11 @@ class Proveedores{
             return false;
         }
         
-        $stmt->bind_param("ssssssss", 
+        $stmt->bind_param("sssssss", 
             $data['nombre_proveedor'],
             $data['email'],
             $data['telefono'],
             $data['direccion'],
-            $data['nombre_encargado'],
             $data['estado'],
             $data['nota'],
             $data['rif']
@@ -62,8 +83,8 @@ class Proveedores{
         return $resultado;
     }
 
-    public function actualizarProveedor($id, $data) {
-        $query = "UPDATE proveedor SET nombre_proveedor = ?, email = ?, telefono = ?, direccion = ?, nombre_encargado = ?, estado = ?, nota = ? WHERE id_proveedor = ?";
+    public function actualizarProveedor($rif, $data) {
+        $query = "UPDATE proveedor SET nombre = ?, email = ?, telefono = ?, direccion = ?, rif = ?, estado = ?, nota = ? WHERE rif = ?";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -71,30 +92,28 @@ class Proveedores{
             return false;
         }
         
-        $stmt->bind_param("sssssssi", 
+        $stmt->bind_param("ssssssss", 
             $data['nombre_proveedor'],
             $data['email'],
             $data['telefono'],
             $data['direccion'],
-            $data['nombre_encargado'],
+            $data['rif'],
             $data['estado'],
             $data['nota'],
-            $id
+            $data['rif_original']
         );
-        
         $resultado = $stmt->execute();
         
         if (!$resultado) {
             error_log("Error ejecutando actualización: " . $stmt->error);
         }
-        
         $stmt->close();
         
         return $resultado;
     }
 
-    public function eliminarProveedor($id) {
-        $query = "DELETE FROM proveedor WHERE id_proveedor = ?";
+    public function eliminarProveedor($rif) {
+        $query = "DELETE FROM proveedor WHERE rif = ?";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -102,15 +121,15 @@ class Proveedores{
             return false;
         }
         
-        $stmt->bind_param("i", $id);
+        $stmt->bind_param("i", $rif);
         $resultado = $stmt->execute();
         $stmt->close();
         
         return $resultado;
     }
 
-    public function obtenerProveedorPorId($id) {
-        $query = "SELECT * FROM proveedor WHERE id_proveedor = ?";
+    public function obtenerProveedorPorId($rif) {
+        $query = "SELECT * FROM proveedor WHERE rif = ?";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -118,7 +137,7 @@ class Proveedores{
             return null;
         }
         
-        $stmt->bind_param("i", $id);
+        $stmt->bind_param("s", $rif);
         
         if (!$stmt->execute()) {
             error_log("Error ejecutando consulta: " . $stmt->error);
