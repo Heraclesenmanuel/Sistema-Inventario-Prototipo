@@ -12,23 +12,19 @@ class ProveedorController extends AdminController
     public function home(){
         $this->iniciarSesion();
         $titulo = 'Proveedores';
+        $categorias = $this->proveedores->getTipos();
         $proveedores = $this->proveedores->obtenerProveedores();
         require_once 'views/provedor/index.php';
     }
     public function eliminarProveedor() {
-        // Detener cualquier output previo
-        ob_clean();
-        
+
         try {
             header('Content-Type: application/json; charset=utf-8');
             
             // Obtener el ID desde POST o GET
             $rif = null;
-            if (!empty($_POST['id'])) {
-                $rif = intval($_POST['rif']);
-            } elseif (!empty($_GET['rif'])) {
-                $rif = intval($_GET['rif']);
-            }
+            $rif = $_POST['rif'];
+            //$rif = intval($_GET['rif']);
             
             if (!$rif) {
                 throw new Exception('ID del proveedor es requerido');

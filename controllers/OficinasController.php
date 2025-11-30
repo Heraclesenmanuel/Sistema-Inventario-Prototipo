@@ -25,18 +25,14 @@ class OficinasController extends AdminController
         $this->validarSesion();
         $titulo = 'Directores';
         $directores = $this->oficinas->getDirectores();
-
-        if (isset($_POST['btn-add'])) { //cambiar el post acordemente
-            $this->agregarOficina(); 
-        }
         require_once 'views/oficinas/directores.php';
     }
     public function agregarOficina()
     {
         $numero = $_POST['num_oficina'];
-        $nombre = trim($_POST['name']);
+        $nombre = trim($_POST['providerName']);
         $cedula = trim($_POST['cedula']);
-        $telefono = trim($_POST['cel']);
+        $telefono = trim($_POST['providerPhone']);
 
         // Validar que los campos no estén vacíos
         if (empty($nombre) || empty($cedula)) {
@@ -56,25 +52,38 @@ class OficinasController extends AdminController
             }
         }
     }
+    public function capturarDirector()
+    {
+        $cedula = trim($_POST['cedula']);
+        echo $this->agregarDirector($cedula);
+        exit();
+    }
     public function agregarDirector($cedula)
     {
         $nombre = trim($_POST['dir_nombre']);
         $telf = trim($_POST['dir_telf']);
         // Validar que los campos no estén vacíos
         if (empty($nombre) || empty($telf)) {
-            echo '<script>alert("Campos requeridos, El nombre y la cédula son obligatorios")</script>';
-        } else {
+            return json_encode([
+                'success' => false,
+                'message' => 'El nombre y telefono deben estar llenos.'
+            ]);
+        }
+        else {
             if ($this->oficinas->agregarDir($nombre, $cedula, $telf)) {
-                echo '<script>alert("¡Éxito! Director agregado correctamente o Ya eXIsTIa")
-                    </script>';
+                    return json_encode([
+                            'success' => true,
+                            'message' => 'Director agregado correctamente'
+                        ]);
                 }
                 else
                 { 
-                    echo '<script>
-                    alert("Error al agregar al director. Intente nuevamente.")
-                    </script>';
+                    return json_encode([
+                        'success' => false,
+                        'message' => 'Asegurese que su Cedula no se repita entre directores.'
+                ]);
                 }
-            }
+        }
     }
     public function deleteOficina(){
         $id = $_GET['id'];

@@ -17,6 +17,25 @@ class Inventario extends Base {
         }
         return $datos;
     }
+    public function getTiposCompleto()
+    {
+        $sql = "SELECT tp.id_tipo as id_tipo, tp.nombre as nombre, SUM(un_deseadas) as cant_pend, 
+                SUM(un_deseadas) as cant_solic FROM tipo_prod tp LEFT JOIN prod_solic ps ON tp.id_tipo=ps.id_tipo
+                GROUP BY tp.id_tipo";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $tipos = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $tipos[] = $row;
+        }
+
+        return [
+            'data' => $tipos,
+            'success' => true
+        ];
+    }
     public function validarTiposDatos($datos, $stmt)
     {
         $codigo = $datos['codigo'];
@@ -96,6 +115,52 @@ class Inventario extends Base {
         
         return $stmt->execute();
     }
+    public function guardarCategoria($datos) {
+        $stmt = $this->db->prepare("INSERT INTO tipo_prod (nombre) VALUES (?)");
+        if (!$stmt) {
+            $this->db->close();
+            die('Error en la preparación de la consulta SQL');
+        }
+        $stmt->bind_param('s', $datos['nombre']);
+        $stmt->execute();
+        if (!$stmt) {
+            error_log("Error al ejecutar la consulta: " . $stmt->error);
+        }
+        $stmt->close();
+        
+        return $stmt;
+    }
+    public function obtenerCategoriaPorId($id) {
+        $stmt = $this->db->prepare("SELECT * FROM tipo_prod WHERE id_tipo = ?");
+        
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . $this->db->error);
+        }
+        
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_assoc();
+    }
+
+    public function eliminarCategoria($id) {
+        $stmt = $this->db->prepare("DELETE FROM tipo_prod WHERE id_tipo = ?");
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . $this->db->error);
+        }
+        try {
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            if ($stmt->affected_rows > 0) {
+                return true;
+            } else {
+                throw new Exception("No se encontró la categoria con ID $id");
+            }
+        } finally {
+            $stmt->close();
+        }
+    }
     public function obtenerEstadisticas() {
         // Estadísticas por estado (para gráfico de torta)
         $sqlEstados = "SELECT 
@@ -124,6 +189,22 @@ class Inventario extends Base {
             'por_estado' => $resultEstados->fetch_all(MYSQLI_ASSOC),
             'mensuales' => $resultMensual->fetch_all(MYSQLI_ASSOC)
         ];
+    }
+    public function actualizarCategoria($datos) {
+        $stmt = $this->db->prepare("UPDATE tipo_prod SET  
+            nombre = ?, 
+            WHERE id_tipo= ?");
+        
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . $this->db->error);
+        }
+        
+        $stmt->bind_param("si", 
+            $datos['nombre'],
+            $datos['id_tipo']
+        );
+        
+        return $stmt->execute();
     }
 }
 ?>

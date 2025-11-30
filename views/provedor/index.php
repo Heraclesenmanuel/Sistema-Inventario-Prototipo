@@ -154,7 +154,20 @@
                         <label for="providerAddress">Dirección</label>
                         <input type="text" id="providerAddress" name="direccion" placeholder="Calle, Ciudad, País">
                     </div>
-
+                    <!-- Nueva sección: Categorías de Especialización -->
+                <div class="form-group full-width">
+                    <label>Categorías de Especialización</label>
+                    <div class="categorias-grid">
+                        <?php if(!empty($categorias)): ?>
+                            <?php foreach($categorias['data'] as $categoria): ?>
+                                <div class="categoria-item">
+                                    <input type="checkbox" id="cat_<?php echo $categoria['nombre']?>" name="categorias[]" value=<?php echo $categoria['id_tipo']?>>
+                                    <label for="cat_<?php echo $categoria['nombre']?>"><?php echo $categoria['nombre']?></label>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
                     <div class="form-group full-width">
                         <label for="providerNotes">Notas</label>
                         <textarea id="providerNotes" name="nota" rows="3" placeholder="Información adicional sobre el proveedor..."></textarea>
@@ -280,6 +293,13 @@
             const formData = new FormData();
             const providerRif = document.getElementById('providerRif').value;
             const isEdit = !!providerRif;
+            const categoriasSeleccionadas = [];
+            const checkboxes = document.querySelectorAll('input[name="categorias[]"]:checked');
+            checkboxes.forEach(checkbox => {
+                categoriasSeleccionadas.push(checkbox.value);
+            });
+            
+            console.log('Categorías seleccionadas:', categoriasSeleccionadas);
             
             // Agregar datos del formulario
             formData.append('nombre', document.getElementById('providerName').value);
@@ -289,6 +309,8 @@
             formData.append('direccion', document.getElementById('providerAddress').value);
             formData.append('nota', document.getElementById('providerNotes').value);
             formData.append('rif', document.getElementById('rif').value);
+            formData.append('categorias_seleccionadas', JSON.stringify(categoriasSeleccionadas));
+            
             if (isEdit) {
                 formData.append('rif_original', providerRif);
             }

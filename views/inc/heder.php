@@ -45,22 +45,50 @@
     <div class="navegacion-lateral">
         <ul>
             <li>
-                <a href="?action=admin&method=home">
+                <a href="?action=admin&method=home" class="active">
                     <i class="fas fa-home"></i>
                     <span>Inicio</span>
                 </a>
             </li>
-            <li>
-                <a href="?action=inventario&method=home">
+            <li class="has-submenu">
+                <a href="#">
                     <i class="fas fa-warehouse"></i>
                     <span>Inventario</span>
                 </a>
+                <ul class="submenu">
+                    <li>
+                        <a href="?action=inventario&method=categorias">
+                            <i class="fas fa-boxes"></i>
+                            <span>Categorias</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="?action=inventario&method=home">
+                            <i class="fas fa-box"></i>
+                            <span>Productos</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <a href="?action=oficinas&method=home">
+            <li class="has-submenu">
+                <a href="#">
                     <i class="fas fa-users"></i>
-                    <span>Oficinas</span>
+                    <span>Departamentos</span>
                 </a>
+                <ul class="submenu">
+                    <li>
+                        <a href="?action=oficinas&method=directores">
+                            <i class="fas fa-user-check"></i>
+                            <span>Directores</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="?action=oficinas&method=home">
+                            <i class="fa fa-users"></i>
+                            <span>Oficinas</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li>
                 <a href="?action=proveedor&method=home">
@@ -223,4 +251,39 @@
             }
         });
     });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Seleccionar todos los elementos con submenús
+            const submenuItems = document.querySelectorAll('.has-submenu');
+            
+            // Añadir evento de clic a cada elemento con submenú
+            submenuItems.forEach(item => {
+                const link = item.querySelector('a');
+                
+                link.addEventListener('click', function(e) {
+                    // Prevenir la navegación si es un enlace vacío
+                    if (this.getAttribute('href') === '#') {
+                        e.preventDefault();
+                    }
+                    
+                    // Cerrar otros submenús abiertos
+                    submenuItems.forEach(otherItem => {
+                        if (otherItem !== item && otherItem.classList.contains('open')) {
+                            otherItem.classList.remove('open');
+                        }
+                    });
+                    
+                    // Alternar el estado del submenú actual
+                    item.classList.toggle('open');
+                });
+            });
+            
+            // Cerrar submenús al hacer clic fuera del menú
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.navegacion-lateral')) {
+                    submenuItems.forEach(item => {
+                        item.classList.remove('open');
+                    });
+                }
+            });
+        });
 </script>

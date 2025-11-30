@@ -51,12 +51,12 @@
                         <tr>
                             <th>Director</th>
                             <th>Teléfono</th>
-                            <th>RIF</th>
+                            <th>Cédula</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="providersTableBody">
-                        <?php if(!empty($directores)): ?>
+                        <?php if(!empty($directores['data'])): ?>
                             <?php foreach($directores['data'] as $director): ?>
                                     <td><?= htmlspecialchars($director['nombre']) ?></td>
                                     <td>
@@ -77,13 +77,13 @@
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" class="text-center">No hay directores disponibles</td>
+                                <td colspan="4" class="text-center">No hay directores disponibles</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
                 
-                <div id="emptyState" class="empty-state" style="display: <?= empty($directores) ? 'block' : 'none' ?>;">
+                <div id="emptyState" class="empty-state" style="display: <?= empty($directores['data']) ? 'block' : 'none' ?>;">
                     <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
                         <path d="M32 8v48M8 32h48" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
                         <circle cx="32" cy="32" r="24" stroke="currentColor" stroke-width="2" opacity="0.3"/>
@@ -113,16 +113,16 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="providerName">Nombre del Director *</label>
-                        <input type="text" id="providerName" name="nombre" required placeholder="Ej: Distribuidora ABC">
+                        <input type="text" id="dir_nombre" name="nombre" required placeholder="Ej: Distribuidora ABC">
                     </div>
 
                     <div class="form-group">
                         <label for="providerPhone">Teléfono *</label>
-                        <input type="tel" id="providerPhone" name="telefono" required placeholder="0414 5000000">
+                        <input type="tel" id="dir_telf" name="telefono" required placeholder="0414 5000000">
                     </div>
                     
                     <div class="form-group">
-                        <label for="rif">Cédula *</label>
+                        <label for="cedula">Cédula *</label>
                         <input type="text" id="cedula" name="cedula" required placeholder="Ej: 12345678">
                     </div>
 
@@ -177,7 +177,7 @@
             const emptyState = document.getElementById('emptyState');
             const table = document.getElementById('providersTable');
             
-            if (show || providers.length === 0) {
+            if (show || directors.length === 0) {
                 emptyState.style.display = 'block';
                 table.style.display = 'none';
             } else {
@@ -206,14 +206,14 @@
                 modalTitle.textContent = 'Editar Director';
                 
                 // Buscar proveedor por RIF
-                const director = providers.find(p => p.ced === providerCed);
+                const director = directors.find(p => p.ced === providerCed);
                 
                 if (director) {
                     console.log('Director encontrado:', director);
                     
                     document.getElementById('providerCed').value = director.ced;
-                    document.getElementById('providerName').value = director.nombre || '';
-                    document.getElementById('providerPhone').value = director.telefono || '';
+                    document.getElementById('dir_nombre').value = director.nombre || '';
+                    document.getElementById('dir_telf').value = director.telefono || '';
                     document.getElementById('cedula').value = director.ced || '';
                     // Hacer el campo RIF de solo lectura en edición
                 } else {
@@ -245,8 +245,8 @@
             const isEdit = !!providerCed;
             
             // Agregar datos del formulario
-            formData.append('nombre', document.getElementById('providerName').value);
-            formData.append('telefono', document.getElementById('providerPhone').value);
+            formData.append('dir_nombre', document.getElementById('dir_nombre').value);
+            formData.append('dir_telf', document.getElementById('dir_telf').value);
             formData.append('cedula', document.getElementById('cedula').value);
             if (isEdit) {
                 formData.append('ced_original', providerCed);
@@ -261,7 +261,7 @@
                     });
                 } else {
                     // Agregar nuevo proveedor
-                    response = await fetch('?action=oficinas&method=addDirector', {
+                    response = await fetch('?action=oficinas&method=capturarDirector', {
                         method: 'POST',
                         body: formData
                     });
@@ -300,7 +300,7 @@
         }
 
         // Eliminar proveedor
-        async function deleteProvider(rif) {
+        async function deleteProvider(cedula) {
             const result = await Swal.fire({
                 title: '¿Estás seguro?',
                 text: "Esta acción no se puede deshacer",
@@ -323,12 +323,12 @@
                         }
                     });
                     
-                    const response = await fetch(`?action=oficinas&method=eliminarDirector&rif=${encodeURIComponent(rif)}`, {
+                    const response = await fetch(`?action=oficinas&method=eliminarDirector&cedula=${encodeURIComponent(cedula)}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: `rif=${encodeURIComponent(rif)}`
+                        body: `cedula=${encodeURIComponent(cedula)}`
                     });
                     
                     // Obtener el texto de la respuesta primero

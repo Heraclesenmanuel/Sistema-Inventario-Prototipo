@@ -132,7 +132,7 @@ body {
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
-            border: 2px solid rgba(255,77,77,0.2);
+            border: 2px solid #f7e4ab;
             text-decoration: none;
         }
         

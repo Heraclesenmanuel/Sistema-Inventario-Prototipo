@@ -54,7 +54,8 @@ class Proveedores extends Base{
         return ($count == 0);
     }
     public function agregarProveedor($data) {
-        $query = "INSERT INTO proveedor (nombre, email, telefono, direccion, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $query = "BEGIN TRANSACTION;
+                    INSERT INTO proveedor (nombre, email, telefono, direccion, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?);";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -121,7 +122,7 @@ class Proveedores extends Base{
             return false;
         }
         
-        $stmt->bind_param("i", $rif);
+        $stmt->bind_param("s", $rif);
         $resultado = $stmt->execute();
         $stmt->close();
         
