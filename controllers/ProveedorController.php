@@ -86,7 +86,8 @@ class ProveedorController extends AdminController
                     'estado' => trim($_POST['estado']),
                     'direccion' => isset($_POST['direccion']) ? trim($_POST['direccion']) : '',
                     'nota' => isset($_POST['nota']) ? trim($_POST['nota']) : '',
-                    'rif' => $rif
+                    'rif' => $rif,
+                    'categorias_recomendadas' => isset($_POST['categorias_seleccionadas']) ? json_decode($_POST['categorias_seleccionadas']) : []
                 ];
 
                 // Validar formato de email
@@ -151,7 +152,8 @@ class ProveedorController extends AdminController
                     'estado' => trim($_POST['estado']),
                     'direccion' => isset($_POST['direccion']) ? trim($_POST['direccion']) : '',
                     'nota' => isset($_POST['nota']) ? trim($_POST['nota']) : '',
-                    'rif_original' => $rif_og
+                    'rif_original' => $rif_og,
+                    'categorias_recomendadas' => isset($_POST['categorias_seleccionadas']) ? json_decode($_POST['categorias_seleccionadas']) : []
                 ];
                 
                 if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
@@ -184,5 +186,34 @@ class ProveedorController extends AdminController
             ]);
         }
         exit();
+    }
+    public function getRecomendaciones()
+    {
+        $rif = isset($_POST['rif']) ? trim($_POST['rif']) : '';
+        try {
+            $resultado = $this->proveedores->getRecomendaciones($rif);
+            if (!$resultado)
+            {
+                echo json_encode([
+                'success' => false,
+                'message' => "No se ha podido ejecutar la consulta de recomendaciones"
+            ]);
+            }
+            else
+            {
+                echo json_encode([
+                        'success' => true,
+                        'message' => 'Proveedor actualizado correctamente',
+                        'recomendaciones' => $resultado
+                    ]);
+            }
+        }
+        catch (Exception $e)
+        {
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }

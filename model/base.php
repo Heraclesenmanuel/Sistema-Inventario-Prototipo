@@ -22,6 +22,20 @@ class Base
             'success' => true
         ];
     }
+    public function getRecomendaciones($rif)
+    {
+        $sql = "SELECT tp.nombre as nombre
+        FROM prov_recomendaciones pr INNER JOIN tipo_prod tp ON pr.id_tipo=tp.id_tipo 
+        WHERE rif_proveedor = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('s', $rif);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $rows = $result->fetch_all(MYSQLI_NUM);
+        $valores = array_column($rows, 0);
+
+        return $valores;
+    }
     public function getTipos() {
         $sql = "SELECT id_tipo, nombre FROM tipo_prod";
         $stmt = $this->db->prepare($sql);

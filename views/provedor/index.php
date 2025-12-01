@@ -233,12 +233,24 @@
         }
 
         // Editar proveedor
-        function editProvider(providerRif) {
-            openModal('edit', providerRif);
+        async function editProvider(providerRif) {
+            const response = await fetch(`?action=proveedor&method=getRecomendaciones&rif=${encodeURIComponent(providerRif)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                body: `rif=${encodeURIComponent(providerRif)}`
+                    });
+            if (!response.ok) {
+                throw new Error("Error en la petición: " + response.status);
+            }
+
+            const recomendacionesdata = await response.json();
+            openModal('edit', providerRif, recomendacionesdata);
         }
 
         // Abrir modal
-        function openModal(mode, providerRif = null) {
+        function openModal(mode, providerRif = null, recom_data) {
             const modal = document.getElementById('providerModal');
             const modalTitle = document.getElementById('modalTitle');
             const form = document.getElementById('providerForm');
@@ -265,6 +277,12 @@
                     document.getElementById('providerAddress').value = provider.direccion || '';
                     document.getElementById('providerNotes').value = provider.nota || '';
                     document.getElementById('rif').value = provider.rif || '';
+                    console.log(recom_data.recomendaciones)
+                    for (let nombre_recom of recom_data.recomendaciones)
+                    {
+                        document.getElementById('cat_' + nombre_recom).checked = true
+                    }
+                    
                     // Hacer el campo RIF de solo lectura en edición
                 } else {
                     console.error('Proveedor no encontrado con RIF:', providerRif);
@@ -310,7 +328,6 @@
             formData.append('nota', document.getElementById('providerNotes').value);
             formData.append('rif', document.getElementById('rif').value);
             formData.append('categorias_seleccionadas', JSON.stringify(categoriasSeleccionadas));
-            
             if (isEdit) {
                 formData.append('rif_original', providerRif);
             }

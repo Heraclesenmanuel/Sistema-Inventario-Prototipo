@@ -53,34 +53,57 @@ class Proveedores extends Base{
 
         return ($count == 0);
     }
-    public function agregarProveedor($data) {
-        $query = "BEGIN TRANSACTION;
-                    INSERT INTO proveedor (nombre, email, telefono, direccion, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?);";
+    private function agregarProvRecomendacion($recomendaciones, $rif)
+    {
+        $query = "INSERT INTO prov_recomendaciones (rif_proveedor, id_tipo) VALUES (?, ?)";
         $stmt = $this->db->prepare($query);
-        
-        if (!$stmt) {
-            error_log("Error preparando consulta: " . $this->db->error);
-            return false;
+        foreach($recomendaciones as $categoria)
+        {
+            $id_tipo = intval($categoria);
+            $stmt->bind_param('si', $rif, $id_tipo);
+            $resultado = $stmt->execute();
+            if (!$resultado) {
+                error_log("Error ejecutando inserción: " . $stmt->error);
+                return false;
+            }
         }
-        
-        $stmt->bind_param("sssssss", 
-            $data['nombre_proveedor'],
-            $data['email'],
-            $data['telefono'],
-            $data['direccion'],
-            $data['estado'],
-            $data['nota'],
-            $data['rif']
-        );
-        
-        $resultado = $stmt->execute();
-        
-        if (!$resultado) {
-            error_log("Error ejecutando inserción: " . $stmt->error);
+        return true;
+    }
+    public function agregarProveedor($data) {
+        $this->db->begin_transaction();
+
+        try 
+        {
+            $query = "INSERT INTO proveedor (nombre, email, telefono, direccion, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?);";
+            $stmt = $this->db->prepare($query);
+            
+            if (!$stmt) {
+                error_log("Error preparando consulta: " . $this->db->error);
+                $this->db->rollback();
+                return false;
+            }
+            $stmt->bind_param("sssssss", 
+                $data['nombre_proveedor'],
+                $data['email'],
+                $data['telefono'],
+                $data['direccion'],
+                $data['estado'],
+                $data['nota'],
+                $data['rif']
+            );
+            $resultado = $stmt->execute();
+            if (!$resultado || !$this->agregarProvRecomendacion($data['categorias_recomendadas'], $data['rif'])) {
+                $this->db->rollback();
+                error_log("Error ejecutando inserción: " . $stmt->error);
+            }
+            else { $this->db->commit(); }
         }
-        
+        catch(Exception $e)
+        {
+            $this->db->rollback();
+            error_log("Error en la transacción pepe: " . $e->getMessage());
+        }
         $stmt->close();
-        
         return $resultado;
     }
 
@@ -105,7 +128,7 @@ class Proveedores extends Base{
         );
         $resultado = $stmt->execute();
         
-        if (!$resultado) {
+        if (!$resultado /*|| !$this->actualizarRecomProv()*/) {
             error_log("Error ejecutando actualización: " . $stmt->error);
         }
         $stmt->close();
