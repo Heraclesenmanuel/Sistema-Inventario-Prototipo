@@ -31,10 +31,15 @@ class Base
         $stmt->bind_param('s', $rif);
         $stmt->execute();
         $result = $stmt->get_result();
+        if(!$result)
+        {
+            error_log("Error accediendo a los datos de Recomendacion para este RIF.");
+            return false;
+        }
         $rows = $result->fetch_all(MYSQLI_NUM);
         $valores = array_column($rows, 0);
-
         return $valores;
+        
     }
     public function getTipos() {
         $sql = "SELECT id_tipo, nombre FROM tipo_prod";

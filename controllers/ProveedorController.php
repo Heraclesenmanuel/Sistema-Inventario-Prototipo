@@ -160,7 +160,7 @@ class ProveedorController extends AdminController
                     throw new Exception("El formato del email no es válido");
                 }
                 
-                $resultado = $this->proveedores->actualizarProveedor($rif, $data);
+                $resultado = $this->proveedores->actualizarProveedor($data);
                 if ($resultado) {
                     echo json_encode([
                         'success' => true,
@@ -192,18 +192,18 @@ class ProveedorController extends AdminController
         $rif = isset($_POST['rif']) ? trim($_POST['rif']) : '';
         try {
             $resultado = $this->proveedores->getRecomendaciones($rif);
-            if (!$resultado)
+            if (!$resultado && !is_array($resultado))
             {
                 echo json_encode([
                 'success' => false,
-                'message' => "No se ha podido ejecutar la consulta de recomendaciones"
+                'message' => "No se ha podido ejecutar la consulta de recomendaciones",
             ]);
             }
             else
             {
                 echo json_encode([
                         'success' => true,
-                        'message' => 'Proveedor actualizado correctamente',
+                        'message' => 'Recomendaciones obtenidas correctamente',
                         'recomendaciones' => $resultado
                     ]);
             }

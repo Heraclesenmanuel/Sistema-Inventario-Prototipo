@@ -246,8 +246,20 @@
             }
 
             const recomendacionesdata = await response.json();
-            openModal('edit', providerRif, recomendacionesdata);
+            if (!recomendacionesdata.success)
+            {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error accediendo a los datos. Por favor, intente nuevamente'
+            });
+            }
+            else
+            {
+                openModal('edit', providerRif, recomendacionesdata);
+            }
         }
+        
 
         // Abrir modal
         function openModal(mode, providerRif = null, recom_data) {
@@ -282,7 +294,6 @@
                     {
                         document.getElementById('cat_' + nombre_recom).checked = true
                     }
-                    
                     // Hacer el campo RIF de solo lectura en edición
                 } else {
                     console.error('Proveedor no encontrado con RIF:', providerRif);

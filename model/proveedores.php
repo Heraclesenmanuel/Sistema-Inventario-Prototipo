@@ -49,7 +49,7 @@ class Proveedores extends Base{
 
         $stmt->bind_result($count);
         $stmt->fetch();
-        $stmt->close(); // muy importante
+        $stmt->close();
 
         return ($count == 0);
     }
@@ -67,6 +67,24 @@ class Proveedores extends Base{
                 return false;
             }
         }
+        return true;
+    }
+    private function eliminarProvRecomendaciones($rif)
+    {
+        $sql = 'DELETE FROM prov_recomendaciones WHERE rif_proveedor=?';
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('s', $rif);
+        
+        if (!$stmt) {
+            error_log("Error preparando consulta: " . $this->db->error);
+            return false;
+        }
+        
+        if (!$stmt->execute()) {
+            error_log("Error ejecutando consulta: " . $stmt->error);
+            return false;
+        }
+        $stmt->close();
         return true;
     }
     public function agregarProveedor($data) {
@@ -107,7 +125,8 @@ class Proveedores extends Base{
         return $resultado;
     }
 
-    public function actualizarProveedor($rif, $data) {
+    public function actualizarProveedor($data) {
+        $this->db->begin_transaction();
         $query = "UPDATE proveedor SET nombre = ?, email = ?, telefono = ?, direccion = ?, rif = ?, estado = ?, nota = ? WHERE rif = ?";
         $stmt = $this->db->prepare($query);
         
@@ -128,8 +147,13 @@ class Proveedores extends Base{
         );
         $resultado = $stmt->execute();
         
-        if (!$resultado /*|| !$this->actualizarRecomProv()*/) {
+        if (!$resultado || !$this->eliminarProvRecomendaciones($data['rif_original']) || !$this->agregarProvRecomendacion($data['categorias_recomendadas'], $data['rif'])) {
+            $this->db->rollback();
             error_log("Error ejecutando actualización: " . $stmt->error);
+        }
+        else
+        {
+            $this->db->commit();
         }
         $stmt->close();
         
