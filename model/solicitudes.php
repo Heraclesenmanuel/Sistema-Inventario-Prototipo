@@ -5,6 +5,17 @@ class Solicitud extends Base{
     {
         return count(array_filter($solicitudes, fn($solicitud) => $solicitud['estado'] !== "En revision"));
     }
+    public function actualizarEstadoSolicitud($idSolicitud, $nuevoEstado, $motivo)
+    {
+        $sql = "UPDATE solicitud SET
+                estado = ?,
+                comentarios = ?
+                WHERE id_solicitud = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('ssi', $nuevoEstado, $motivo, $idSolicitud);
+        $stmt->execute();
+        return $stmt->affected_rows;
+    }
     public function obtenerSolicitudes(){
         $sql = 'SELECT s.*, u.nombre as nombre_solicitante, f.nombre as nombre_oficina
         FROM solicitud s INNER JOIN usuario u ON s.id_solicitante=u.id_usuario JOIN oficina f ON u.num_oficina=f.num_oficina';
@@ -19,6 +30,22 @@ class Solicitud extends Base{
             $datos[] = $row;
         }
         return $datos;
+    }
+    public function cargarProds() {
+        $sql = "SELECT id_producto, nombre FROM producto";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $oficinas = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $oficinas[] = $row;
+        }
+
+        return [
+            'data' => $oficinas,
+            'success' => true
+        ];
     }
     public function validarTiposDatos($datos, $stmt)
     {

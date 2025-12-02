@@ -10,169 +10,6 @@
     <link rel="stylesheet" href="public/css/oficinas.css">
     <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
 
-    <style>
-        /* Estilos para el modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background-color: white;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transform: translateY(-20px);
-            transition: transform 0.3s;
-            position: relative;
-        }
-
-        .modal-overlay.active .modal {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            padding: 20px;
-            border-radius: 10px 10px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .modal-close:hover {
-            transform: scale(1.1);
-        }
-
-        .modal-body {
-            padding: 25px;
-        }
-
-        .office-info {
-            display: grid;
-            gap: 20px;
-        }
-
-        .info-section {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            border-left: 4px solid #3498db;
-        }
-
-        .info-section h4 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #2c3e50;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-section h4 i {
-            color: #3498db;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .info-item {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .info-label {
-            font-weight: 600;
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .info-value {
-            color: #2c3e50;
-            font-size: 1.1rem;
-            padding: 8px 12px;
-            background-color: white;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .modal {
-                width: 95%;
-                margin: 10px;
-            }
-            
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-body {
-                padding: 15px;
-            }
-        }
-
-        /* Botón ver más */
-        .btn.btn-see.view {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-
-        .btn.btn-see.view:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-        }
-    </style>
-
 </head>
 <body>
     <div class="dashboard">
@@ -186,20 +23,14 @@
             <div class="add">
                 <form action="?action=oficinas&method=home" method="post" id="oficina-form">
                     <h3>Agregar Nueva Oficina</h3>
-                    <?php if (isset($_GET['exito'])): ?>
-                        <div class="alert alert-success">
-                            <i class="fa fa-calendar-check"></i>
-                            <span>...¡Tu solicitud fue agregada exitosamente!</span>
-                            <i class="fa fa-long-arrow-down"></i>
-                        </div>
-                    <?php endif; ?>
+                    
                     <!-- Datos de la oficina -->
                     <h4 class="form-section-title">Datos de la Oficina</h4>
                     <input type="number" id="num_oficina" name="num_oficina" placeholder="Ingrese el número de esta oficina" min=100 max=399 required>
                     <input type="text" id="name" name="name" placeholder="Ingrese el nombre de esta oficina" required>
                     <input type="text" id="cel" name="cel" placeholder="Ingrese el numero de teléfono de oficina" pattern="\d{11,}" required>
                     
-                    <!-- Opciones para el director -->
+            <!-- Opciones para el director -->
                     <div class="director-options">
                         <button type="button" class="director-btn" id="btn-select-director">
                             <i class="fas fa-user-check"></i> Seleccionar Director Existente
@@ -295,10 +126,9 @@
                                                 class="btn btn-see view" 
                                                 data-action="view"
                                                 title="Ver más" 
-                                                data-id="<?php echo $oficina['num_oficina']; ?>"
-                                                data-oficina='<?php echo json_encode($oficina); ?>'>
+                                                data-id="<?php echo $oficina['num_oficina']; ?>">
                                                 <i class="fas fa-eye"></i>
-                                                <span>Más</span>
+                                                    <span>Más</span>
                                             </button>
                                             <button 
                                                 class="btn btn-sm btn-danger btn-delete"
@@ -333,84 +163,11 @@
         </main>
     </div>
 
-    <!-- Modal para ver detalles de la oficina -->
-    <div class="modal-overlay" id="officeModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-building"></i> Detalles de la Oficina</h3>
-                <button class="modal-close" id="closeModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="office-info">
-                    <div class="info-section">
-                        <h4><i class="fas fa-info-circle"></i> Información General</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Número de Oficina</span>
-                                <span class="info-value" id="modal-num-oficina">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Nombre</span>
-                                <span class="info-value" id="modal-nombre">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Teléfono</span>
-                                <span class="info-value" id="modal-telefono">-</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-section">
-                        <h4><i class="fas fa-user-tie"></i> Información del Director</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Nombre</span>
-                                <span class="info-value" id="modal-director-nombre">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Cédula</span>
-                                <span class="info-value" id="modal-director-cedula">-</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Teléfono</span>
-                                <span class="info-value" id="modal-director-telefono">-</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-section">
-                        <h4><i class="fas fa-calendar-alt"></i> Información Adicional</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Fecha de Creación</span>
-                                <span class="info-value" id="modal-fecha-creacion"><?php echo date('d/m/Y'); ?></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Estado</span>
-                                <span class="info-value" id="modal-estado">Activa</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Total Empleados</span>
-                                <span class="info-value" id="modal-total-empleados">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Elementos del modal
-            const officeModal = document.getElementById('officeModal');
-            const closeModal = document.getElementById('closeModal');
-            
-            // Elementos del formulario de director (mantener tu código existente)
+            // Elementos del formulario de director
             const btnSelectDirector = document.getElementById('btn-select-director');
             const btnNewDirector = document.getElementById('btn-new-director');
             const selectDirectorContainer = document.getElementById('select-director-container');
@@ -426,65 +183,6 @@
             const oficinaForm = document.getElementById('oficina-form');
 
             let modoDirector = ''; // 'existente' o 'nuevo'
-
-            // Función para abrir el modal con datos
-            function openOfficeModal(oficinaData) {
-                try {
-                    // Parsear datos si viene como string JSON
-                    if (typeof oficinaData === 'string') {
-                        oficinaData = JSON.parse(oficinaData);
-                    }
-                    
-                    // Actualizar contenido del modal
-                    document.getElementById('modal-num-oficina').textContent = oficinaData.num_oficina || '-';
-                    document.getElementById('modal-nombre').textContent = oficinaData.nombre || '-';
-                    document.getElementById('modal-telefono').textContent = oficinaData.telefono || '-';
-                    document.getElementById('modal-director-nombre').textContent = oficinaData.nombre_dir || '-';
-                    document.getElementById('modal-director-cedula').textContent = oficinaData.ced_dir || '-';
-                    document.getElementById('modal-director-telefono').textContent = oficinaData.telf_dir || '-';
-                    
-                    // Datos de prueba adicionales
-                    document.getElementById('modal-fecha-creacion').textContent = '<?php echo date("d/m/Y"); ?>';
-                    document.getElementById('modal-estado').textContent = 'Activa';
-                    document.getElementById('modal-total-empleados').textContent = Math.floor(Math.random() * 10) + 1; // Número aleatorio para ejemplo
-                    
-                    // Mostrar modal
-                    officeModal.classList.add('active');
-                    document.body.style.overflow = 'hidden'; // Prevenir scroll del body
-                    
-                } catch (error) {
-                    console.error('Error al cargar datos de la oficina:', error);
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'No se pudieron cargar los datos de la oficina.',
-                        icon: 'error',
-                        confirmButtonColor: '#e74c3c'
-                    });
-                }
-            }
-
-            // Cerrar modal
-            function closeOfficeModal() {
-                officeModal.classList.remove('active');
-                document.body.style.overflow = 'auto'; // Restaurar scroll del body
-            }
-
-            // Evento para cerrar modal con botón X
-            closeModal.addEventListener('click', closeOfficeModal);
-
-            // Evento para cerrar modal haciendo clic fuera
-            officeModal.addEventListener('click', function(e) {
-                if (e.target === officeModal) {
-                    closeOfficeModal();
-                }
-            });
-
-            // Evento para cerrar modal con ESC
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && officeModal.classList.contains('active')) {
-                    closeOfficeModal();
-                }
-            });
 
             // Función para actualizar campos ocultos
             function actualizarCamposOcultos() {
@@ -652,11 +350,11 @@
                 if (filasFiltradas.length === 0) {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td colspan="5">
+                        <td colspan="4">
                             <div class="text-muted">
                                 <i class="fas fa-search fa-3x"></i>
                                 <h5>No se encontraron resultados</h5>
-                                <p>No hay oficinas que coincidan con tu búsqueda.</p>
+                                <p>No hay clientes que coincidan con tu búsqueda.</p>
                             </div>
                         </td>
                     `;
@@ -690,25 +388,14 @@
                     tbody.appendChild(filasFiltradas[i].cloneNode(true));
                 }
                 
-                // Reactivar eventos de eliminar y ver
+                // Reactivar eventos de eliminar
                 activarBotonesEliminar();
-                activarBotonesVer();
                 
                 // Actualizar información de paginación
-                paginationInfo.textContent = `Mostrando ${inicio + 1} a ${fin} de ${totalFilas} oficinas`;
+                paginationInfo.textContent = `Mostrando ${inicio + 1} a ${fin} de ${totalFilas} clientes`;
                 
                 // Generar botones de paginación
                 generarPaginacion(totalPaginas);
-            }
-
-            function activarBotonesVer() {
-                tbody.querySelectorAll('.btn.btn-see.view').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const oficinaData = this.getAttribute('data-oficina');
-                        openOfficeModal(oficinaData);
-                    });
-                });
             }
 
             function generarPaginacion(totalPaginas) {
@@ -823,7 +510,7 @@
                                         if (data.success) {
                                         Swal.fire({
                                             title: 'Eliminado',
-                                            text: 'La oficina se eliminó con éxito.',
+                                            text: 'El cliente se eliminó con éxito.',
                                             icon: 'success',
                                             confirmButtonColor: '#3498db'
                                         }).then(() => {
@@ -833,7 +520,7 @@
                                         } else {
                                         Swal.fire({
                                             title: 'Error',
-                                            text: data.error || 'No se pudo eliminar la oficina.',
+                                            text: data.error || 'No se pudo eliminar el cliente.',
                                             icon: 'error',
                                             confirmButtonColor: '#e74c3c'
                                         });
@@ -875,7 +562,6 @@
 
             // Inicializar
             mostrarPagina();
-            activarBotonesVer(); // Activar botones de ver en la carga inicial
         });
     </script>
 </body>

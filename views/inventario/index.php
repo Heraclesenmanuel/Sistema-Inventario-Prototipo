@@ -17,9 +17,17 @@
         <main class="main-content">
             <div class="page-header">
                 <h1><?= $titulo ?></h1>
+                                <?php if (isset($_GET['exito'])): ?>
+                    <div class="alert alert-success">
+                        <i class="fa fa-calendar-check"></i>
+                        <span>...¡Tu producto fue agregado exitosamente!</span>
+                        <i class="fa fa-long-arrow-down"></i>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <section class="bus-add">
+
                 <div class="bus">
                     <input type="text" id="buscar" name="buscar" placeholder="Ingrese el nombre o código del producto" onkeyup="filtrarProductos()">
                     <button name="add" id="add"><i class="fas fa-plus"></i> Agregar Producto</button>
@@ -31,7 +39,7 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th>Presentacion</th>
-                                <th>Fecha de Registro</th>
+                                <th>Ultimo Registro</th>
                                 <th>Tipo</th>
                                 <th>Unidades Disponibles</th>
                                 <th>Acciones</th>
@@ -40,15 +48,12 @@
                         <tbody>
                             <?php if(!empty($datosInven)): ?>
                                 <?php foreach($datosInven as $dato): ?>
-                                    <?php 
-                                    $totalUnidades = $dato['un_disponibles'];
-                                    ?>
                                     <tr>
                                         <td><?php echo htmlspecialchars($dato['nombre']); ?></td>
                                         <td><?php echo htmlspecialchars($dato['medida']); ?></td>
-                                        <td><?php echo htmlspecialchars($dato['fecha_r']); ?></td>
+                                        <td>idk</td>
                                         <td><?php echo htmlspecialchars($dato['tipo']); ?></td>
-                                        <td style="text-align: center;"><?php echo htmlspecialchars($dato['un_disponibles']); ?></td>
+                                        <td>lol</td>
                                         <td>
                                             <button class="btn btn-sm btn-primary btn-editar" 
                                                 data-id="<?php echo $dato['id_producto']; ?>">
@@ -92,7 +97,7 @@
                             
                             <div class="form-group">
                                 <select id="productMeasure" name="productMeasure" required>
-                                <option value="">Seleccionar unidad</option>
+                                <option value="">Seleccione su Unidad de Medida:</option>
                                 <option value="Unidades">Unidades</option>
                                 <option value="Kilogramos">Kilogramos</option>
                                 <option value="Litros">Litros</option>
@@ -100,11 +105,6 @@
                                 <option value="Paquetes">Paquetes</option>
                                 <option value="Otro">Otro</option>
                             </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="productStock">Unidades Disponibles:</label>
-                                <input type="number" id="productStock" name="productStock" min="0" required>
                             </div>
                             <div class="form-group">
                                 <label for="editStock">Tipo de producto:</label>
@@ -138,32 +138,36 @@
                             <input type="hidden" id="editId" name="editId">
                             
                             <div class="form-group">
-                                <label for="productCode">Código:</label>
-                                <input type="text" id="codigo" pattern="[0-9]*" name="codigo" required>
-                            </div>
-                            
-                            <div class="form-group">
                                 <label for="editName">Nombre del Producto:</label>
                                 <input type="text" id="editName" name="nombre" required>
                             </div>
                             
                             <div class="form-group">
                                 <label for="editMeasure">Unidad de Medida:</label>
-                                <input type="text" id="editMeasure" name="medida" required>
+                                <select id="editMeasure" name="editMeasure" required>
+                                    <option value="">Unidad de Medida:</option>
+                                    <option value="Kilogramos">Kilogramos</option>
+                                    <option value="Litros">Litros</option>
+                                    <option value="Cajas">Cajas</option>
+                                    <option value="Paquetes">Paquetes</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
                             </div>
-                            
-                            <div class="form-group">
-                                <label for="editStock">Unidades Disponibles:</label>
-                                <input type="number" id="editStock" name="un_disponibles" min="0" required>
-                            </div>
+
                             <div class="form-group">
                                 <label for="editStock">Tipo de producto:</label>
-                                <select name="tipo_p" id="tipo_p">
-                                    <option value="Alimento" selected>Alimento</option>
-                                    <option value="Limpieza">Limpieza</option>
-                                    <option value="Electronicos">Electronicos</option>
-                                    <option value="Oficina">Oficina</option>
-                                    <option value="Material literario">Material literario</option>
+                                <select name="editTipo" id="editTipo" class="form-select-sm">
+                                    <?php if(isset($tipos_p['success']) && $tipos_p['success'] && !empty($tipos_p['data'])): ?>
+                                        <?php foreach($tipos_p['data'] as $tipo): ?>
+                                            <option value=<?php echo $tipo['id_tipo']?>><?php echo $tipo['nombre']?></option>
+                                            <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <option value="Alimento" selected>Alimento</option>
+                                        <option value="Limpieza">Limpieza</option>
+                                        <option value="Electronicos">Electronicos</option>
+                                        <option value="Oficina">Oficina</option>
+                                        <option value="Material literario">Material literario</option>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                             <button type="submit" class="submit-btn">Actualizar Producto</button>
@@ -248,11 +252,10 @@
                         if(data.success) {
                             const producto = data.producto;
                             document.getElementById('editId').value = producto.id_producto;
-                            document.getElementById('editCode').value = producto.codigo;
                             console.log("SADSA")
                             document.getElementById('editName').value = producto.nombre;
                             document.getElementById('editMeasure').value = producto.medida;
-                            document.getElementById('editStock').value = producto.un_disponibles;
+                            document.getElementById('editTipo').value = producto.id_tipo;
                             modalEditar.style.display = 'block';
                         } else {
                             Swal.fire('Error', data.message || 'No se pudo cargar el producto', 'error');

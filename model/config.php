@@ -189,5 +189,17 @@ class Config extends Base{
             'data' => $usuarios
         ];
     }
+    public function verif()
+    {
+        $sql = "SELECT claveSuper FROM usuario_super WHERE id_usuario = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('i', $_SESSION['id']);
+        $stmt->execute();
+        $result = $stmt->get_result();;
+
+
+        return $result->fetch_assoc();
+    }
 }
+
 ?>

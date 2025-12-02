@@ -16,26 +16,29 @@ class InventarioController extends AdminController
         $datosInven = $this->inventario->obtenerDatos();
 
         if (isset($_POST['add'])) {
-            // Sanitizar y validar datos antes de guardar
-            $datos = [
-                'nombre' => trim($_POST['productName'] ?? 'N/A'),
-                'un_disponibles' => (int)(trim($_POST['productStock'] ?? 0)),
-                'tipo_p' => ($_POST['tipo_p']),
-                'medida' => trim($_POST['productMeasure'] ?? 'N/A')
-            ];
-
-            if (empty($datos['nombre'])){
-                echo '<script>alert("El código del producto no puede estar vacío")</script>';
-            } 
-            else if ($this->inventario->guardarDatos($datos)) {
-                header('Location: ?action=inventario&method=home&mensaje=exito'); //implementar mensaje exito
-                exit();
-            } 
-            else {
-                echo '<script>alert("Error al guardar el producto. Intente nuevamente.")</script>';
-            }
+            $this->agregarProducto();
         }
         require_once 'views/inventario/index.php';
+    }
+    public function agregarProducto()
+    {
+        // Sanitizar y validar datos antes de guardar
+        $datos = [
+            'nombre' => trim($_POST['productName'] ?? 'N/A'),
+            'tipo_p' => ($_POST['tipo_p']),
+            'medida' => trim($_POST['productMeasure'] ?? 'N/A')
+        ];
+
+        if (empty($datos['nombre'])){
+            echo '<script>alert("El código del producto no puede estar vacío")</script>';
+        } 
+        else if ($this->inventario->guardarDatos($datos)) {
+            header('Location: ?action=inventario&method=home&mensaje=exito'); //implementar mensaje exito
+            exit();
+        } 
+        else {
+            echo '<script>alert("Error al guardar el producto. Intente nuevamente.")</script>';
+        }
     }
     public function categorias()
     {
@@ -64,7 +67,7 @@ class InventarioController extends AdminController
     public function eliminarProducto() {
         try{
             if(!isset($_GET['id'])){
-                echo '<script>alert("ID del producto no encontra a surguido un error")</script>';
+                echo '<script>alert("ID del producto no encontrado, ha surguido un error")</script>';
             }
 
             $id = $_GET['id'];
@@ -100,16 +103,15 @@ class InventarioController extends AdminController
     }
     public function actualizarProducto() {
         try {
-            if(!isset($_POST['id'])) {
+            if(!isset($_POST['editId'])) {
                 echo '<script>alert("ID del producto no encontrado")</script>';
                 return;
             }
             $datos = [
-                'id_producto' => $_POST['id'],
+                'id_producto' => $_POST['editId'],
                 'nombre' => $_POST['nombre'],
-                'medida' => $_POST['medida'],
-                'un_disponibles' => $_POST['un_disponibles'],
-                'tipo_p' => $_POST['tipo_p']
+                'medida' => $_POST['editMeasure'],
+                'tipo_p' => $_POST['editTipo']
             ];
             if($this->inventario->actualizarProducto($datos)) {
                 echo '<script>alert("Producto actualizado correctamente")</script>';
@@ -126,7 +128,6 @@ class InventarioController extends AdminController
         try {
             if(!isset($_GET['id'])) {
                 echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
-                return;
             }
 
             $id = $_GET['id'];
@@ -147,10 +148,10 @@ class InventarioController extends AdminController
                 return;
             }
             $datos = [
-                'id_tipo' => $_POST['id'],
+                'id_tipo' => $_POST['editId'],
                 'nombre' => $_POST['nombre']
             ];
-            if($this->inventario->actualizarCategoria($datos)) {
+            if($this->inventario->actualizarCategoria($datos['nombre'], $datos['id_tipo'])) {
                 echo '<script>alert("Categoria actualizada correctamente")</script>';
             } else {
                 echo '<script>alert("Error al actualizar la categoria")</script>';

@@ -15,7 +15,8 @@ class SolicitudesController extends AdminController
         $oficinas = $this->solicitudes->cargarOficinas();
         $tipos_p = $this->solicitudes->getTipos();
         $solicitudes = $this->solicitudes->obtenerSolicitudes();
-        $solicts_no_en_rev = $this->solicitudes->contarSolictsNoEnRev($solicitudes);
+        $cant_solicts_no_en_rev = $this->solicitudes->contarSolictsNoEnRev($solicitudes);
+        $productos = $this->getProductos();
 
         if (isset($_POST['departamento'])) {
             $this->agregarSolic();
@@ -40,7 +41,7 @@ class SolicitudesController extends AdminController
             exit();
         } 
         else {
-            echo '<script>alert("Error al guardar el producto. Intente nuevamente.")</script>';
+            echo '<script>alert("Error al guardar la solicitud. Intente nuevamente.")</script>';
         }
     }
     public function procesarProds() {
@@ -48,7 +49,6 @@ class SolicitudesController extends AdminController
         $un_deseadas = $_POST['cantidad'] ?? [];
         $tipos_p = $_POST['tipo_producto'] ?? [];
         $medidas = $_POST['unidad_medida'] ?? [];
-        echo var_dump($nombres, $un_deseadas, $tipos_p, $medidas);
         $productos = [];
         // Asegurarse de que sean arrays
         if (!is_array($nombres)) {
@@ -91,6 +91,132 @@ class SolicitudesController extends AdminController
         header('Location: ?action=solicitudes&method=home');
         exit();
     }
+    public function cambiarEstado() {
+        header('Content-Type: application/json');
+        
+        try {
+            // Verificar si es una solicitud POST
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Método no permitido'
+                ]);
+                return;
+            }
+            // Obtener datos del POST
+            $idSolicitud = $_POST['id_solicitud'] ?? null;
+            $nuevoEstado = $_POST['nuevo_estado'] ?? null;
+            $motivo = $_POST['motivo'] ?? '';
+            
+            // Validar datos requeridos
+            if (!$idSolicitud || !$nuevoEstado) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Datos incompletos'
+                ]);
+                return;
+            }
+            
+            // Validar estado permitido
+            $estadosPermitidos = ['Aprobado', 'Rechazado', 'En Revisión'];
+            if (!in_array($nuevoEstado, $estadosPermitidos)) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Estado no válido'
+                ]);
+                return;
+            }
+            $actualizado = $this->solicitudes->actualizarEstadoSolicitud($idSolicitud, $nuevoEstado, $motivo);
+
+            if ($actualizado) {                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Solicitud colocada ' . strtolower($nuevoEstado) . ' correctamente'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No se pudo actualizar el estado de la solicitud'
+                ]);
+            }
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+    }
+    public function obtenerDetalles() {
+        header('Content-Type: application/json');
+        
+        try {
+            // Verificar si es una solicitud POST
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Método no permitido'
+                ]);
+                return;
+            }
+            
+            // Obtener ID de la solicitud
+            $idSolicitud = $_POST['id_solicitud'] ?? null;
+            
+            if (!$idSolicitud) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'ID de solicitud no proporcionado'
+                ]);
+                return;
+            }
+            
+            // Aquí llamas a tu modelo para obtener los detalles
+            // Ejemplo:
+            // $model = new SolicitudesModel();
+            // $solicitud = $model->obtenerSolicitudPorId($idSolicitud);
+            // $productos = $model->obtenerProductosSolicitud($idSolicitud);
+            
+            // Datos de ejemplo (reemplaza con tu lógica real)
+            $solicitud = [
+                'id_solicitud' => $idSolicitud,
+                'nombre_solicitante' => 'Juan Pérez',
+                'nombre_oficina' => 'Informática',
+                'fecha_deseo' => '2024-01-20',
+                'fecha_creacion' => '2024-01-15',
+                'estado' => 'Pendiente',
+                'notas' => 'Material necesario para el nuevo proyecto'
+            ];
+            
+            $productos = [
+                [
+                    'nombre_producto' => 'Laptop Dell',
+                    'cantidad' => 3,
+                    'unidad_medida' => 'Unidades',
+                    'tipo_producto' => 'Electrónicos'
+                ],
+                [
+                    'nombre_producto' => 'Mouse inalámbrico',
+                    'cantidad' => 5,
+                    'unidad_medida' => 'Unidades',
+                    'tipo_producto' => 'Electrónicos'
+                ]
+            ];
+            
+            $solicitud['productos'] = $productos;
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Detalles obtenidos correctamente',
+                'data' => $solicitud
+            ]);
+            
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al obtener detalles: ' . $e->getMessage()
+            ]);
+        }
+    }
     public function obtenerProducto() {
         try {
             if(!isset($_GET['id'])) {
@@ -107,6 +233,19 @@ class SolicitudesController extends AdminController
             }
         } catch(Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
+        }
+    }
+    private function getProductos()
+    {
+        try {
+            $productos = $this->solicitudes->cargarProds();
+            if($productos) {
+                return $productos;
+            } else {
+                return [];
+            }
+        } catch(Exception $e) {
+            return [];
         }
     }
     public function actualizarSolic() {

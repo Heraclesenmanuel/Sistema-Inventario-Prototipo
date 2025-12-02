@@ -114,4 +114,19 @@
                 exit();
             }
         }
+        public function verif()
+        {
+            try 
+            {
+                $clave = $this->config->verif();
+                if($clave) {
+                    echo json_encode(['success' => true, 'claveSeguridad' => $clave, 'message' => 'obtenido']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Clave no encontrada']);
+                }
+            }   
+            catch(Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
+        }
     }
+}

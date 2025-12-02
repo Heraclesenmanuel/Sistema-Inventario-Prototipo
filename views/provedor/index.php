@@ -294,7 +294,6 @@
                     {
                         document.getElementById('cat_' + nombre_recom).checked = true
                     }
-                    // Hacer el campo RIF de solo lectura en edición
                 } else {
                     console.error('Proveedor no encontrado con RIF:', providerRif);
                     Swal.fire({

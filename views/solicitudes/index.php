@@ -9,6 +9,11 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="public/css/admin.css">
     <link rel="stylesheet" href="public/css/solicitudes.css">
+    
+    <!-- Añade jQuery y SweetAlert2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    
 </head>
 <body>
    <div class="dashboard">
@@ -37,7 +42,7 @@
                     <select id="statusFilter" class="filter-select" aria-label="Filtrar por estado">
                         <option value="">Todos los estados</option>
                         <option value="Pendiente">Pendiente</option>
-                        <option value="Aprobado">Aprobado</option>
+                        <option value="En Revisión">Aprobado</option>
                         <option value="Rechazado">Rechazado</option>
                     </select>
                 </div>
@@ -48,8 +53,8 @@
                     <table class="requests-table" id="requestsTable" aria-label="Lista de solicitudes">
                         <thead>
                             <tr>
-                                <th scope="col">Departamento</th>
                                 <th scope="col">Solicitante</th>
+                                <th scope="col">Oficina de Destino</th>
                                 <th scope="col">Fecha deseada</th>
                                 <th scope="col">Estado</th>
                                 <th scope="col">Acciones</th>
@@ -58,27 +63,17 @@
                         <tbody id="requestsTableBody">
                             <?php 
                             // Datos de ejemplo para desarrollo
-                            $solicitudes_ejemplo = [
-                                [
-                                    'id_solicitud' => 1,
-                                    'nombre_oficina' => 'Recursos Humanos',
-                                    'fecha_deseo' => '2025-11-20',
-                                    'estado' => 'Pendiente',
-                                    'nombre_solicitante' => 'Heracles',
-                                    'notas' => 'Para entrega a nuevo personal'
-                                ]
-                            ];
                             
-                            $solicitudes = !empty($solicitudes) ? $solicitudes : $solicitudes_ejemplo;
+                            $solicitudes = !empty($solicitudes) ? $solicitudes : [];
                             ?>
                             
-                            <?php if($solicts_no_en_rev > 0): ?>
+                            <?php if($cant_solicts_no_en_rev > 0): ?>
                                 <?php foreach($solicitudes as $solicitud): ?>
-                                    <?php if($solicitud['estado'] !== 'En revision'): ?>
+                                    <?php if($solicitud['estado'] !== 'En Revisión'): ?>
                                     <tr data-status="<?= htmlspecialchars($solicitud['estado']) ?>" 
                                         data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>">
-                                        <td><?= htmlspecialchars($solicitud['nombre_oficina']) ?></td>
                                         <td><?= htmlspecialchars($solicitud['nombre_solicitante']) ?></td>
+                                        <td><?= htmlspecialchars($solicitud['nombre_oficina']) ?></td>
                                         <td><?= htmlspecialchars($solicitud['fecha_deseo']) ?></td>
 
                                         <td>
@@ -89,7 +84,7 @@
                                         <td>
                                             <div class="action-buttons">
                                                 <?php if($solicitud['estado'] === 'Pendiente'): ?>
-                                                    <button type="button" class="btn-action approve" 
+                                                    <button type="button" class="btn-action approve" onclick="aprobarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
                                                             data-action="approve" 
                                                             data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
                                                             aria-label="Aprobar solicitud">
@@ -97,6 +92,7 @@
                                                         <span>Aprobar</span>
                                                     </button>
                                                     <button type="button" class="btn-action reject" 
+                                                            onclick="rechazarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
                                                             data-action="reject"
                                                             data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
                                                             aria-label="Rechazar solicitud">
@@ -104,8 +100,8 @@
                                                         <span>Rechazar</span>
                                                     </button>
                                                 <?php endif; ?>
-                                            <?php endif; ?>
                                                 <button type="button" class="btn-action view" 
+                                                        onclick="verDetallesSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
                                                         data-action="view"
                                                         data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
                                                         aria-label="Ver detalles de solicitud">
@@ -115,6 +111,7 @@
                                             </div>
                                         </td>
                                     </tr>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
@@ -164,7 +161,7 @@
                         $departamento = $_SESSION['num_oficina'];
                         ?>
                         <div class="form-group">
-                            <label for="departamento" class="required">Departamento que lo solicita</label>
+                            <label for="departamento" class="required">Departamento de destino</label>
                             <select id="departamento" name="departamento" class="form-select" required>
                                 <?php if(isset($oficinas['success']) && $oficinas['success'] && !empty($oficinas['data'])): ?>
                                     <?php foreach($oficinas['data'] as $oficina): ?>
@@ -188,19 +185,14 @@
                             <div class="product-fields-group" data-product-index="0">
                                 <div class="product-group-title">Producto #1</div>
                                 
-                                <!-- REEMPLAZAR todo el bloque del product-fields-grid por esto: -->
 <div class="product-fields-grid">
     <div class="form-group">
         <label for="producto_0">Producto existente</label>
         <select class="filter-select" name="producto_id[]" id="producto_0">
             <option value="">-- Seleccionar producto existente --</option>
-            <?php
-            if ($resultado->num_rows > 0) {
-                while($fila = $resultado->fetch_assoc()) {
-                    echo "<option value='" . $fila['id_producto'] . "'>" . $fila['nombre'] . "</option>";
-                }
-            }
-            ?>
+            <?php foreach($productos['data'] as $producto): ?>
+                <option value="<?php echo $producto['id_producto']?>"><?php echo $producto['nombre']?></option>;
+            <?php endforeach; ?>
         </select>
     </div>
     
@@ -288,7 +280,6 @@
     </div>
 
     <script>
-
         // Funciones básicas para el modal
         function openModal() {
             document.getElementById('requestModal').classList.add('active');
@@ -510,13 +501,17 @@
             const maxHint = document.getElementById('maxProductsHint');
             const addBtn = document.getElementById('addProductBtn');
             
-            counter.textContent = `${count} producto${count !== 1 ? 's' : ''}`;
+            if (counter) {
+                counter.textContent = `${count} producto${count !== 1 ? 's' : ''}`;
+            }
             
             // Mostrar advertencia cuando se acerque al límite
-            if (count >= 8) {
-                maxHint.style.display = 'block';
-            } else {
-                maxHint.style.display = 'none';
+            if (maxHint) {
+                if (count >= 8) {
+                    maxHint.style.display = 'block';
+                } else {
+                    maxHint.style.display = 'none';
+                }
             }
             
             // Deshabilitar botón cuando se alcance el límite
@@ -535,6 +530,235 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateProductsCounter();
         });
+
+        // Función para aprobar una solicitud
+        function aprobarSolicitud(idSolicitud) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Si la apruebas, será enviada al departamento de Presupuesto. ¿Deseas continuar?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, aprobar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    cambiarEstadoSolicitud(idSolicitud, 'En Revisión');
+                }
+            });
+        }
+        
+        // Función para rechazar una solicitud
+        function rechazarSolicitud(idSolicitud) {
+            Swal.fire({
+                title: 'Rechazar Solicitud',
+                text: 'Ingresa el motivo del rechazo (opcional):',
+                input: 'text',
+                inputPlaceholder: 'Motivo del rechazo...',
+                inputAttributes: {
+                    maxlength: 200
+                },
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Rechazar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    cambiarEstadoSolicitud(idSolicitud, 'Rechazado', result.value);
+                }
+            });
+        }
+        
+        // Función principal para cambiar el estado de la solicitud
+        function cambiarEstadoSolicitud(idSolicitud, nuevoEstado, motivo = '') {
+            // Mostrar loading
+            const swalLoading = Swal.fire({
+                title: 'Procesando...',
+                text: 'Actualizando estado de la solicitud',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Datos a enviar al servidor
+            const datos = {
+                id_solicitud: idSolicitud,
+                nuevo_estado: nuevoEstado,
+                motivo: motivo
+            };
+            
+            // Realizar petición AJAX
+            $.ajax({
+                url: '?action=solicitudes&method=cambiarEstado',
+                type: 'POST',
+                data: datos,
+                dataType: 'json',
+                success: function(response) {
+                    swalLoading.close();
+                    
+                    if (response.success) {
+                        // Mostrar éxito
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: response.message || 'Estado actualizado correctamente',
+                            icon: 'success',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'Aceptar'
+                        }).then(() => {
+                            // Recargar la página para ver los cambios
+                            location.reload();
+                        });
+                    } else {
+                        // Mostrar error
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.message || 'Hubo un error al actualizar el estado',
+                            icon: 'error',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    swalLoading.close();
+                    
+                    Swal.fire({
+                        title: 'Error de conexión',
+                        text: 'No se pudo conectar con el servidor. Intenta nuevamente.',
+                        icon: 'error',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    
+                    console.error('Error AJAX:', error);
+                }
+            });
+        }
+        
+        // Función para ver detalles de la solicitud
+        function verDetallesSolicitud(idSolicitud) {
+            // Mostrar loading
+            const swalLoading = Swal.fire({
+                title: 'Cargando...',
+                text: 'Obteniendo detalles de la solicitud',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Datos a enviar al servidor
+            const datos = {
+                id_solicitud: idSolicitud
+            };
+            
+            // Realizar petición AJAX
+            $.ajax({
+                url: '?action=solicitudes&method=obtenerDetalles',
+                type: 'POST',
+                data: datos,
+                dataType: 'json',
+                success: function(response) {
+                    swalLoading.close();
+                    
+                    if (response.success && response.data) {
+                        const solicitud = response.data;
+                        
+                        // Crear contenido HTML para el modal
+                        let contenidoHTML = `
+                            <div class="solicitud-detalles" style="text-align: left; max-height: 400px; overflow-y: auto;">
+                                <div class="detalle-item" style="margin-bottom: 15px;">
+                                    <strong>Solicitante:</strong> ${solicitud.nombre_solicitante || 'N/A'}
+                                </div>
+                                <div class="detalle-item" style="margin-bottom: 15px;">
+                                    <strong>Oficina destino:</strong> ${solicitud.nombre_oficina || 'N/A'}
+                                </div>
+                                <div class="detalle-item" style="margin-bottom: 15px;">
+                                    <strong>Fecha deseada:</strong> ${solicitud.fecha_deseo || 'N/A'}
+                                </div>
+                                <div class="detalle-item" style="margin-bottom: 15px;">
+                                    <strong>Estado:</strong> <span class="status-badge status-${(solicitud.estado || '').toLowerCase()}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block;">${solicitud.estado || 'N/A'}</span>
+                                </div>
+                                <div class="detalle-item" style="margin-bottom: 15px;">
+                                    <strong>Fecha de creación:</strong> ${solicitud.fecha_creacion || 'N/A'}
+                                </div>
+                        `;
+                        
+                        // Mostrar productos si existen
+                        if (solicitud.productos && solicitud.productos.length > 0) {
+                            contenidoHTML += `
+                                <div class="detalle-item" style="margin-bottom: 15px;">
+                                    <strong>Productos solicitados:</strong>
+                                    <ul class="productos-lista" style="margin: 10px 0 0 20px; padding: 0;">
+                            `;
+                            
+                            solicitud.productos.forEach((producto, index) => {
+                                contenidoHTML += `
+                                    <li style="margin-bottom: 5px; padding: 5px; background-color: #f9f9f9; border-radius: 4px;">
+                                        ${index + 1}. ${producto.nombre_producto || 'Producto'} - 
+                                        Cantidad: ${producto.cantidad || 0} 
+                                        ${producto.unidad_medida || ''}
+                                        ${producto.tipo_producto ? `(${producto.tipo_producto})` : ''}
+                                    </li>
+                                `;
+                            });
+                            
+                            contenidoHTML += `
+                                    </ul>
+                                </div>
+                            `;
+                        }
+                        
+                        // Mostrar notas si existen
+                        if (solicitud.notas) {
+                            contenidoHTML += `
+                                <div class="detalle-item" style="margin-bottom: 15px;">
+                                    <strong>Notas:</strong>
+                                    <p style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 5px; white-space: pre-wrap;">${solicitud.notas}</p>
+                                </div>
+                            `;
+                        }
+                        
+                        contenidoHTML += `</div>`;
+                        
+                        // Mostrar modal con detalles
+                        Swal.fire({
+                            title: `Detalles de Solicitud #${idSolicitud}`,
+                            html: contenidoHTML,
+                            width: '600px',
+                            showCloseButton: true,
+                            confirmButtonText: 'Cerrar',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.message || 'No se pudieron obtener los detalles',
+                            icon: 'error',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    swalLoading.close();
+                    
+                    Swal.fire({
+                        title: 'Error de conexión',
+                        text: 'No se pudieron cargar los detalles de la solicitud',
+                        icon: 'error',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            });
+        }
         
     </script>
 </body>

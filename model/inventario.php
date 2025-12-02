@@ -38,18 +38,16 @@ class Inventario extends Base {
     }
     public function validarTiposDatos($datos, $stmt)
     {
-        $codigo = $datos['codigo'];
         $nombre = $datos['nombre'];
-        $un_disponibles = (int)$datos['un_disponibles'];
         $tipo_p = $datos['tipo_p'];
         $medida = $datos['medida'];
 
-        $stmt->bind_param('sisi', $nombre, $un_disponibles, $medida, $tipo_p);
+        $stmt->bind_param('ssi', $nombre, $medida, $tipo_p);
         
         return $stmt;
     }
     public function guardarDatos($datos) {
-        $stmt = $this->db->prepare("INSERT INTO producto (nombre, un_disponibles, medida, id_tipo, fecha_r) VALUES (?, ?, ?, ?, NOW())");
+        $stmt = $this->db->prepare("INSERT INTO producto (nombre, medida, id_tipo) VALUES (?, ?, ?)");
         if (!$stmt) {
             $this->db->close();
             die('Error en la preparación de la consulta SQL');
@@ -97,18 +95,16 @@ class Inventario extends Base {
         $stmt = $this->db->prepare("UPDATE producto SET  
             nombre = ?, 
             medida = ?, 
-            un_disponibles = ?, 
-            id_tipo = ?,
+            id_tipo = ?
             WHERE id_producto = ?");
         
         if (!$stmt) {
             throw new Exception("Error al preparar la consulta: " . $this->db->error);
         }
         
-        $stmt->bind_param("sssis", 
+        $stmt->bind_param("ssii", 
             $datos['nombre'],
             $datos['medida'],
-            $datos['un_disponibles'],
             $datos['tipo_p'],
             $datos['id_producto']
         );
@@ -161,6 +157,17 @@ class Inventario extends Base {
             $stmt->close();
         }
     }
+    public function actualizarCategoria($nombre, $id) 
+    {
+        $stmt = $this->db->prepare("UPDATE tipo_prod SET  
+            nombre = ?
+            WHERE id_tipo= ?");
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . $this->db->error);
+        }
+        $stmt->bind_param("si", $nombre, $id);
+        return $stmt->execute();
+    }
     public function obtenerEstadisticas() {
         // Estadísticas por estado (para gráfico de torta)
         $sqlEstados = "SELECT 
@@ -189,22 +196,6 @@ class Inventario extends Base {
             'por_estado' => $resultEstados->fetch_all(MYSQLI_ASSOC),
             'mensuales' => $resultMensual->fetch_all(MYSQLI_ASSOC)
         ];
-    }
-    public function actualizarCategoria($datos) {
-        $stmt = $this->db->prepare("UPDATE tipo_prod SET  
-            nombre = ?, 
-            WHERE id_tipo= ?");
-        
-        if (!$stmt) {
-            throw new Exception("Error al preparar la consulta: " . $this->db->error);
-        }
-        
-        $stmt->bind_param("si", 
-            $datos['nombre'],
-            $datos['id_tipo']
-        );
-        
-        return $stmt->execute();
     }
 }
 ?>

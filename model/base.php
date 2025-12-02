@@ -39,7 +39,6 @@ class Base
         $rows = $result->fetch_all(MYSQLI_NUM);
         $valores = array_column($rows, 0);
         return $valores;
-        
     }
     public function getTipos() {
         $sql = "SELECT id_tipo, nombre FROM tipo_prod";

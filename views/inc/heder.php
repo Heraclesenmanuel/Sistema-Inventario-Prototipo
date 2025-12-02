@@ -132,16 +132,27 @@
 
 <!-- Script para el Modal de Verificación -->
 <script>
+    async function obtenerClave() {
+        try {
+            const response = await fetch('?action=config&method=verif');
+            const data = await response.json();
+            const claveSeguridad = data.claveSeguridad;
+            console.log("Clave de seguridad:", claveSeguridad);
+            return claveSeguridad;
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }   
     const ventanaModal = document.getElementById('modalVerificacion');
     const btnAbrirConfig = document.getElementById('abrirConfiguracion');
     const btnCerrarModal = document.querySelector('.boton-cerrar');
     const btnAlternarVisibilidad = document.getElementById('alternadorVisibilidad');
     const inputClave = document.getElementById('campoClaveSeguridad');
     const iconoVisibilidad = document.getElementById('iconoOjo');
-    const claveSeguridad = "<?=APP_Password?>";
-
-    // Abrir modal
-    btnAbrirConfig.addEventListener("click", () => {
+    var claveSeguridad = '';
+    //abrir Modal
+    btnAbrirConfig.addEventListener("click", async() => {
+        claveSeguridad = (await obtenerClave()).claveSuper;
         ventanaModal.style.display = "flex";
     });
 

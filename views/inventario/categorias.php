@@ -183,7 +183,7 @@
                     .then(data => {
                         if(data.success) {
                             const producto = data.producto;
-                            document.getElementById('editId').value = producto.id_producto;
+                            document.getElementById('editId').value = producto.id_tipo;
                             document.getElementById('editName').value = producto.nombre;
                             modalEditar.style.display = 'block';
                         } else {

@@ -453,7 +453,96 @@ tbody tr:last-child td:last-child {
         padding: 10px 8px;
     }
 }
-
+/* Estilos adicionales para los nuevos elementos */
+        .director-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .director-btn {
+            padding: 12px 24px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            background: white;
+            color: #3498db;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .director-btn:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .director-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .director-form-container {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .director-form-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .director-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .director-form input {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+        
+        .director-form input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
+        }
+        
+        .director-form input:disabled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-section-title {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            grid-column: 1 / -1;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+        }
 @media (max-width: 480px) {
     .add, .viewsUser {
         padding: 15px;

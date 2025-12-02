@@ -240,6 +240,11 @@ function crearBaseDeDatos($datosIniciales) {
                 CONSTRAINT `id_usuario_fk` FOREIGN KEY (`id_usuario`) 
                 REFERENCES `usuario`(`id_usuario`)
             )",
+            "CREATE TABLE prov_recomendaciones (
+            rif_proveedor VARCHAR(13) REFERENCES proveedor(rif), 
+            id_tipo INT(11) REFERENCES tipo_prod(id_tipo), 
+            PRIMARY KEY (rif_proveedor, id_tipo)
+            );",
             "DROP TABLE IF EXISTS `codigo_recuperacion`;",
             //CAMBIAR REFERENCIAS DE ID A ID_USUARIO
             "CREATE TABLE `codigo_recuperacion` (

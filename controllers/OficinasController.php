@@ -17,6 +17,7 @@ class OficinasController extends AdminController
 
         if (isset($_POST['btn-add'])) {
             $this->agregarOficina();
+            header('Location: ?action=oficinas&method=home&exito=1');
         }
         require_once 'views/oficinas/index.php';
     }
@@ -30,9 +31,9 @@ class OficinasController extends AdminController
     public function agregarOficina()
     {
         $numero = $_POST['num_oficina'];
-        $nombre = trim($_POST['providerName']);
+        $nombre = trim($_POST['name']);
         $cedula = trim($_POST['cedula']);
-        $telefono = trim($_POST['providerPhone']);
+        $telefono = trim($_POST['cel']);
 
         // Validar que los campos no estén vacíos
         if (empty($nombre) || empty($cedula)) {
