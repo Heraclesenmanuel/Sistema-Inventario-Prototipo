@@ -291,22 +291,24 @@
                                         <td><?php echo htmlspecialchars($oficina['nombre_dir']); ?></td>
                                         <td><?php echo htmlspecialchars($oficina['telefono']); ?></td>
                                         <td>
-                                            <button
-                                                class="btn btn-see view" 
-                                                data-action="view"
-                                                title="Ver más" 
-                                                data-id="<?php echo $oficina['num_oficina']; ?>"
-                                                data-oficina='<?php echo json_encode($oficina); ?>'>
-                                                <i class="fas fa-eye"></i>
-                                                <span>Más</span>
-                                            </button>
-                                            <button 
-                                                class="btn btn-sm btn-danger btn-delete"
-                                                data-action="erase"
-                                                title="Eliminar oficina" 
-                                                data-id="<?php echo $oficina['num_oficina']; ?>">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
+                                            <div class="btn-group">
+                                                <button
+                                                    class="btn btn-see view" 
+                                                    data-action="view"
+                                                    title="Ver más" 
+                                                    data-id="<?php echo $oficina['num_oficina']; ?>"
+                                                    data-oficina='<?php echo json_encode($oficina); ?>'>
+                                                    <i class="fas fa-eye"></i>
+                                                    <span>Más</span>
+                                                </button>
+                                                <button 
+                                                    class="btn btn-sm btn-danger btn-delete"
+                                                    data-action="erase"
+                                                    title="Eliminar oficina" 
+                                                    data-id="<?php echo $oficina['num_oficina']; ?>">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

@@ -331,7 +331,10 @@ tbody tr:last-child td:last-child {
 .btn-see:active {
     transform: translateY(0);
 }
-
+.btn-group {
+    display: flex;
+    gap: 6px; /* espacio entre botones */
+}
 /* Paginación */
 .pagination-wrapper {
     display: flex;
