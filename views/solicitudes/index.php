@@ -101,7 +101,7 @@
                                                     </button>
                                                 <?php endif; ?>
                                                 <button type="button" class="btn-action view" 
-                                                        onclick="verDetallesSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
+                                                        onclick='verDetallesSolicitud(<?= json_encode($solicitudes) ?>, <?= (int)$solicitud["id_solicitud"] ?>)'
                                                         data-action="view"
                                                         data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
                                                         aria-label="Ver detalles de solicitud">
@@ -642,8 +642,9 @@
         }
         
         // Función para ver detalles de la solicitud
-        function verDetallesSolicitud(idSolicitud) {
+        function verDetallesSolicitud(solicitudes, idSolicitud) {
             // Mostrar loading
+            const solicitud_seleccionada = solicitudes.find(s => s.id_solicitud == idSolicitud);
             const swalLoading = Swal.fire({
                 title: 'Cargando...',
                 text: 'Obteniendo detalles de la solicitud',
@@ -652,10 +653,10 @@
                     Swal.showLoading();
                 }
             });
-            
             // Datos a enviar al servidor
             const datos = {
-                id_solicitud: idSolicitud
+                id_solicitud: idSolicitud,
+                solicitud_seleccionada: JSON.stringify(solicitud_seleccionada)
             };
             
             // Realizar petición AJAX
@@ -686,10 +687,9 @@
                                     <strong>Estado:</strong> <span class="status-badge status-${(solicitud.estado || '').toLowerCase()}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block;">${solicitud.estado || 'N/A'}</span>
                                 </div>
                                 <div class="detalle-item" style="margin-bottom: 15px;">
-                                    <strong>Fecha de creación:</strong> ${solicitud.fecha_creacion || 'N/A'}
+                                    <strong>Fecha de creación:</strong> ${solicitud.fecha_solic || 'N/A'}
                                 </div>
                         `;
-                        
                         // Mostrar productos si existen
                         if (solicitud.productos && solicitud.productos.length > 0) {
                             contenidoHTML += `
@@ -701,10 +701,10 @@
                             solicitud.productos.forEach((producto, index) => {
                                 contenidoHTML += `
                                     <li style="margin-bottom: 5px; padding: 5px; background-color: #f9f9f9; border-radius: 4px;">
-                                        ${index + 1}. ${producto.nombre_producto || 'Producto'} - 
-                                        Cantidad: ${producto.cantidad || 0} 
-                                        ${producto.unidad_medida || ''}
-                                        ${producto.tipo_producto ? `(${producto.tipo_producto})` : ''}
+                                        ${index + 1}. ${producto.nombre || 'Producto'} - 
+                                        Cantidad: ${producto.un_deseadas || 0} 
+                                        ${producto.medida || ''}
+                                        ${producto.nombre_tipo ? `(${producto.nombre_tipo})` : ''}
                                     </li>
                                 `;
                             });
@@ -716,11 +716,11 @@
                         }
                         
                         // Mostrar notas si existen
-                        if (solicitud.notas) {
+                        if (solicitud.comentarios) {
                             contenidoHTML += `
                                 <div class="detalle-item" style="margin-bottom: 15px;">
                                     <strong>Notas:</strong>
-                                    <p style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 5px; white-space: pre-wrap;">${solicitud.notas}</p>
+                                    <p style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 5px; white-space: pre-wrap;">${solicitud.comentarios}</p>
                                 </div>
                             `;
                         }
@@ -748,7 +748,9 @@
                 },
                 error: function(xhr, status, error) {
                     swalLoading.close();
-                    
+                        console.log("Respuesta cruda:", xhr.responseText);
+                        console.log("Status:", status);
+                        console.log("Error:", error);
                     Swal.fire({
                         title: 'Error de conexión',
                         text: 'No se pudieron cargar los detalles de la solicitud',

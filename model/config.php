@@ -173,8 +173,9 @@ class Config extends Base{
     }
 
     public function mostrarUsuarios() {
-        $sql = "SELECT id_usuario, cedula, u.nombre, id_cargo, u.num_oficina, o.nombre as nombre_oficina
-        FROM usuario u INNER JOIN oficina o ON u.num_oficina=o.num_oficina";
+        $sql = "SELECT id_usuario, cedula, u.nombre, rs.nombre as nombre_cargo, u.num_oficina, o.nombre as nombre_oficina
+                FROM rol_usuario rs INNER JOIN usuario u ON u.id_cargo=rs.id_cargo 
+                INNER JOIN oficina o ON u.num_oficina=o.num_oficina";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();

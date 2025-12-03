@@ -47,6 +47,27 @@ class Solicitud extends Base{
             'success' => true
         ];
     }
+    public function getProdsPorIdSolic($id_solicitud) {
+        $sql = "SELECT ps.*, t.nombre as nombre_tipo FROM prod_solic ps 
+                INNER JOIN solicitud s ON s.id_solicitud = ps.id_solicitud
+                INNER JOIN tipo_prod t ON ps.id_tipo = t.id_tipo
+                WHERE ps.id_solicitud = ?
+                ORDER BY ps.num_linea";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('i', $id_solicitud);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $productos_solic = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $productos_solic[] = $row;
+        }
+
+        return [
+            'data' => $productos_solic,
+            'success' => true
+        ];
+    }
     public function validarTiposDatos($datos, $stmt)
     {
         $id_solicitante = $_SESSION['id'];

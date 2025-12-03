@@ -56,6 +56,22 @@ class Base
             'success' => true
         ];
     }
+        public function getRoles() {
+        $sql = "SELECT * FROM rol_usuario";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $roles = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $roles[] = $row;
+        }
+
+        return [
+            'data' => $roles,
+            'success' => true
+        ];
+    }
     public function getDirectores() {
         $sql = "SELECT ced_dir, nombre, telf FROM director";
         $stmt = $this->db->prepare($sql);

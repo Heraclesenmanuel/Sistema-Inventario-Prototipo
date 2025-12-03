@@ -160,49 +160,21 @@ class SolicitudesController extends AdminController
             }
             
             // Obtener ID de la solicitud
-            $idSolicitud = $_POST['id_solicitud'] ?? null;
+            $idSolicitud = (int)$_POST['id_solicitud'] ?? null;
+            $solicitud = isset($_POST['solicitud_seleccionada'])
+                            ? json_decode($_POST['solicitud_seleccionada'], true)
+                            : null;
             
-            if (!$idSolicitud) {
+            if (!$idSolicitud || !$solicitud) {
                 echo json_encode([
                     'success' => false,
                     'message' => 'ID de solicitud no proporcionado'
                 ]);
                 return;
             }
+            $productos_solic = $this->solicitudes->getProdsPorIdSolic($idSolicitud);
             
-            // Aquí llamas a tu modelo para obtener los detalles
-            // Ejemplo:
-            // $model = new SolicitudesModel();
-            // $solicitud = $model->obtenerSolicitudPorId($idSolicitud);
-            // $productos = $model->obtenerProductosSolicitud($idSolicitud);
-            
-            // Datos de ejemplo (reemplaza con tu lógica real)
-            $solicitud = [
-                'id_solicitud' => $idSolicitud,
-                'nombre_solicitante' => 'Juan Pérez',
-                'nombre_oficina' => 'Informática',
-                'fecha_deseo' => '2024-01-20',
-                'fecha_creacion' => '2024-01-15',
-                'estado' => 'Pendiente',
-                'notas' => 'Material necesario para el nuevo proyecto'
-            ];
-            
-            $productos = [
-                [
-                    'nombre_producto' => 'Laptop Dell',
-                    'cantidad' => 3,
-                    'unidad_medida' => 'Unidades',
-                    'tipo_producto' => 'Electrónicos'
-                ],
-                [
-                    'nombre_producto' => 'Mouse inalámbrico',
-                    'cantidad' => 5,
-                    'unidad_medida' => 'Unidades',
-                    'tipo_producto' => 'Electrónicos'
-                ]
-            ];
-            
-            $solicitud['productos'] = $productos;
+            $solicitud['productos'] = $productos_solic['data'];
             
             echo json_encode([
                 'success' => true,

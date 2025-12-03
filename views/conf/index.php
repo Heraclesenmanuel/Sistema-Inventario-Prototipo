@@ -177,11 +177,19 @@
                     <div>
                         
                     </div>
-                    <select name="id_cargo" class="form-select-sm">
-                        <option value="1">Administrador</option>
-                        <option value="2">Usuario</option>
+                    <select name="id_cargo" id="id_cargo" class="form-select-sm">
+                        <?php if(isset($roles['success']) && $roles['success'] && !empty($roles['data'])): ?>
+                            <?php foreach($roles['data'] as $rol): ?>
+                                <option value=<?php echo $rol['id_cargo']?>><?php echo $rol['nombre']?></option>
+                                <?php endforeach; ?>
+                        <?php else: ?>
+                            <option value=1>Administrador</option>
+                            <option value=2>Usuario</option>
+                            <option value=3>Cuentas</option>
+                            <option value=4>Presupuesto</option>
+                        <?php endif; ?>
                     </select>
-                    <select name="oficina" class="form-select-sm">
+                    <select name="oficina" id="oficina" class="form-select-sm">
                         <?php if(isset($oficinas['success']) && $usuarios['success'] && !empty($usuarios['data'])): ?>
                             <?php foreach($oficinas['data'] as $oficina): ?>
                                 <option value=<?php echo $oficina['num_oficina']?>><?php echo $oficina['nombre']?></option>
@@ -223,7 +231,7 @@
                                     <td><?= htmlspecialchars($usuario['id_usuario']) ?></td>
                                     <td><?= htmlspecialchars($usuario['cedula']) ?></td>
                                     <td><?= htmlspecialchars($usuario['nombre']) ?></td>
-                                    <td><?= $usuario['id_cargo'] == 1 ? 'Administrador' : 'Usuario' ?></td>
+                                    <td><?= $usuario['nombre_cargo']?></td>
                                     <td> <?=htmlspecialchars($usuario['nombre_oficina'])?><br>(<?=htmlspecialchars($usuario['num_oficina'])?>)</td>
                                     <td>
                                         <?php if(isset($_SESSION['cedula']) && $_SESSION['cedula'] == $usuario['cedula']): ?>
@@ -253,6 +261,22 @@
 
     <!--ELIMINAR USUARIO-->
     <script>
+        document.getElementById("id_cargo").addEventListener("change", function() {
+            const oficinaSelect = document.getElementById("oficina");
+
+            if (this.value == 3) { 
+                // Si es Cuentas
+                oficinaSelect.value = "143";
+                oficinaSelect.disabled = true;
+            } else if (this.value == 4) { 
+                // Si es Presupuesto
+                oficinaSelect.value = "166";
+                oficinaSelect.disabled = true;
+            }
+            else {
+                oficinaSelect.disabled = false;
+            }
+        });
         function eliminarUsuario(id, nombre) {
             Swal.fire({
                 title: '¿Estás seguro?',

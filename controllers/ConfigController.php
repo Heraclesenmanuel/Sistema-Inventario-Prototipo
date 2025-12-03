@@ -11,6 +11,7 @@
         public function home(){
             $this->validarSesion();
             $titulo = 'Configuracion';
+            $roles = $this->config->getRoles();
             $usuarios = $this->config->mostrarUsuarios();
             $oficinas = $this->config->cargarOficinas();
 
