@@ -108,7 +108,7 @@ class Config extends Base{
         }
         $stmtCheck->close();
     }
-    public function addUsuario($cedula, $nombre, $clave_usuario, $id_cargo, $correo, $dpto) {
+    public function addUsuario($cedula, $nombre, $clave_usuario, $id_cargo, $correo, $oficinas) {
         // Validaciones básicas
         if (!preg_match('/^[0-9]{7,10}$/', $cedula)) {
             return [
@@ -121,24 +121,60 @@ class Config extends Base{
         {
             return $verificacion;
         }
+        $this->db->begin_transaction();
         // Insertar nuevo usuario
-        $sql = "INSERT INTO usuario (cedula, nombre, clave, id_cargo, correo, num_oficina) VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO usuario (cedula, nombre, clave, id_cargo, correo) VALUES (?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("sssiss", $cedula, $nombre, $clave_usuario, $id_cargo, $correo, $dpto);
+        $stmt->bind_param("sssis", $cedula, $nombre, $clave_usuario, $id_cargo, $correo);
 
-        if ($stmt->execute()) {
-            return [
-                'success' => true,
-                'message' => 'Usuario agregado exitosamente.'
-            ];
-        } else {
+        if (!$stmt->execute() || !$this->addOficinasUsuario($this->db->insert_id, $oficinas)) {
+            $this->db->rollback();
             return [
                 'success' => false,
                 'message' => 'Error al agregar usuario: ' . $stmt->error
             ];
+        } else {
+            $this->db->commit();
+            return [
+                'success' => true,
+                'message' => 'Usuario agregado exitosamente.'
+            ];
         }
     }
-
+    private function addOficinasUsuario($id_usuario, $oficinas)
+    {
+        $query = "INSERT INTO ofic_usuario VALUES (?, ?)";
+        $stmt = $this->db->prepare($query);
+        foreach($oficinas as $oficina)
+        {
+            $num_ofic = intval($oficina);
+            $stmt->bind_param('si', $num_ofic, $id_usuario);
+            $resultado = $stmt->execute();
+            if (!$resultado) {
+                error_log("Error ejecutando inserción: " . $stmt->error);
+                return false;
+            }
+        }
+        return true;
+    }
+    public function getOficinasUsuario($id_usuario)
+    {
+        $sql = "SELECT of.nombre as nombre
+        FROM oficina of INNER JOIN ofic_usuario of_u ON of.num_oficina=of_u.num_oficina
+        WHERE of_u.id_usuario = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('i', $id_usuario);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if(!$result)
+        {
+            error_log("Error accediendo a los datos de Recomendacion para este RIF.");
+            return false;
+        }
+        $rows = $result->fetch_all(MYSQLI_NUM);
+        $valores = array_column($rows, 0);
+        return $valores;
+    }
     public function deleteUsuario($id_usuario) {
         // Validación básica
         if (!is_numeric($id_usuario) || $id_usuario <= 0) {
@@ -173,9 +209,11 @@ class Config extends Base{
     }
 
     public function mostrarUsuarios() {
-        $sql = "SELECT id_usuario, cedula, u.nombre, rs.nombre as nombre_cargo, u.num_oficina, o.nombre as nombre_oficina
+        $sql = "SELECT u.id_usuario, cedula, u.nombre, rs.nombre as nombre_cargo, o.nombre as nombre_oficina, COUNT(of_u.num_oficina) AS cantidad_oficinas_afiliadas
                 FROM rol_usuario rs INNER JOIN usuario u ON u.id_cargo=rs.id_cargo 
-                INNER JOIN oficina o ON u.num_oficina=o.num_oficina";
+                INNER JOIN ofic_usuario of_u ON u.id_usuario=of_u.id_usuario
+                INNER JOIN oficina o ON of_u.num_oficina=o.num_oficina
+                GROUP BY u.id_usuario";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();

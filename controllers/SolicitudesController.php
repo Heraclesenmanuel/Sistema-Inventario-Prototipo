@@ -23,25 +23,46 @@ class SolicitudesController extends AdminController
         }
         require_once 'views/solicitudes/index.php';
     }
-    public function agregarSolic()
+    public function agregarSolic($edit = null)
     {
-        // Sanitizar y validar datos antes de guardar
+
+            // Sanitizar y validar datos antes de guardar
         $datosSolic = [
             'oficina' => trim($_POST['departamento'] ?? 'N/A'),
             'fecha_deseada' => trim($_POST['fecha_requerida'] ?? 'N/A'),
             'oficina_solic' => trim($_POST['departamento'] ?? 'N/A'),
             'comentarios' => trim($_POST['notas'] ?? 'N/A')
         ];
+        if($edit)
+        {
+            $datosSolic['id_solicitud'] = (int)$_POST['request_id'];
+        }
+        
         $productos = $this->procesarProds();
         if (empty($datosSolic['oficina']) && empty($productos[0]['nombre'])){
-            echo '<script>alert("El nombre del producto no puede estar vacío")</script>';
+            echo json_encode([
+                    'success' => false,
+                    'message' => 'El nombre del producto no puede estar vacío'
+                ]);
+        } 
+        else if ($edit)
+        {
+            $set_aceptar = $_SESSION['dpto'] == 4;
+            if ($this->solicitudes->eliminarSolicitud($datosSolic['id_solicitud']) && $this->solicitudes->guardarSolicitud($datosSolic, $datosSolic['id_solicitud']) && $this->solicitudes->guardarProds($productos)) {
+                return true;
+            }
         } 
         else if ($this->solicitudes->guardarSolicitud($datosSolic) && $this->solicitudes->guardarProds($productos)) {
-            header('Location: ?action=solicitudes&method=home');
-            exit();
+            echo json_encode([
+                    'success' => true,
+                    'message' => '¡Exito al guardar la solicitud!'
+                ]);
         } 
         else {
-            echo '<script>alert("Error al guardar la solicitud. Intente nuevamente.")</script>';
+            echo json_encode([
+                    'success' => false,
+                    'message' => 'Error al guardar la solicitud. Intente nuevamente.'
+                ]);
         }
     }
     public function procesarProds() {
@@ -75,20 +96,36 @@ class SolicitudesController extends AdminController
     public function eliminarSolic() {
         try{
             if(!isset($_GET['id'])){
-                echo '<script>alert("ID del producto no encontra a surguido un error")</script>';
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'ID del producto no encontrado, ha surguido un error'
+                ]);
             }
 
             $id = $_GET['id'];
             if($this->solicitudes->eliminarSolicitud($id)){
-                echo '<script>alert("Producto eliminado exitosamente")</script>';
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Producto eliminado exitosamente.'
+                ]);
             }else{
-                echo '<script>alert("Error al eliminar")</script>';
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Error al eliminar'
+                ]);
+                
             }
         }
         catch(Exception $e){
-            echo '<script>alert("Error en el servidor")</script>';
+            echo json_encode([
+                    'success' => false,
+                    'message' => 'Error en el servidor'
+                ]);
         }
-        header('Location: ?action=solicitudes&method=home');
+        echo json_encode([
+                    'success' => true,
+                    'message' => 'Solicitud Eliminada exitosamente.'
+                ]);
         exit();
     }
     public function cambiarEstado() {
@@ -221,28 +258,23 @@ class SolicitudesController extends AdminController
         }
     }
     public function actualizarSolic() {
+        header('Content-Type: application/json; charset=utf-8');
         try {
-            if(!isset($_POST['id'])) {
-                echo '<script>alert("ID del producto no encontrado")</script>';
-                return;
+            if ($this->agregarSolic(true)) {
+                if (isset($_POST['nuevo_estado'])) {
+                    $this->cambiarEstado();
+                    exit; // corta aquí para no enviar nada más
+                }
+                else
+                {
+                    echo json_encode(['success' => true, 'message' => '¡Se ha actualizado su solicitud!']);
+                }
             }
-            $datos = [
-                'id_producto' => $_POST['id'],
-                'codigo' => $_POST['productCode'],
-                'nombre' => $_POST['nombre'],
-                'medida' => $_POST['medida'],
-                'un_disponibles' => $_POST['un_disponibles'],
-                'tipo_p' => $_POST['tipo_p']
-            ];
-            if($this->solicitudes->actualizarSolic($datos)) {
-                echo '<script>alert("Producto actualizado correctamente")</script>';
-            } else {
-                echo '<script>alert("Error al actualizar el producto")</script>';
-            }
-        } catch(Exception $e) {
-            echo '<script>alert("Error en el servidor")</script>';
+            // Si no entra en el if, devuelve algo por defecto
+            echo json_encode(['success' => false, 'message' => 'No se pudo actualizar']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
         }
-        header('Location: ?action=solicitudes&method=home');
-        exit();
+        exit;
     }
 }

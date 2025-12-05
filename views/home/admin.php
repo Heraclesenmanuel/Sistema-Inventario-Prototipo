@@ -62,7 +62,7 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
                     <h3>Solicitudes</h3>
                 </a>
 
-                <a href="?action=algo&method=users" class="quick-access-item">
+                <a class="quick-access-item">
                     <i class="fas fa-question"></i>
                     <h3>Algo mas</h3>
                 </a>

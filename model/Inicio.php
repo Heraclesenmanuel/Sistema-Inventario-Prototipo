@@ -280,8 +280,8 @@ class Inicio extends Base
     private function establecerSesionUsuario($datosUsuario)
     {
         $_SESSION['nombre'] = $datosUsuario['nombre'];
-        $_SESSION['dpto'] = $datosUsuario['dpto'];
-        $_SESSION['num_oficina'] = $datosUsuario['num_oficina'];
+        $_SESSION['dpto'] = $datosUsuario['id_cargo'];
+        //$_SESSION['num_oficina'] = $datosUsuario['num_oficina'];
         $_SESSION['id'] = $datosUsuario['id_usuario'];
     }
 
@@ -308,7 +308,7 @@ class Inicio extends Base
         //$clave = $this->obtenerClaveSuper();
         //define('APP_Password', '1234');
         switch ($idCargo) {
-            case 1:
+            case 1 || 2 || 3 || 4:
                 header("Location: ?action=admin&method=home");
                 break;
             default:

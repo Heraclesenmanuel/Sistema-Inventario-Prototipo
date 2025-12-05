@@ -57,9 +57,8 @@ function crearBaseDeDatos($datosIniciales) {
 
         // Array con todas las consultas SQL
         $queries = [
-            // Tabla admin
+            "START TRANSACTION",
             "DROP TABLE IF EXISTS `config_pag`;",
-            //CAMBIAR CONSULTAS QUE LLAMEN A SU CLAVE
             "CREATE TABLE `config_pag` (
                 `id_config` int NOT NULL AUTO_INCREMENT,
                 `NombreAPP` varchar(100) NOT NULL,
@@ -124,10 +123,18 @@ function crearBaseDeDatos($datosIniciales) {
                 `productos_vendidos` json NOT NULL,
                 PRIMARY KEY (`id_historial`)
             )",*/
-            // Tabla usuario
+            "DROP TABLE IF EXISTS `rol_usuario`;",
+            "CREATE TABLE `rol_usuario` (
+                `id_cargo` int(11) NOT NULL AUTO_INCREMENT,
+                `nombre` varchar(100) NOT NULL,
+                PRIMARY KEY(`id_cargo`)
+            )",
+            "INSERT INTO rol_usuario VALUES
+            (1, 'Administrador'),
+            (2, 'Usuario'),
+            (3, 'Cuentas'),
+            (4, 'Presupuesto')",
             "DROP TABLE IF EXISTS `usuario`;",
-            //CAMBIAR CONSULTAS QUE LLAMEN A SU "ID" O A "INF_USUARIO"
-            //CAMBIAR CONSULTAS QUE LLAMEN A "ID_OFIC_INA"
             "CREATE TABLE `usuario` (
                 `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
                 `cedula` varchar(100) NOT NULL,
@@ -135,13 +142,11 @@ function crearBaseDeDatos($datosIniciales) {
                 `id_cargo` int NOT NULL,
                 `correo` varchar(200) NOT NULL,
                 `nombre` varchar(100) NOT NULL,
-                `num_oficina` VARCHAR(10) NOT NULL,
                 PRIMARY KEY (`id_usuario`),
-                CONSTRAINT `num_oficina_fk` FOREIGN KEY (`num_oficina`) 
-                REFERENCES `oficina`(`num_oficina`) ON UPDATE CASCADE
+                CONSTRAINT `fk_usuario_cargo` FOREIGN KEY (`id_cargo`) 
+                REFERENCES `rol_usuario`(`id_cargo`) ON UPDATE CASCADE
             )",
             "DROP TABLE IF EXISTS `usuario_super`;",
-            //IMPLEMENTARLA PARA USUARIOS ADMIN
             "CREATE TABLE `usuario_super` (
                 `id_usuario` int NOT NULL,
                 `claveSuper` varchar(100) NOT NULL,
@@ -152,7 +157,6 @@ function crearBaseDeDatos($datosIniciales) {
 
             // Tabla proveedor
             "DROP TABLE IF EXISTS `proveedor`;",
-            //TAL VEZ QUITARRR CED_ENCARGADO.
             "CREATE TABLE `proveedor` (
                 `rif` varchar(13) NOT NULL,
                 `nombre` varchar(100) NOT NULL,
@@ -164,7 +168,6 @@ function crearBaseDeDatos($datosIniciales) {
                 `nota` varchar(100) NOT NULL,
                 PRIMARY KEY (`rif`)
             )",
-            //IMPLEMENTAR
             "DROP TABLE IF EXISTS `tipo_prod`;",
             "CREATE TABLE `tipo_prod` (
                 `id_tipo` INT(11) NOT NULL AUTO_INCREMENT,
@@ -172,7 +175,6 @@ function crearBaseDeDatos($datosIniciales) {
                 `telf` VARCHAR(15) NOT NULL,
                 PRIMARY KEY (`id_tipo`)
             )",
-            //IMPLEMENTAR
             "DROP TABLE IF EXISTS `servicio_proveedor`;",
             "CREATE TABLE `servicio_proveedor` (
                 `id_tipo` INT(11) NOT NULL,
@@ -184,9 +186,7 @@ function crearBaseDeDatos($datosIniciales) {
                 REFERENCES `proveedor`(`rif`)
                 ON UPDATE CASCADE
             )",
-            // Tabla inventario
             "DROP TABLE IF EXISTS `producto`;",
-            //CAMBIAR LLAMADOS DE 'INVENTARIO' A "PRODUCTO"
             "CREATE TABLE `producto` (
                 `id_producto` int NOT NULL AUTO_INCREMENT,
                 `nombre` varchar(100) NOT NULL,
@@ -199,7 +199,6 @@ function crearBaseDeDatos($datosIniciales) {
                 REFERENCES `tipo_prod`(`id_tipo`)
             )",
             "DROP TABLE IF EXISTS `solicitud`;",
-            //CAMBIAR LLAMADOS A "ID_OFIC"
             "CREATE TABLE `solicitud` (
                 `id_solicitud` int(11) NOT NULL AUTO_INCREMENT,
                 `id_solicitante` int(11) NOT NULL,
@@ -208,14 +207,13 @@ function crearBaseDeDatos($datosIniciales) {
                 `comentarios` VARCHAR(500) NOT NULL,
                 `num_oficina` VARCHAR(10),
                 `estado` VARCHAR(20) DEFAULT 'Pendiente',
+                `apelada` tinyint(1) DEFAULT 0,
                 PRIMARY KEY (`id_solicitud`),
                 CONSTRAINT `num_oficina_solic_fk` FOREIGN KEY (`num_oficina`)
                 REFERENCES `oficina`(`num_oficina`)
                 ON UPDATE CASCADE
             )",
             "DROP TABLE IF EXISTS `prod_solic`;",
-            //CAMBIAR REFERENCIAS DE "ID_SOLIC" A ID_SOLICITUD
-            //CAMBIAR REFERENCIAS DE "TIPO_P" A ID_TIPO
             "CREATE TABLE `prod_solic` (
                 `id_solicitud` int(11) NOT NULL, 
                 `num_linea` int(11) NOT NULL, 
@@ -236,22 +234,39 @@ function crearBaseDeDatos($datosIniciales) {
                 `fecha_notif` DATE NOT NULL,
                 `leido` tinyint(1) DEFAULT 0,
                 `id_usuario` int(11) NOT NULL,
+                `num_oficina` VARCHAR(10), 
                 PRIMARY KEY (`id_notif`),
+                CONSTRAINT `num__ofic_notifk` FOREIGN KEY (`num_oficina`) 
+                REFERENCES `oficina`(`num_oficina`),
                 CONSTRAINT `id_usuario_fk` FOREIGN KEY (`id_usuario`) 
                 REFERENCES `usuario`(`id_usuario`)
             )",
             "CREATE TABLE prov_recomendaciones (
-            rif_proveedor VARCHAR(13) REFERENCES proveedor(rif), 
-            id_tipo INT(11) REFERENCES tipo_prod(id_tipo), 
-            PRIMARY KEY (rif_proveedor, id_tipo)
+                rif_proveedor VARCHAR(13),
+                id_tipo INT(11),
+                PRIMARY KEY (rif_proveedor, id_tipo),
+                CONSTRAINT fk_prov FOREIGN KEY (rif_proveedor) REFERENCES proveedor(rif),
+                CONSTRAINT fk_tipo FOREIGN KEY (id_tipo) REFERENCES tipo_prod(id_tipo)
             );",
             "DROP TABLE IF EXISTS `codigo_recuperacion`;",
-            //CAMBIAR REFERENCIAS DE ID A ID_USUARIO
             "CREATE TABLE `codigo_recuperacion` (
-                `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
+                `id_usuario` int(11) NOT NULL,
                 `codigo` varchar(100) NOT NULL,
                 PRIMARY KEY (`id_usuario`)
-            )"
+            )",
+            "DROP TABLE IF EXISTS `ofic_usuario`;",
+            "CREATE TABLE `ofic_usuario` (
+            num_oficina VARCHAR(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+            id_usuario INT(11) NOT NULL,
+            PRIMARY KEY (num_oficina, id_usuario),
+            CONSTRAINT num_oficina_fk FOREIGN KEY (num_oficina) 
+                REFERENCES oficina(num_oficina)
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            CONSTRAINT id_usuario_ofic_fk FOREIGN KEY (id_usuario) 
+                REFERENCES usuario(id_usuario)
+                ON UPDATE CASCADE ON DELETE CASCADE
+            ) ENGINE=InnoDB;",
+            "COMMIT;"
         ];
         // Ejecutar consultas de creación de tablas
         foreach ($queries as $query) {
@@ -269,13 +284,22 @@ function crearBaseDeDatos($datosIniciales) {
         $id_cargo = (int)$datosIniciales['id_cargo'];
         $nombre = $conn->real_escape_string($datosIniciales['nombre']);
         $correo = strtolower($conn->real_escape_string($datosIniciales['correo']));
-        $oficina = ($conn->real_escape_string($datosIniciales['oficina']));
-        
-        $conn->query("INSERT INTO `usuario` (`id_usuario`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`, `num_oficina`)
-                            VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo', '$oficina')");
+        $conn->query("INSERT INTO `usuario` (`id_usuario`, `cedula`, `clave`, `id_cargo`, `nombre`, `correo`)
+                            VALUES (1, '$cedula', '$clave', $id_cargo, '$nombre', '$correo')");
         $conn->query("INSERT INTO `usuario_super` (`id_usuario`, `claveSuper`)
                         VALUES (1, '$claveSuper')");
-
+        if (!empty($datosIniciales['oficinas_seleccionadas'])) {
+            $oficinasSeleccionadas = json_decode($datosIniciales['oficinas_seleccionadas'], true);
+            
+            if (is_array($oficinasSeleccionadas) && !empty($oficinasSeleccionadas)) {
+                foreach ($oficinasSeleccionadas as $oficinaCod) 
+                {
+                    $oficinaCod = $conn->real_escape_string($oficinaCod);
+                    $conn->query("INSERT INTO `ofic_usuario` (`num_oficina`, `id_usuario`) 
+                                     VALUES ('$oficinaCod', 1)");
+                }
+            }
+        }
         return true;
 
     } catch (Exception $e) {
@@ -303,7 +327,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_bd'])) {
         'id_cargo' => 1, // Valor por defecto
         'nombre' => trim($_POST['nombre'] ?? ''),
         'correo' => trim($_POST['correo'] ?? ''),
-        'oficina' => $_POST['oficina']
+        'oficinas_seleccionadas' => $_POST['oficinas_seleccionadas'] ?? ''
     ];
 
     // Validaciones
@@ -435,14 +459,23 @@ if (!verificarBaseDeDatosExiste()) {
                     >
                     <div class="help-text">Este será su nombre de usuario para iniciar sesión.</div>
                 </div>
-                <select name="oficina" id="oficina" class="form-select-sm">
-                        <option value="313">Biblioteca</option>
-                        <option value="212">Informatica</option>
-                        <option value="143">Cuentas</option>
-                        <option value="204">Deportes</option>
-                        <option value="305">Consejeria/Orientacion</option>
-                        <option value="205">Servicios Generales</option>
-                    </select>
+                <div class="oficinas-grid">
+                    <div class="oficina-item">
+                        <input type="checkbox" id="cat_Biblioteca" name="categorias[]" value="313">
+                        <label for="cat_Biblioteca">Biblioteca</label>
+                        <input type="checkbox" id="cat_Informatica" name="categorias[]" value="212">
+                        <label for="cat_Informatica">Informatica</label>
+                        <input type="checkbox" id="cat_Cuentas" name="categorias[]" value="143">
+                        <label for="cat_Cuentas">Cuentas</label>
+                        <input type="checkbox" id="cat_Deportes" name="categorias[]" value="204">
+                        <label for="cat_Deportes">Deportes</label>
+                        <input type="checkbox" id="cat_Consejeria/Orientacion" name="categorias[]" value="305">
+                        <label for="cat_Consejeria/Orientacion">Consejeria/Orientacion</label>
+                        <input type="checkbox" id="cat_Servicios Generales" name="categorias[]" value="205">
+                        <label for="cat_Servicios Generales">Servicios Generales</label>
+                    </div>
+                </div>
+                <input type="hidden" name="oficinas_seleccionadas" id="oficinasSeleccionadasInput">
                 <div class="form-group">
                     <label for="correo">
                         Correo electrónico <span class="required">*</span>
@@ -484,6 +517,7 @@ if (!verificarBaseDeDatosExiste()) {
     </div>
 
     <script>
+        
         <?php if ($mostrarExito): ?>
         Swal.fire({
             icon: 'success',
@@ -539,6 +573,13 @@ if (!verificarBaseDeDatosExiste()) {
         document.getElementById('setupForm').addEventListener('submit', function(e) {
             const claveSuper = document.getElementById('claveSuper').value;
             const clave = document.getElementById('clave').value;
+            const categoriasSeleccionadas = [];
+                const checkboxes = document.querySelectorAll('input[name="categorias[]"]:checked');
+                checkboxes.forEach(checkbox => {
+                    categoriasSeleccionadas.push(checkbox.value);
+                });
+            
+            console.log('Categorías seleccionadas:', categoriasSeleccionadas);
             
             if (claveSuper.length < 8) {
                 e.preventDefault();
@@ -569,7 +610,19 @@ if (!verificarBaseDeDatosExiste()) {
                 });
                 return false;
             }
+            else
+            {
+                const oficinasSeleccionadasInput = document.getElementById('oficinasSeleccionadasInput');
+                oficinasSeleccionadasInput.value = JSON.stringify(categoriasSeleccionadas);
+                console.log('Oficinas a enviar:', oficinasSeleccionadasInput.value);
+            }
         });
+        async function agregarOficinas(oficinasSeleccionadas)
+        {
+            const formData = new FormData();
+            formData.append(oficinasSeleccionadas);
+
+        }
     </script>
 </body>
 </html>

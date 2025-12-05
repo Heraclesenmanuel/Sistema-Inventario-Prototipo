@@ -17,6 +17,41 @@
 
             require_once 'views/conf/index.php';
         }
+        public function getOficinasUsuario()
+        {
+            $id_usuario = isset($_POST['id']) ? (int)trim($_POST['id']) : '';
+            try {
+                $resultado = $this->config->getOficinasUsuario($id_usuario);
+                if (!$resultado && !is_array($resultado))
+                {
+                    header('Content-Type: application/json');
+                    echo json_encode([
+                    'success' => false,
+                    'message' => "No se ha podido ejecutar la consulta de recomendaciones",
+                    ]);
+                    exit();
+                }
+                else
+                {
+                    header('Content-Type: application/json');
+                    echo json_encode([
+                            'success' => true,
+                            'message' => 'Recomendaciones obtenidas correctamente',
+                            'recomendaciones' => $resultado
+                        ]);
+                    exit();
+                }
+            }
+            catch (Exception $e)
+            {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ]);
+                exit();
+            }
+        }
         public function cambiarClave()
         {
             if (isset($_POST['bandera_cambiar_clave']))
@@ -60,9 +95,9 @@
                 $clave = trim($_POST['clave_usuario']);
                 $correo = trim($_POST['correo']);
                 $id_cargo = (int)$_POST['id_cargo'];
-                $oficina = trim($_POST['oficina']);
+                $oficinas = json_decode($_POST['oficinas_seleccionadas'], true);
 
-                $resultado = $this->config->addUsuario($cedula, $nombre, $clave, $id_cargo, $correo, $oficina);
+                $resultado = $this->config->addUsuario($cedula, $nombre, $clave, $id_cargo, $correo, $oficinas);
                 $_SESSION['mensaje'] = $resultado['message'];
                 $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
                 
@@ -82,7 +117,6 @@
             header('Location: ?action=config&method=home');
             exit();
         }
-
         public function cambiarNombreApp() {
             $this->iniciarSesion();
             if(isset($_POST['nombre_app'])) {

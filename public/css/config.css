@@ -24,6 +24,8 @@
 
         .form-group {
             margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
         }
 
         .form-group label {
@@ -38,7 +40,45 @@
             color: #e74c3c;
             margin-left: 3px;
         }
+        
 
+
+        .form-group.full-width {
+        grid-column: 1 / -1;
+        }
+
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+        padding: 0.875rem 1rem;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        color: #0f172a;
+        font-size: 0.9375rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+        color: #94a3b8;
+        }
         .config-form input[type="text"],
         .config-form input[type="password"],
         .config-form input[type="email"],
@@ -51,7 +91,15 @@
             transition: all 0.3s ease;
             box-sizing: border-box;
         }
+        .categoria-item {
+        display: inline-flex;
+        align-items: center; /* centra verticalmente */
+        margin-right: 15px;  /* espacio entre cada checkbox-label */
+        }
 
+        .categoria-item input {
+            margin-right: 5px; /* separa el checkbox del texto */
+        }
         .config-form input[type="text"]:focus,
         .config-form input[type="password"]:focus,
         .config-form input[type="number"]:focus {
@@ -385,6 +433,26 @@
             transform: none;
             box-shadow: none;
         }
+        .acciones {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .btn-editar {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .btn-editar:hover {
+            background-color: #0056b3;
+        }
+
                 /* Responsive */
     @media (max-width: 768px) {
         .config-form {

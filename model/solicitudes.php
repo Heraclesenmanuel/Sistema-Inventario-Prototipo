@@ -17,8 +17,14 @@ class Solicitud extends Base{
         return $stmt->affected_rows;
     }
     public function obtenerSolicitudes(){
-        $sql = 'SELECT s.*, u.nombre as nombre_solicitante, f.nombre as nombre_oficina
-        FROM solicitud s INNER JOIN usuario u ON s.id_solicitante=u.id_usuario JOIN oficina f ON u.num_oficina=f.num_oficina';
+        $sql = 'SELECT s.*, u.nombre AS nombre_solicitante, f.nombre AS nombre_oficina
+                FROM solicitud s
+                LEFT JOIN usuario u 
+                    ON s.id_solicitante = u.id_usuario
+                LEFT JOIN oficina f 
+                    ON s.num_oficina = f.num_oficina
+                ORDER BY s.fecha_solic DESC;
+                ';
         $resultado = $this->db->query($sql);
 
         if(!$resultado) {
@@ -32,7 +38,7 @@ class Solicitud extends Base{
         return $datos;
     }
     public function cargarProds() {
-        $sql = "SELECT id_producto, nombre FROM producto";
+        $sql = "SELECT * FROM producto";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -68,15 +74,29 @@ class Solicitud extends Base{
             'success' => true
         ];
     }
-    public function validarTiposDatos($datos, $stmt)
+    public function eliminarSolicitud($id)
+    {
+        $query = "DELETE FROM solicitud WHERE id_solicitud = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param('i', $id);
+        $resultado = $stmt->execute();
+        
+        return $resultado;
+    }
+    public function validarTiposDatos($datos, $stmt, $id=null)
     {
         $id_solicitante = $_SESSION['id'];
         $ofic_solic = $datos['oficina_solic'];
         $fecha_deseada = $datos['fecha_deseada'];
         $comentarios = $datos['comentarios'];
-
-        $stmt->bind_param('isss', $id_solicitante, $fecha_deseada, $comentarios, $ofic_solic);
-        
+        if($id)
+        {
+            $stmt->bind_param('iisss', $id, $id_solicitante, $fecha_deseada, $comentarios, $ofic_solic); 
+        }
+        else
+        {
+            $stmt->bind_param('isss', $id_solicitante, $fecha_deseada, $comentarios, $ofic_solic);
+        }
         return $stmt;
     }
     public function validarDatosProds($datos, $stmt, $num_linea, $id_solic)
@@ -89,13 +109,20 @@ class Solicitud extends Base{
         
         return $stmt;
     }
-    public function guardarSolicitud($datos) {
-        $stmt = $this->db->prepare("INSERT INTO solicitud (id_solicitante, fecha_solic, fecha_deseo, comentarios, num_oficina) VALUES (?, NOW(), ?, ?, ?)");
+    public function guardarSolicitud($datos, $id = null) {
+        if($id)
+        {
+            $stmt = $this->db->prepare("INSERT INTO solicitud (id_solicitud, id_solicitante, fecha_solic, fecha_deseo, comentarios, num_oficina) VALUES (?, ?, NOW(), ?, ?, ?)");
+        }
+        else
+        {
+            $stmt = $this->db->prepare("INSERT INTO solicitud (id_solicitante, fecha_solic, fecha_deseo, comentarios, num_oficina) VALUES (?, NOW(), ?, ?, ?)");
+        }
         if (!$stmt) {
             $this->db->close();
             die('Error en la preparación de la consulta SQL');
         }
-        $result = $this->validarTiposDatos($datos, $stmt)->execute();
+        $result = $this->validarTiposDatos($datos, $stmt, $id)->execute();
         if (!$result) {
             error_log("Error al ejecutar la consulta: " . $stmt->error);
         }
@@ -118,7 +145,7 @@ class Solicitud extends Base{
                 $this->db->close();
                 die('Error en la preparación de la consulta SQL');
             }
-            $result = $this->validarDatosProds($prods[$i], $stmt, $i, $id_solic)->execute();
+            $result = $this->validarDatosProds($prods[$i], $stmt, $i+1, $id_solic)->execute();
             if (!$result) 
             {
                 error_log("Error al ejecutar la consulta: " . $stmt->error);
@@ -128,23 +155,6 @@ class Solicitud extends Base{
         $stmt->close();
         return $result;
     }
-        public function eliminarSolicitud($id) {
-            $stmt = $this->db->prepare("DELETE FROM producto WHERE id_producto = ?");
-            if (!$stmt) {
-                throw new Exception("Error al preparar la consulta: " . $this->db->error);
-            }
-            try {
-                $stmt->bind_param("i", $id);
-                $stmt->execute();
-                if ($stmt->affected_rows > 0) {
-                    return true;
-                } else {
-                    throw new Exception("No se encontró el producto con ID $id");
-                }
-            } finally {
-                $stmt->close();
-            }
-        }
     public function obtenerSolicPorId($id) {
         $stmt = $this->db->prepare("SELECT * FROM producto WHERE id_producto = ?");
         
@@ -160,13 +170,12 @@ class Solicitud extends Base{
     }
 
     public function actualizarSolic($datos) {
-        $stmt = $this->db->prepare("UPDATE producto SET 
-            codigo = ?, 
+        $stmt = $this->db->prepare("UPDATE prod_solic SET 
             nombre = ?, 
             medida = ?, 
             un_disponibles = ?, 
             id_tipo = ?,
-            WHERE id_producto = ?");
+            WHERE id_solicitud = ?");
         
         if (!$stmt) {
             throw new Exception("Error al preparar la consulta: " . $this->db->error);
