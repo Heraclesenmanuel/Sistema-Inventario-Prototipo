@@ -1,0 +1,77 @@
+/* =========================================
+   Estilos de Submenús (UPEL Design System)
+   ========================================= */
+
+/* Transición suave para la flecha */
+.submenu-arrow {
+    transition: transform 0.3s ease;
+    width: 16px;
+    height: 16px;
+    margin-left: auto; /* Empuja la flecha a la derecha */
+}
+
+/* Estado abierto para la flecha */
+.has-submenu.open .submenu-arrow {
+    transform: rotate(180deg);
+}
+
+/* Contenedor del Submenú (Oculto por defecto) */
+.submenu {
+    max-height: 0;
+    overflow: hidden;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: #FAFAFA; /* Un poco más oscuro que el fondo del sidebar */
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 3px solid transparent; 
+}
+
+/* Estado abierto del submenú */
+.has-submenu.open .submenu {
+    max-height: 500px; /* Altura suficiente para el contenido */
+    border-left-color: var(--azul-anil, #3F51B5); /* Línea indicadora visual */
+}
+
+/* Enlaces del submenú */
+.submenu-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px 12px 48px; /* Indentación para jerarquía */
+    color: #616161; /* Gris medio para texto secundario */
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border-radius: 0 8px 8px 0; /* Bordes redondeados solo a la derecha */
+    margin-right: 8px;
+}
+
+.submenu-link:hover {
+    background-color: #E8EAF6; /* Azul muy suave al hover */
+    color: var(--azul-anil, #3F51B5);
+    padding-left: 52px; /* Pequeño desplazamiento al hover */
+}
+
+/* Iconos del submenú */
+.submenu-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+    color: #9E9E9E;
+    transition: color 0.2s ease;
+}
+
+.submenu-link:hover .submenu-icon {
+    color: var(--azul-anil, #3F51B5);
+}
+
+/* Link Activo (si se desea marcar la página actual) */
+.submenu-link.active {
+    background-color: rgba(63, 81, 181, 0.1);
+    color: var(--azul-anil, #3F51B5);
+    font-weight: 500;
+}
+
+.submenu-link.active .submenu-icon {
+    color: var(--azul-anil, #3F51B5);
+}

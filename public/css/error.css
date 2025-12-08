@@ -1,0 +1,126 @@
+/* =========================================
+   Estilos de Páginas de Error (UPEL Professional)
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+    --bg-color: #F8F9FA;
+    --azul-anil: #3F51B5;
+    --azul-oscuro: #1A237E;
+    --texto-gris: #666666;
+    --sombra: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-color);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.error-container {
+    text-align: center;
+    background: white;
+    padding: 60px 40px;
+    border-radius: 20px;
+    box-shadow: var(--sombra);
+    max-width: 500px;
+    width: 90%;
+    animation: slideUp 0.5s ease-out;
+}
+
+.error-icon {
+    margin-bottom: 24px;
+    color: var(--azul-anil);
+    background: rgba(63, 81, 181, 0.1);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+.icon-svg {
+    width: 50px;
+    height: 50px;
+    stroke-width: 1.5;
+}
+
+.error-code {
+    font-size: 80px;
+    font-weight: 700;
+    color: var(--azul-oscuro);
+    line-height: 1;
+    margin: 0 0 16px 0;
+    letter-spacing: -2px;
+}
+
+.error-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--azul-oscuro);
+    margin-bottom: 12px;
+}
+
+.error-description {
+    color: var(--texto-gris);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+.btn-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--azul-anil);
+    color: white;
+    text-decoration: none;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(63, 81, 181, 0.2);
+}
+
+.btn-home:hover {
+    background-color: var(--azul-oscuro);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(63, 81, 181, 0.3);
+}
+
+.btn-home i {
+    width: 20px;
+    height: 20px;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(63, 81, 181, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 20px rgba(63, 81, 181, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(63, 81, 181, 0);
+    }
+}
