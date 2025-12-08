@@ -203,10 +203,6 @@ body {
     box-shadow: 0 8px 24px rgba(63, 81, 181, 0.35);
 }
 
-<<<<<<< HEAD
-/* ===== Pagination ===== */
-.pagination-controls-top {
-=======
         .modal-header h3 {
             margin: 0;
             font-size: 1.5rem;
@@ -341,7 +337,6 @@ body {
 }
 /* Paginación */
 .pagination-wrapper {
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
     display: flex;
     justify-content: space-between;
     align-items: center;

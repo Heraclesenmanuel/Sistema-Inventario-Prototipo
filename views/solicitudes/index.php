@@ -27,13 +27,8 @@
                         <p class="subtitle">Administra y organiza las solicitudes de productos por departamento</p>
                     <?php endif; ?>
                 </div>
-<<<<<<< HEAD
                 <button class="btn-primary" onclick="openModal()" id="newRequestBtn">
                     <i data-lucide="plus-circle"></i>
-=======
-                <button class="btn-primary" onclick="openModal('add')" id="newRequestBtn">
-                    <i class="fas fa-plus"></i>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                     Nueva Solicitud
                 </button>
             </div>
@@ -46,16 +41,10 @@
                 </div>
                 
                 <div class="filter-group">
-<<<<<<< HEAD
-                    <label for="statusFilter" class="filter-label">Estado:</label>
-                    <select id="statusFilter" class="filter-select">
-                        <option value="">Todos</option>
-=======
                     <label for="statusFilter" class="filter-label">Filtrar por estado:</label>
                     <?php if ($_SESSION['dpto'] != 4): ?>
                     <select id="statusFilter" class="filter-select" aria-label="Filtrar por estado">
                         <option value="">Todos los estados</option>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                         <option value="Pendiente">Pendiente</option>
                         <option value="Aprobado">Aprobado</option>
                         <option value="En Revisión">En Revisión</option>
@@ -139,13 +128,6 @@
                     </tbody>
                 </table>
                 
-<<<<<<< HEAD
-                <!-- Empty State -->
-                <div id="emptyState" class="empty-state" style="display: <?= empty($solicitudes) ? 'block' : 'none' ?>;">
-                    <i data-lucide="inbox" class="empty-icon"></i>
-                    <h3>No hay solicitudes</h3>
-                    <p>No se encontraron registros que coincidan con tu búsqueda.</p>
-=======
                 <div id="emptyState" class="empty-state" style="display: <?= empty($solicitudes) ? 'flex' : 'none' ?>;">
                     <div class="empty-state-content">
                         <i class="fas fa-inbox empty-icon"></i>
@@ -156,7 +138,6 @@
                             Agregar Solicitud
                         </button>
                     </div>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                 </div>
 
                 <!-- Footer Clean Pagination -->
@@ -184,22 +165,6 @@
     </div>
 
     <!-- Modal para Solicitudes -->
-<<<<<<< HEAD
-    <div id="requestModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Nueva Solicitud</h2>
-                <button type="button" class="close-btn" onclick="closeModal()">
-                    <i data-lucide="x" style="width: 24px; height: 24px;"></i>
-                </button>
-            </div>
-            
-            <form id="requestForm" method="POST" action="?action=solicitudes&method=home">
-                <input type="hidden" id="requestId" name="request_id">
-                <div class="modal-body">
-                    
-                    <?php $departamento = $_SESSION['num_oficina']; ?>
-=======
 <div id="requestModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
     <div class="modal-content" role="document">
         <div class="modal-header">
@@ -218,7 +183,6 @@
                     <?php
                     $departamento = $_SESSION['dpto'];
                     ?>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                     <div class="form-group">
                         <label for="departamento" class="required">Departamento de destino</label>
                         <select id="departamento" name="departamento" class="form-select" required>
@@ -227,78 +191,16 @@
                                     <option value="<?php echo $oficina['num_oficina']?>" <?php echo $departamento==$oficina['num_oficina'] ? "selected" : "" ?>><?php echo $oficina['nombre']?></option>
                                 <?php endforeach; ?>
                             <?php else: ?>
-<<<<<<< HEAD
-                                <option value="313">Biblioteca</option>
-=======
                                 <option value="313" <?= $departamento == "Biblioteca" ? "selected" : "" ?>>Biblioteca</option>
                                 <option value="212" <?= $departamento == "Informatica" ? "selected" : "" ?>>Informatica</option>
                                 <option value="143" <?= $departamento == "Cuentas" ? "selected" : "" ?>>Cuentas</option>
                                 <option value="204" <?= $departamento == "Deportes" ? "selected" : "" ?>>Deportes</option>
                                 <option value="305" <?= $departamento == "Consejeria/Orientacion" ? "selected" : "" ?>>Consejeria/Orientacion</option>
                                 <option value="205" <?= $departamento == "Servicios Generales" ? "selected" : "" ?>>Servicios Generales</option>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                             <?php endif; ?>
                         </select>
                     </div>
 
-<<<<<<< HEAD
-                    <!-- Contenedor dinámico de productos -->
-                    <div class="product-fields-container" id="productFieldsContainer">
-                        <!-- Grupo Plantilla (Índice 0) -->
-                        <div class="product-fields-group" data-product-index="0">
-                            <div class="product-group-title">Producto 1</div>
-                            
-                            <div class="product-fields-grid">
-                                <div class="form-group">
-                                    <label for="producto_0">Producto existente</label>
-                                    <select class="filter-select" name="producto_id[]" id="producto_0" style="width:100%">
-                                        <option value="">-- Seleccionar --</option>
-                                        <?php if(isset($productos['data'])): ?>
-                                            <?php foreach($productos['data'] as $producto): ?>
-                                                <option value="<?php echo $producto['id_producto']?>"><?php echo $producto['nombre']?></option>
-                                            <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="nombre_producto_0" class="required">Nombre</label>
-                                    <input type="text" id="nombre_producto_0" name="nombre_producto[]" required placeholder="Nombre del producto">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="unidad_medida_0" class="required">Medida</label>
-                                    <select id="unidad_medida_0" name="unidad_medida[]" required>
-                                        <option value="">Seleccionar</option>
-                                        <option value="Unidades">Unidades</option>
-                                        <option value="Kilogramos">Kg</option>
-                                        <option value="Litros">Litros</option>
-                                        <option value="Cajas">Cajas</option>
-                                        <option value="Paquetes">Paquetes</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="cantidad_0" class="required">Cantidad</label>
-                                    <input type="number" id="cantidad_0" name="cantidad[]" required min="1" placeholder="Ej: 10">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="tipo_producto_0" class="required">Tipo</label>
-                                    <select id="tipo_producto_0" name="tipo_producto[]">
-                                        <?php if(isset($tipos_p['success']) && !empty($tipos_p['data'])): ?>
-                                            <?php foreach($tipos_p['data'] as $tipo): ?>
-                                                <option value="<?php echo $tipo['id_tipo']?>"><?php echo $tipo['nombre']?></option>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <option value="Alimento">Alimento</option>
-                                            <option value="Limpieza">Limpieza</option>
-                                            <option value="Oficina">Oficina</option>
-                                        <?php endif; ?>
-                                    </select>
-                                </div>
-                            </div>
-=======
                     
                     <!-- Contenedor para grupos de campos de productos -->
                     <div class="product-fields-container" id="productFieldsContainer">
@@ -364,36 +266,10 @@
         </select>
     </div>
 </div>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                         </div>
                     </div>
                     
                     <button type="button" class="add-product-btn" id="addProductBtn">
-<<<<<<< HEAD
-                        <i data-lucide="plus"></i> Añadir otro producto
-                    </button>
-                    
-                    <div class="final-fields-container">
-                        <div class="form-group">
-                            <label for="fecha_requerida" class="required">Fecha deseada</label>
-                            <input type="date" id="fecha_requerida" name="fecha_requerida" required min="<?= date('Y-m-d') ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="notas">Notas Adicionales</label>
-                            <textarea id="notas" name="notas" rows="1" maxlength="500"></textarea>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary">
-                        <i data-lucide="save"></i> Guardar Solicitud
-                    </button>
-                </div>
-            </form>
-        </div>
-=======
                         <i class="fas fa-plus"></i>
                         Añadir otro producto
                     </button>
@@ -428,74 +304,9 @@
                 </button>
             </div>
         </form>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
     </div>
 </div>
 
-<<<<<<< HEAD
-    <script>
-        // Inicializar Iconos
-        lucide.createIcons();
-        
-        // Variables de Paginación
-        let currentPage = 1;
-        
-        // --- Lógica del Modal (Robustez mejorada) ---
-        function openModal() {
-            const modal = document.getElementById('requestModal');
-            if(modal) {
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevenir scroll body
-                
-                // Setear fecha default
-                const today = new Date();
-                const nextWeek = new Date(today);
-                nextWeek.setDate(today.getDate() + 7);
-                try {
-                    document.getElementById('fecha_requerida').valueAsDate = nextWeek;
-                } catch(e) {}
-            }
-        }
-        
-        function closeModal() {
-            const modal = document.getElementById('requestModal');
-            if(modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
-                
-                // Reset form
-                setTimeout(() => {
-                    document.getElementById('requestForm').reset();
-                    // Resetear productos al original
-                    const container = document.getElementById('productFieldsContainer');
-                    const groups = container.querySelectorAll('.product-fields-group');
-                    // Mantener solo el primero
-                    for(let i = 1; i < groups.length; i++) {
-                        groups[i].remove();
-                    }
-                }, 300); // Wait for transition
-            }
-        }
-        
-        // Cerrar al hacer click fuera
-        window.onclick = function(event) {
-            const modal = document.getElementById('requestModal');
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
-
-        // --- Agregar Producto ---
-        document.getElementById('addProductBtn').addEventListener('click', function() {
-            const container = document.getElementById('productFieldsContainer');
-            // Usar index 0 siempre como plantilla
-            const template = container.querySelector('.product-fields-group[data-product-index="0"]');
-            if(!template) return;
-
-            const currentCount = container.querySelectorAll('.product-fields-group').length;
-            if (currentCount >= 10) {
-                Swal.fire('Límite', 'Máximo 10 productos.', 'warning');
-=======
 <script>
     // Variable global para productos (convertir PHP a JavaScript)
     const productosData = <?= json_encode($productos['data'] ?? []) ?>;
@@ -597,48 +408,12 @@
                     title: 'Error',
                     text: 'No se encontró la solicitud'
                 });
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                 return;
             }
 
             const clone = template.cloneNode(true);
             const newIndex = currentCount; // Simple increment
             
-<<<<<<< HEAD
-            clone.setAttribute('data-product-index', newIndex);
-            clone.querySelector('.product-group-title').textContent = `Producto ${newIndex + 1}`;
-            
-            // Asegurar botón eliminar
-            let removeBtn = clone.querySelector('.remove-product-btn');
-            if(!removeBtn) {
-                removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'remove-product-btn';
-                removeBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
-                clone.appendChild(removeBtn);
-            }
-            // Logic to remove
-            removeBtn.onclick = function() {
-                this.closest('.product-fields-group').remove();
-                // Re-numerar titulos opcionalmente
-            };
-
-            // Limpiar Inputs
-            const inputs = clone.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                input.value = '';
-                // Actualizar IDs para accesibilidad (opcional pero recomendado)
-                if(input.id) input.id = input.id.replace(/_\d+$/, `_${newIndex}`);
-            });
-            const labels = clone.querySelectorAll('label');
-            labels.forEach(label => {
-                if(label.getAttribute('for')) label.setAttribute('for', label.getAttribute('for').replace(/_\d+$/, `_${newIndex}`));
-            });
-
-            container.appendChild(clone);
-            lucide.createIcons();
-            clone.scrollIntoView({ behavior: 'smooth' });
-=======
             // Crear el body con los datos que espera el backend
             const body = new URLSearchParams();
             body.append('id_solicitud', solicitudId);
@@ -1101,7 +876,6 @@
             if (result.isConfirmed) {
                 cambiarEstadoSolicitud(idSolicitud, 'En Revisión');
             }
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
         });
     }
     
@@ -1122,176 +896,6 @@
             cancelButtonText: 'Cancelar',
             reverseButtons: true,
 
-<<<<<<< HEAD
-        // --- Paginación Client-Side ---
-        function updatePagination() {
-            const tableBody = document.getElementById('requestsTableBody');
-            const rows = Array.from(tableBody.querySelectorAll('tr.request-row'));
-            const emptyState = document.getElementById('emptyState');
-            
-            if(rows.length === 0) {
-                if(emptyState) emptyState.style.display = 'block';
-                return; 
-            }
-
-            const entriesPerPage = parseInt(document.getElementById('entriesPerPage').value);
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            
-            // 1. Filtrar
-            const visibleRows = rows.filter(row => {
-                const textContent = row.innerText.toLowerCase();
-                const statusAttr = row.getAttribute('data-status');
-                
-                const matchesSearch = textContent.includes(searchText);
-                const matchesStatus = !statusFilter || statusAttr === statusFilter;
-                
-                return matchesSearch && matchesStatus;
-            });
-            
-            // 2. Calcular Paginas
-            const totalPages = Math.ceil(visibleRows.length / entriesPerPage) || 1;
-            if (currentPage > totalPages) currentPage = 1;
-            
-            // 3. Ocultar todo primero
-            rows.forEach(r => r.style.display = 'none');
-            
-            if(visibleRows.length === 0) {
-                if(emptyState) emptyState.style.display = 'block';
-                document.getElementById('showingText').textContent = 'Mostrando 0 de 0';
-                renderButtons(0);
-                return; 
-            } else {
-                if(emptyState) emptyState.style.display = 'none';
-            }
-
-            // 4. Mostrar pagina actual
-            const start = (currentPage - 1) * entriesPerPage;
-            const end = start + entriesPerPage;
-            
-            visibleRows.slice(start, end).forEach(r => r.style.display = 'table-row');
-            
-            // 5. Update Info
-            const showingStart = start + 1;
-            const showingEnd = Math.min(end, visibleRows.length);
-            document.getElementById('showingText').textContent = `Mostrando ${showingStart}-${showingEnd} de ${visibleRows.length}`;
-            
-            // 6. Render Botones
-            renderButtons(totalPages);
-        }
-
-        function renderButtons(totalPages) {
-            const container = document.getElementById('paginationButtons');
-            container.innerHTML = '';
-            
-            if(totalPages <= 1) return;
-
-            // Prev
-            const prev = document.createElement('button');
-            prev.className = 'page-btn';
-            prev.innerHTML = '<i data-lucide="chevron-left" style="width:16px"></i>';
-            prev.onclick = () => { if(currentPage > 1) { currentPage--; updatePagination(); }};
-            prev.disabled = currentPage === 1;
-            container.appendChild(prev);
-            
-            // Pages
-            for(let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-                btn.textContent = i;
-                btn.onclick = () => { currentPage = i; updatePagination(); };
-                container.appendChild(btn);
-            }
-            
-            // Next
-            const next = document.createElement('button');
-            next.className = 'page-btn';
-            next.innerHTML = '<i data-lucide="chevron-right" style="width:16px"></i>';
-            next.onclick = () => { if(currentPage < totalPages) { currentPage++; updatePagination(); }};
-            next.disabled = currentPage === totalPages;
-            container.appendChild(next);
-            
-            lucide.createIcons();
-        }
-
-        // Listeners
-        document.getElementById('searchInput').addEventListener('keyup', () => { currentPage = 1; updatePagination(); });
-        document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 1; updatePagination(); });
-        
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-             updatePagination();
-             lucide.createIcons();
-        });
-
-        // --- Funciones Legacy AJAX (Conservadas) ---
-        function aprobarSolicitud(id) {
-             Swal.fire({
-                title: '¿Aprobar?',
-                text: "Enviar a presupuesto",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#2ECC71',
-                confirmButtonText: 'Aprobar'
-            }).then((result) => {
-                if (result.isConfirmed) cambiarEstadoSolicitud(id, 'En Revisión');
-            });
-        }
-        function rechazarSolicitud(id) {
-            Swal.fire({
-                title: 'Rechazar',
-                input: 'text',
-                inputPlaceholder: 'Motivo...',
-                showCancelButton: true,
-                confirmButtonColor: '#E44336',
-                confirmButtonText: 'Rechazar'
-            }).then((result) => {
-                if (result.isConfirmed) cambiarEstadoSolicitud(id, 'Rechazado', result.value);
-            });
-        }
-        function cambiarEstadoSolicitud(id, estado, motivo='') {
-            Swal.showLoading();
-            $.post('?action=solicitudes&method=cambiarEstado', { id_solicitud: id, nuevo_estado: estado, motivo: motivo }, function(res) {
-                 // Try parsing json if string
-                 if(typeof res === 'string') { try { res = JSON.parse(res); } catch(e){} }
-                 
-                 if(res.success) {
-                     Swal.fire('Listo', 'Estado actualizado', 'success').then(() => location.reload());
-                 } else {
-                     Swal.fire('Error', 'No se pudo actualizar', 'error');
-                 }
-            }, 'json').fail(() => Swal.fire('Error', 'Fallo de red', 'error'));
-        }
-        
-        function verDetallesSolicitud(solicitudes, id) {
-             const sol = solicitudes.find(s => s.id_solicitud == id);
-             if(sol) {
-                 let html = `<ul style="text-align:left;list-style:none;padding:0;">`;
-                 // Si tenemos productos cargados en el array principal (no siempre es el caso, depende del backend)
-                 // Si no, podríamos hacer ajax. Asumamos ajax para seguridad como estaba antes
-                 Swal.showLoading();
-                 $.post('?action=solicitudes&method=obtenerDetalles', { id_solicitud: id, solicitud_seleccionada: JSON.stringify(sol) }, function(res) {
-                     Swal.close();
-                     if(res.success && res.data) {
-                         const d = res.data;
-                         let list = d.productos.map(p => `<li>• ${p.un_deseadas} ${p.medida} <strong>${p.nombre}</strong></li>`).join('');
-                         Swal.fire({
-                             title: `Solicitud #${id}`,
-                             html: `<div style="text-align:left">
-                                      <p><strong>De:</strong> ${d.nombre_solicitante}</p>
-                                      <p><strong>Oficina:</strong> ${d.nombre_oficina}</p>
-                                      <hr>
-                                      <strong>Productos:</strong>
-                                      <ul style="padding-left:1rem">${list}</ul>
-                                      ${d.comentarios ? `<p><em>Nota: ${d.comentarios}</em></p>` : ''}
-                                    </div>`
-                         });
-                     }
-                 }, 'json');
-             }
-        }
-    </script>
-=======
         }).then((result) => {
             if (result.isConfirmed) {
                 cambiarEstadoSolicitud(idSolicitud, 'Rechazado', result.value);
@@ -1503,6 +1107,5 @@
         }
     });
 </script>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
 </body>
 </html>

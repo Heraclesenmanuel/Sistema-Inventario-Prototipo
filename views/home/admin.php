@@ -59,7 +59,6 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
                     <p class="section-description">Accede rápidamente a las funciones principales del sistema</p>
                 </header>
                 
-<<<<<<< HEAD
                 <div class="quick-access-grid">
                     <!-- Inventario -->
                     <a href="?action=inventario&method=home" class="quick-access-card" data-category="inventory">
@@ -160,36 +159,6 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
     </div>
     
     <!-- Scripts -->
-=======
-                <a href="?action=proveedor&method=home" class="quick-access-item">
-                    <i class="fas fa-truck"></i>
-                    <h3>Proveedores</h3>
-
-                <a href="?action=oficinas&method=home" class="quick-access-item">
-                    <i class="fas fa-users"></i>
-                    <h3>Oficinas</h3>
-                </a>
-
-                <a href="?action=reporte&method=home" class="quick-access-item">
-                    <i class="fas fa-chart-bar"></i>
-                    <h3>Estadísticas</h3>
-
-                <a href="?action=solicitudes&method=home" class="quick-access-item">
-                    <i class="	fas fa-receipt"></i>
-                    <h3>Solicitudes</h3>
-                </a>
-
-                <a class="quick-access-item">
-                    <i class="fas fa-question"></i>
-                    <h3>Algo mas</h3>
-                </a>
-                
-            </div>
-        </div> <br><br>
-        <footer>
-    </footer>
-    </main>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="assets/js/menu.js"></script>
     

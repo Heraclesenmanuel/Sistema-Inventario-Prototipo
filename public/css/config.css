@@ -33,20 +33,11 @@
     gap: 16px;
 }
 
-<<<<<<< HEAD
-.header-icon {
-    width: 40px;
-    height: 40px;
-    color: var(--azul-anil);
-    stroke-width: 2;
-}
-=======
         .form-group {
             margin-bottom: 15px;
             display: flex;
             flex-direction: column;
         }
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
 
 .page-header h1 {
     font-size: 32px;
@@ -56,32 +47,6 @@
     letter-spacing: -0.02em;
 }
 
-<<<<<<< HEAD
-.header-date {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--texto-secundario);
-    margin: 0;
-}
-
-.date-icon {
-    width: 16px;
-    height: 16px;
-    stroke-width: 2;
-}
-
-/* ===== Config Section ===== */
-.config-section {
-    background: white;
-    border-radius: 16px;
-    padding: 32px;
-    margin-bottom: 24px;
-    box-shadow: var(--sombra-suave);
-    border: 1px solid var(--gris-claro);
-}
-=======
         .form-group label .required {
             color: #e74c3c;
             margin-left: 3px;
@@ -153,7 +118,6 @@
             border-color: #3498db;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
 
 .section-header {
     display: flex;
@@ -468,104 +432,6 @@
     border-bottom: none;
 }
 
-<<<<<<< HEAD
-.users-table tbody td {
-    padding: 16px;
-    font-size: 14px;
-    color: var(--texto-oscuro);
-}
-
-.office-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.office-name {
-    font-weight: 500;
-    color: var(--texto-oscuro);
-}
-
-.office-number {
-    font-size: 12px;
-    color: var(--texto-secundario);
-}
-
-.no-data {
-    text-align: center;
-    padding: 48px 16px !important;
-}
-
-.no-data-icon {
-    width: 48px;
-    height: 48px;
-    color: var(--texto-secundario);
-    stroke-width: 1.5;
-    margin-bottom: 12px;
-}
-
-.no-data p {
-    margin: 0;
-    color: var(--texto-secundario);
-    font-size: 16px;
-}
-
-/* Delete Button */
-.btn-delete {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: var(--rojo-vibrante);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-delete:hover {
-    background: #C62828;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(228, 67, 54, 0.3);
-}
-
-.btn-delete:active {
-    transform: translateY(0);
-}
-
-.btn-delete:disabled {
-    background: #9E9E9E;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.btn-delete:disabled:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-delete .btn-icon {
-    width: 16px;
-    height: 16px;
-    stroke-width: 2;
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 768px) {
-    .config-section {
-        padding: 20px;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 0;
-    }
-    
-    .config-form {
-=======
         /* Estilos para alertas modernas */
         .swal2-popup {
             font-family: Arial, sans-serif;
@@ -633,7 +499,6 @@
                 /* Responsive */
     @media (max-width: 768px) {
         .config-form {
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
         max-width: 100%;
     }
     
