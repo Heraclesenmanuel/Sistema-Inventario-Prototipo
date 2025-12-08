@@ -6,13 +6,6 @@
     <meta name="description" content="Configuración del Sistema - UPEL">
     <meta name="theme-color" content="#3F51B5">
     <title><?= APP_NAME ?? 'Inicio' ?> - <?= $titulo ?></title>
-<<<<<<< HEAD
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="public/css/admin.css">
-    <link rel="stylesheet" href="public/css/config.css">
-    <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
-=======
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -251,7 +244,6 @@
             justify-content: center;
         }
     </style>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
 </head>
 <body>
     <div class="dashboard">
@@ -473,74 +465,6 @@
                             </div>
                         </div>
                     </div>
-<<<<<<< HEAD
-
-                    <div class="form-group">
-                        <label for="correo" class="form-label">
-                            <i data-lucide="mail" class="label-icon"></i>
-                            <span>Correo Electrónico<span class="required">*</span></span>
-                        </label>
-                        <div class="input-wrapper">
-                            <i data-lucide="at-sign" class="input-icon"></i>
-                            <input 
-                                type="email" 
-                                id="correo" 
-                                name="correo"
-                                class="form-input"
-                                placeholder="usuario@ejemplo.com" 
-                                required 
-                                maxlength="200">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="clave_usuario" class="form-label">
-                            <i data-lucide="key" class="label-icon"></i>
-                            <span>Clave de Acceso<span class="required">*</span></span>
-                        </label>
-                        <div class="input-wrapper password-wrapper">
-                            <i data-lucide="lock" class="input-icon"></i>
-                            <input 
-                                type="password" 
-                                id="clave_usuario" 
-                                name="clave_usuario"
-                                class="form-input"
-                                placeholder="Mínimo 6 caracteres" 
-                                required 
-                                minlength="6"
-                                autocomplete="new-password">
-                            <button type="button" class="btn-toggle" data-target="clave_usuario">
-                                <i data-lucide="eye" class="toggle-icon"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="id_cargo" class="form-label">
-                                <i data-lucide="briefcase" class="label-icon"></i>
-                                <span>Cargo<span class="required">*</span></span>
-                            </label>
-                            <div class="select-wrapper">
-                                <i data-lucide="user-cog" class="select-icon"></i>
-                                <select name="id_cargo" id="id_cargo" class="form-select" required>
-                                    <?php if(isset($roles['success']) && $roles['success'] && !empty($roles['data'])): ?>
-                                        <?php foreach($roles['data'] as $rol): ?>
-                                            <option value="<?php echo $rol['id_cargo']?>"><?php echo $rol['nombre']?></option>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <option value="1">Administrador</option>
-                                        <option value="2">Usuario</option>
-                                        <option value="3">Cuentas</option>
-                                        <option value="4">Presupuesto</option>
-                                    <?php endif; ?>
-                                </select>
-                                <i data-lucide="chevron-down" class="select-arrow"></i>
-                            </div>
-                        </div>
-
-                        <div class="form-group full-width">
-=======
                     
                     <div class="form-group">
                         <label for="id_cargo">Cargo</label>
@@ -559,7 +483,6 @@
                     </div>
                     
                     <div class="form-group full-width">
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                         <label>Oficina/s Del Usuario:</label>
                         <div class="categorias-grid">
                             <?php if(!empty($oficinas)): ?>
@@ -573,113 +496,13 @@
                         </div>
                         <input type="hidden" name="oficinas_seleccionadas" id="oficinasSeleccionadasInput">
                     </div>
-<<<<<<< HEAD
-                    </div>
-
-                    <button type="submit" name="bandera_agregar_usuario" class="btn-submit">
-                        <i data-lucide="user-plus" class="btn-icon"></i>
-                        <span>Agregar Usuario</span>
-=======
                     <button type="submit" name="bandera_agregar_usuario" onclick="enviarOficinas()">
                         <i class="fas fa-user-plus"></i> Agregar Usuario
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                     </button>
                 </form>
             </section>
 
             <!-- Sección: Lista de Usuarios -->
-<<<<<<< HEAD
-            <section class="config-section users-list">
-                <div class="section-header">
-                    <i data-lucide="users" class="section-icon"></i>
-                    <h2>Lista de Usuarios</h2>
-                </div>
-                
-                <!-- Pagination Controls Top -->
-                <div class="pagination-controls-top">
-                    <div class="entries-selector">
-                        <label for="entriesPerPage">Mostrar:</label>
-                        <select id="entriesPerPage" class="entries-select">
-                            <option value="5">5</option>
-                            <option value="10" selected>10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                        <span class="entries-label">usuarios</span>
-                    </div>
-                    <div class="pagination-info">
-                        <span id="paginationInfo">Mostrando 1 a 10 de 0 usuarios</span>
-                    </div>
-                </div>
-                
-                <div class="table-container">
-                    <table class="users-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Cédula</th>
-                                <th>Nombre</th>
-                                <th>Cargo</th>
-                                <th>Numero de Oficinas</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usuariosTableBody">
-                            <?php if(isset($usuarios['success']) && $usuarios['success'] && !empty($usuarios['data'])): ?>
-                                <?php foreach($usuarios['data'] as $usuario): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($usuario['id_usuario']) ?></td>
-                                        <td><?= htmlspecialchars($usuario['cedula']) ?></td>
-                                        <td><?= htmlspecialchars($usuario['nombre']) ?></td>
-                                        <td><?= $usuario['nombre_cargo']?></td>
-                                        <td>
-                                            <div class="office-info">
-                                                <span class="office-name"><?= htmlspecialchars($usuario['cantidad_oficinas_afiliadas'])?></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <?php if(isset($_SESSION['id']) && $_SESSION['id'] == $usuario['id_usuario']): ?>
-                                                <button class="btn-delete" disabled title="No puedes eliminar tu propia cuenta">
-                                                    <i data-lucide="trash-2" class="btn-icon"></i>
-                                                    <span>Eliminar</span>
-                                                </button>
-                                            <?php else: ?>
-                                                <button class="btn-delete" onclick="eliminarUsuario(<?= $usuario['id_usuario'] ?>, '<?= htmlspecialchars($usuario['nombre']) ?>')">
-                                                    <i data-lucide="trash-2" class="btn-icon"></i>
-                                                    <span>Eliminar</span>
-                                                </button>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="6" class="no-data">
-                                        <i data-lucide="users-round" class="no-data-icon"></i>
-                                        <p>No hay usuarios registrados</p>
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Pagination Navigation -->
-                <div class="pagination-controls-bottom">
-                    <nav class="pagination-nav" aria-label="Paginación de usuarios">
-                        <button class="pagination-btn" id="prevPage" aria-label="Página anterior">
-                            <i data-lucide="chevron-left" class="pagination-icon"></i>
-                        </button>
-                        <div class="pagination-numbers" id="paginationNumbers">
-                            <!-- Los números de página se generarán dinámicamente -->
-                        </div>
-                        <button class="pagination-btn" id="nextPage" aria-label="Página siguiente">
-                            <i data-lucide="chevron-right" class="pagination-icon"></i>
-                        </button>
-                    </nav>
-                </div>
-=======
             <section class="mostrar-usuarios">
                 <h3><i class="fas fa-users"></i> Lista de Usuarios</h3>
                 <table>
@@ -727,7 +550,6 @@
                         <?php endif; ?>
                     </tbody>
                 </table>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
             </section>
         </main>
     </div>
@@ -858,12 +680,6 @@
         let usuarios = <?= json_encode($usuarios['data'] ?? []) ?>;
         let checkboxes = document.querySelectorAll("input[name='categorias[]']");
 
-<<<<<<< HEAD
-        document.getElementById("formAgregarUsuario").addEventListener("submit", function(e) {
-            enviarOficinas();
-        });
-=======
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
         // Función para enviar oficinas al agregar usuario
         function enviarOficinas() {
             const categoriasSeleccionadas = [];
@@ -1061,11 +877,7 @@
             
             // Obtener oficinas seleccionadas
             const oficinasSeleccionadas = [];
-<<<<<<< HEAD
-            const checkboxes = document.querySelectorAll('#usuarioForm input[name="categorias[]"]:checked');
-=======
             const checkboxes = document.querySelectorAll('#usuarioForm input[name="oficinas[]"]:checked');
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
             checkboxes.forEach(checkbox => {
                 oficinasSeleccionadas.push(checkbox.value);
             });
@@ -1086,10 +898,6 @@
             }
             
             formData.append('oficinas_seleccionadas', JSON.stringify(oficinasSeleccionadas));
-<<<<<<< HEAD
-            console.log('HEY:', formData.get('oficinas_seleccionadas'))
-=======
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
             
             if (isEdit) {
                 formData.append('id_usuario', usuarioId);

@@ -57,7 +57,7 @@ class SolicitudesController extends AdminController
                     'success' => true,
                     'message' => '¡Exito al guardar la solicitud!'
                 ]);
-        } 
+        }
         else {
             echo json_encode([
                     'success' => false,

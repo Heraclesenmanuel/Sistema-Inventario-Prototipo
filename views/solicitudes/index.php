@@ -49,13 +49,13 @@
                         <option value="Aprobado">Aprobado</option>
                         <option value="En Revisión">En Revisión</option>
                         <option value="Rechazado">Rechazado</option>
-                        <option value="Aprobado">Rechazado</option>
                     </select>
                     <?php else: ?>
                         <select id="statusFilter" class="filter-select" aria-label="Filtrar por estado">
                         <option value="">Todos los estados</option>
                         <option value="En Revisión">Aprobado</option>
                         <option value="Aprobado">Rechazado</option>
+                        <option value="En Revisión">En Revisión</option>
                     </select>
                     <?php endif; ?>
                 </div>
@@ -87,7 +87,7 @@
                                         <strong><?= htmlspecialchars($solicitud['nombre_solicitante']) ?></strong>
                                     </td>
                                     <td><?= htmlspecialchars($solicitud['nombre_oficina']) ?></td>
-                                    <td><?= htmlspecialchars($solicitud['fecha_deseo']) ?></td>
+                                    <td><?php echo date('d/m/Y', strtotime(($solicitud['fecha_deseo'])));?></td>
 
                                     <td>
                                         <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $solicitud['estado'])) ?>">
@@ -1016,7 +1016,7 @@
                                 <strong>Estado:</strong> <span class="status-badge status-${(solicitud.estado || '').toLowerCase()}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block;">${solicitud.estado || 'N/A'}</span>
                             </div>
                             <div class="detalle-item" style="margin-bottom: 15px;">
-                                <strong>Fecha de creación:</strong> ${solicitud.fecha_solic || 'N/A'}
+                                <strong>Fecha de creación:</strong> ${solicitud.fecha_solic.split(' ')[0] || 'N/A'}
                             </div>
                     `;
                     // Mostrar productos si existen
