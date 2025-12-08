@@ -20,6 +20,7 @@ class SolicitudesController extends AdminController
 
         if (isset($_POST['departamento'])) {
             $this->agregarSolic();
+            header('Location: ?action=solicitudes&method=home');
         }
         require_once 'views/solicitudes/index.php';
     }
@@ -40,10 +41,7 @@ class SolicitudesController extends AdminController
         
         $productos = $this->procesarProds();
         if (empty($datosSolic['oficina']) && empty($productos[0]['nombre'])){
-            echo json_encode([
-                    'success' => false,
-                    'message' => 'El nombre del producto no puede estar vacío'
-                ]);
+            return false;
         } 
         else if ($edit)
         {
@@ -53,17 +51,12 @@ class SolicitudesController extends AdminController
             }
         } 
         else if ($this->solicitudes->guardarSolicitud($datosSolic) && $this->solicitudes->guardarProds($productos)) {
-            echo json_encode([
-                    'success' => true,
-                    'message' => '¡Exito al guardar la solicitud!'
-                ]);
+            return true;
         }
         else {
-            echo json_encode([
-                    'success' => false,
-                    'message' => 'Error al guardar la solicitud. Intente nuevamente.'
-                ]);
+            return false;
         }
+        exit();
     }
     public function procesarProds() {
         $nombres = $_POST['nombre_producto'] ?? [];
@@ -138,7 +131,6 @@ class SolicitudesController extends AdminController
                     'success' => false,
                     'message' => 'Método no permitido'
                 ]);
-                return;
             }
             // Obtener datos del POST
             $idSolicitud = $_POST['id_solicitud'] ?? null;
@@ -151,7 +143,6 @@ class SolicitudesController extends AdminController
                     'success' => false,
                     'message' => 'Datos incompletos'
                 ]);
-                return;
             }
             
             // Validar estado permitido
@@ -161,11 +152,10 @@ class SolicitudesController extends AdminController
                     'success' => false,
                     'message' => 'Estado no válido'
                 ]);
-                return;
             }
             $actualizado = $this->solicitudes->actualizarEstadoSolicitud($idSolicitud, $nuevoEstado, $motivo);
 
-            if ($actualizado) {                
+            if ($actualizado) {            
                 echo json_encode([
                     'success' => true,
                     'message' => 'Solicitud colocada ' . strtolower($nuevoEstado) . ' correctamente'
@@ -263,18 +253,19 @@ class SolicitudesController extends AdminController
             if ($this->agregarSolic(true)) {
                 if (isset($_POST['nuevo_estado'])) {
                     $this->cambiarEstado();
-                    exit; // corta aquí para no enviar nada más
+                    exit();
                 }
                 else
                 {
                     echo json_encode(['success' => true, 'message' => '¡Se ha actualizado su solicitud!']);
+                    exit();
                 }
             }
-            // Si no entra en el if, devuelve algo por defecto
-            echo json_encode(['success' => false, 'message' => 'No se pudo actualizar']);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
         }
-        exit;
+            // Si no entra en el if, devuelve algo por defecto
+        echo json_encode(['success' => false, 'message' => 'No se pudo actualizar']);
+        exit();
     }
 }

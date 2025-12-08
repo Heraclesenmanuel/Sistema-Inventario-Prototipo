@@ -17,12 +17,25 @@ class Solicitud extends Base{
         return $stmt->affected_rows;
     }
     public function obtenerSolicitudes(){
-        $sql = 'SELECT s.*, u.nombre AS nombre_solicitante, f.nombre AS nombre_oficina
+        if($_SESSION['dpto'] === 3)
+        {
+            $sql_extra = 'WHERE estado ="Pendiente"';
+        }
+        else if($_SESSION['dpto'] === 4)
+        {
+            $sql_extra = 'WHERE estado ="En Revisión"';
+        }
+        else
+        {
+            $sql_extra = 'WHERE s.id_solicitante = '. $_SESSION["id"];
+        }
+            $sql = 'SELECT s.*, u.nombre AS nombre_solicitante, f.nombre AS nombre_oficina
                 FROM solicitud s
                 LEFT JOIN usuario u 
                     ON s.id_solicitante = u.id_usuario
                 LEFT JOIN oficina f 
-                    ON s.num_oficina = f.num_oficina
+                    ON s.num_oficina = f.num_oficina ' .
+                $sql_extra . '
                 ORDER BY s.fecha_solic DESC;
                 ';
         $resultado = $this->db->query($sql);

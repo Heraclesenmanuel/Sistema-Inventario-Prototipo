@@ -194,10 +194,16 @@
     border: 1px solid #FFE0B2;
 }
 
-.status-aprobado, .status-en-revisión, .status-en_revisión {
+.status-aprobado {
     background-color: #E8F5E9;
     color: #2E7D32;
     border: 1px solid #C8E6C9;
+}
+.status-en-revisión, .status-en_revisión
+{
+    background-color: #e8f0f5;
+    color: #2e6d7d;
+    border: 1px solid #c8e4e6;
 }
 
 .status-rechazado {
@@ -235,6 +241,7 @@
 .btn-action.approve:hover { color: var(--verde-esmeralda); background-color: #E8F5E9; }
 .btn-action.reject:hover { color: var(--rojo-vibrante); background-color: #FFEBEE; }
 .btn-action.view:hover { color: var(--azul-anil); background-color: #E8EAF6; }
+
 
 /* --- Pagination Footer --- */
 .pagination-container {

@@ -42,22 +42,16 @@
                 
                 <div class="filter-group">
                     <label for="statusFilter" class="filter-label">Filtrar por estado:</label>
-                    <?php if ($_SESSION['dpto'] != 4): ?>
                     <select id="statusFilter" class="filter-select" aria-label="Filtrar por estado">
+                    <?php if ($_SESSION['dpto'] != 4) :?>
                         <option value="">Todos los estados</option>
                         <option value="Pendiente">Pendiente</option>
                         <option value="Aprobado">Aprobado</option>
-                        <option value="En Revisión">En Revisión</option>
                         <option value="Rechazado">Rechazado</option>
-                    </select>
                     <?php else: ?>
-                        <select id="statusFilter" class="filter-select" aria-label="Filtrar por estado">
-                        <option value="">Todos los estados</option>
-                        <option value="En Revisión">Aprobado</option>
-                        <option value="Aprobado">Rechazado</option>
                         <option value="En Revisión">En Revisión</option>
-                    </select>
                     <?php endif; ?>
+                    </select>
                 </div>
             </div>
 
@@ -94,8 +88,9 @@
                                             <?php 
                                             // Icono según estado
                                             $iconName = 'clock';
-                                            if($solicitud['estado'] === 'En Revisión') $iconName = 'check-circle';
+                                            if($solicitud['estado'] === 'En Revisión') $iconName = 'pencil';
                                             if($solicitud['estado'] === 'Rechazado') $iconName = 'x-circle';
+                                            if($solicitud['estado'] === 'Aprobado') $iconName = 'check-circle';
                                             ?>
                                             <i data-lucide="<?= $iconName ?>" style="width:14px; height:14px;"></i>
                                             <?= htmlspecialchars($solicitud['estado']) ?>
@@ -104,13 +99,15 @@
                                     <td>
                                         <div class="action-buttons">
                                             <?php if($solicitud['estado'] === 'Pendiente'): ?>
-                                                <button type="button" class="btn-action approve" 
-                                                        onclick="aprobarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
+                                                <button type="button" class=<?php if($_SESSION['dpto'] == 4):?>"btn-action approve" 
+                                                                            <?php else: ?>"btn-action edit" 
+                                                                            <?php endif; ?>
+                                                        onclick="editarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
                                                         data-tippy-content="Aprobar">
                                                     <i data-lucide="check"></i>
                                                 </button>
                                                 <button type="button" class="btn-action reject" 
-                                                        onclick="rechazarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
+                                                        onclick='verDetallesSolicitud(<?= json_encode($solicitudes) ?>, <?= (int)$solicitud["id_solicitud"] ?>)'
                                                         data-tippy-content="Rechazar">
                                                     <i data-lucide="x"></i>
                                                 </button>
@@ -311,7 +308,289 @@
     // Variable global para productos (convertir PHP a JavaScript)
     const productosData = <?= json_encode($productos['data'] ?? []) ?>;
     const solicitudesData = <?= json_encode($solicitudes) ?>;
-    const userRol = <?= json_encode($_SESSION['dpto'] ?? '') ?>;    
+    const userRol = <?= json_encode($_SESSION['dpto'] ?? '') ?>;
+    
+    // Variables para paginación y filtrado
+    let currentPage = 1;
+    let entriesPerPage = 10;
+    let filteredSolicitudes = [...solicitudesData];
+    
+    // Inicializar filtros y paginación al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        updateProductsCounter();
+        initializeFilters();
+        updateTable();
+    });
+    
+    // Inicializar filtros
+    function initializeFilters() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const entriesPerPageSelect = document.getElementById('entriesPerPage');
+        
+        // Filtrar al escribir en la búsqueda
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                applyFilters();
+            });
+        }
+        
+        // Filtrar al cambiar estado
+        if (statusFilter) {
+            statusFilter.addEventListener('change', function() {
+                applyFilters();
+            });
+        }
+        
+        // Cambiar cantidad de registros por página
+        if (entriesPerPageSelect) {
+            entriesPerPageSelect.addEventListener('change', function() {
+                entriesPerPage = parseInt(this.value);
+                currentPage = 1; // Volver a la primera página
+                updateTable();
+            });
+        }
+    }
+    
+    // Aplicar todos los filtros
+    function applyFilters() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const statusFilterValue = document.getElementById('statusFilter').value;
+        
+        // Filtrar solicitudes
+        filteredSolicitudes = solicitudesData.filter(solicitud => {
+            let matches = true;
+            
+            // Filtrar por búsqueda (solicitante u oficina)
+            if (searchTerm) {
+                const searchInSolicitante = solicitud.nombre_solicitante?.toLowerCase().includes(searchTerm);
+                const searchInOficina = solicitud.nombre_oficina?.toLowerCase().includes(searchTerm);
+                matches = matches && (searchInSolicitante || searchInOficina);
+            }
+            
+            // Filtrar por estado
+            if (statusFilterValue) {
+                matches = matches && (solicitud.estado === statusFilterValue);
+            }
+            
+            return matches;
+        });
+        
+        currentPage = 1; // Volver a la primera página
+        updateTable();
+    }
+    
+    // Actualizar la tabla con los datos filtrados
+    // Actualizar la tabla con los datos filtrados
+    function updateTable() {
+        const tableBody = document.getElementById('requestsTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const paginationInfo = document.getElementById('paginationInfo');
+        const showingText = document.getElementById('showingText');
+        const paginationButtons = document.getElementById('paginationButtons');
+        let icono_edit = "check";
+        if(userRol != 4){ icono_edit="pencil" }
+
+        if (!tableBody || filteredSolicitudes.length === 0) {
+            // Mostrar estado vacío
+            if (tableBody) tableBody.innerHTML = '';
+            if (emptyState) emptyState.style.display = 'flex';
+            if (showingText) showingText.textContent = 'Mostrando 0-0 de 0';
+            if (paginationButtons) paginationButtons.innerHTML = '';
+            return;
+        }
+        
+        // Ocultar estado vacío
+        if (emptyState) emptyState.style.display = 'none';
+        
+        // Calcular índices de paginación
+        const totalItems = filteredSolicitudes.length;
+        const totalPages = Math.ceil(totalItems / entriesPerPage);
+        const startIndex = (currentPage - 1) * entriesPerPage;
+        const endIndex = Math.min(startIndex + entriesPerPage, totalItems);
+        
+        // Obtener los elementos para la página actual
+        const currentPageItems = filteredSolicitudes.slice(startIndex, endIndex);
+        
+        // Generar HTML para la tabla
+        let tableHTML = '';
+        
+        currentPageItems.forEach(solicitud => {
+            // Determinar icono según estado
+            let iconName = 'clock';
+            if (solicitud.estado === 'En Revisión') iconName = 'pencil';
+            if (solicitud.estado === 'Rechazado') iconName = 'x-circle';
+            if (solicitud.estado === 'Aprobado') iconName = 'check-circle';
+            
+            // Formatear fecha
+            const fechaFormateada = solicitud.fecha_deseo ? 
+                new Date(solicitud.fecha_deseo).toLocaleDateString('es-ES') : 'N/A';
+                
+            // IMPORTANTE: Usar una función para manejar el click
+            tableHTML += `
+                <tr data-status="${solicitud.estado || ''}" 
+                    data-id="${solicitud.id_solicitud || ''}"
+                    class="request-row">
+                    <td>
+                        <strong>${solicitud.nombre_solicitante || 'N/A'}</strong>
+                    </td>
+                    <td>${solicitud.nombre_oficina || 'N/A'}</td>
+                    <td>${fechaFormateada}</td>
+                    <td>
+                        <span class="status-badge status-${(solicitud.estado || '').toLowerCase().replace(' ', '-')}">
+                            <i data-lucide="${iconName}" style="width:14px; height:14px;"></i>
+                            ${solicitud.estado || 'N/A'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            ${solicitud.estado === 'Pendiente' ? `
+                                <button type="button" class="btn-action approve" 
+                                        onclick="editarSolicitud(${solicitud.id_solicitud})"
+                                        data-tippy-content="Aprobar">
+                                    <i data-lucide="${icono_edit}"></i>
+                                </button>
+                                <button type="button" class="btn-action reject" 
+                                        onclick="rechazarSolicitud(${solicitud.id_solicitud})"
+                                        data-tippy-content="Rechazar">
+                                    <i data-lucide="x"></i>
+                                </button>
+                            ` : ''}
+                            <button type="button" class="btn-action view" 
+                                    onclick="verDetallesSolicitudFiltrada(${solicitud.id_solicitud})"
+                                    data-tippy-content="Ver Detalles">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tableBody.innerHTML = tableHTML;
+        
+        // Actualizar información de paginación
+        if (showingText) {
+            showingText.textContent = `Mostrando ${startIndex + 1}-${endIndex} de ${totalItems}`;
+        }
+        
+        // Generar botones de paginación
+        if (paginationButtons) {
+            paginationButtons.innerHTML = generatePaginationButtons(totalPages);
+        }
+        
+        // Activar iconos de Lucide
+        lucide.createIcons();
+    }
+        // Nueva función para ver detalles de solicitudes filtradas
+    function verDetallesSolicitudFiltrada(idSolicitud) {
+        // Encontrar la solicitud en los datos filtrados
+        const solicitud_seleccionada = filteredSolicitudes.find(s => s.id_solicitud == idSolicitud);
+        
+        if (!solicitud_seleccionada) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se encontró la solicitud en los datos filtrados'
+            });
+            return;
+        }
+        
+        verDetallesSolicitud(filteredSolicitudes, idSolicitud);
+    }
+    
+    // Generar botones de paginación
+    function generatePaginationButtons(totalPages) {
+        if (totalPages <= 1) return '';
+        
+        let buttons = '';
+        
+        // Botón anterior
+        buttons += `
+            <button class="pagination-btn ${currentPage === 1 ? 'disabled' : ''}" 
+                    ${currentPage === 1 ? 'disabled' : ''}
+                    onclick="changePage(${currentPage - 1})">
+                <i data-lucide="chevron-left"></i>
+            </button>
+        `;
+        
+        // Botones de páginas
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Ajustar si estamos cerca del final
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        // Página 1
+        if (startPage > 1) {
+            buttons += `
+                <button class="pagination-btn" onclick="changePage(1)">1</button>
+                ${startPage > 2 ? '<span class="pagination-ellipsis">...</span>' : ''}
+            `;
+        }
+        
+        // Páginas intermedias
+        for (let i = startPage; i <= endPage; i++) {
+            buttons += `
+                <button class="pagination-btn ${i === currentPage ? 'active' : ''}" 
+                        onclick="changePage(${i})">
+                    ${i}
+                </button>
+            `;
+        }
+        
+        // Última página
+        if (endPage < totalPages) {
+            buttons += `
+                ${endPage < totalPages - 1 ? '<span class="pagination-ellipsis">...</span>' : ''}
+                <button class="pagination-btn" onclick="changePage(${totalPages})">
+                    ${totalPages}
+                </button>
+            `;
+        }
+        
+        // Botón siguiente
+        buttons += `
+            <button class="pagination-btn ${currentPage === totalPages ? 'disabled' : ''}" 
+                    ${currentPage === totalPages ? 'disabled' : ''}
+                    onclick="changePage(${currentPage + 1})">
+                <i data-lucide="chevron-right"></i>
+            </button>
+        `;
+        
+        return buttons;
+    }
+    
+    // Cambiar de página
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredSolicitudes.length / entriesPerPage);
+        
+        if (page < 1 || page > totalPages || page === currentPage) {
+            return;
+        }
+        
+        currentPage = page;
+        updateTable();
+        
+        // Hacer scroll suave hacia la parte superior de la tabla
+        document.querySelector('.table-container').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }
+    
+    // Función para actualizar paginación (llamada desde el select)
+    function updatePagination() {
+        const select = document.getElementById('entriesPerPage');
+        if (select) {
+            entriesPerPage = parseInt(select.value);
+            currentPage = 1;
+            updateTable();
+        }
+    }
     // Funciones básicas para el modal
     function openModal(mode = 'add') {
         const modal = document.getElementById('requestModal');
@@ -398,7 +677,6 @@
             });
             
             // Encontrar la solicitud en los datos locales
-            console.log(solicitudesData)
             const solicitudLocal = solicitudesData.find(s => s.id_solicitud == solicitudId);
             
             if (!solicitudLocal) {
@@ -410,9 +688,6 @@
                 });
                 return;
             }
-
-            const clone = template.cloneNode(true);
-            const newIndex = currentCount; // Simple increment
             
             // Crear el body con los datos que espera el backend
             const body = new URLSearchParams();
@@ -573,6 +848,11 @@
             if(userRol == 4)
             {
                 formData.append('nuevo_estado', 'Aprobado')
+                formData.append('id_solicitud', formData.get('request_id'))
+            }
+            else if(userRol == 3)
+            {
+                formData.append('nuevo_estado', 'En Revisión')
                 formData.append('id_solicitud', formData.get('request_id'))
             }
             // Agregar productos al FormData
