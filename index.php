@@ -98,46 +98,7 @@ function crearBaseDeDatos($datosIniciales) {
                 ('305', 'Consejeria/Orientacion', '25000423', '04165348900'), 
                 ('205', 'Servicios Generales', '25000423', '04165348900')
                 ",
-<<<<<<< HEAD
             // Tabla usuario
-=======
-            /* Tabla cuentascobrar
-            "DROP TABLE IF EXISTS `cuentascobrar`;",
-            "CREATE TABLE `cuentascobrar` (
-                `id_historial` int NOT NULL AUTO_INCREMENT,
-                `fecha` date NOT NULL,
-                `cliente` varchar(100) NOT NULL,
-                `tipo_pago` varchar(100) NOT NULL,
-                `tipo_venta` varchar(100) NOT NULL,
-                `total_usd` decimal(10,2) NOT NULL,
-                `productos_vendidos` json NOT NULL,
-                PRIMARY KEY (`id_historial`)
-            )",
-
-             Tabla historial
-            "DROP TABLE IF EXISTS `historial`;",
-            "CREATE TABLE `historial` (
-                `id_historial` int NOT NULL AUTO_INCREMENT,
-                `fecha` date NOT NULL,
-                `cliente` varchar(100) NOT NULL,
-                `tipo_pago` varchar(100) NOT NULL,
-                `tipo_venta` varchar(100) NOT NULL,
-                `total_usd` decimal(10,2) NOT NULL,
-                `productos_vendidos` json NOT NULL,
-                PRIMARY KEY (`id_historial`)
-            )",*/
-            "DROP TABLE IF EXISTS `rol_usuario`;",
-            "CREATE TABLE `rol_usuario` (
-                `id_cargo` int(11) NOT NULL AUTO_INCREMENT,
-                `nombre` varchar(100) NOT NULL,
-                PRIMARY KEY(`id_cargo`)
-            )",
-            "INSERT INTO rol_usuario VALUES
-            (1, 'Administrador'),
-            (2, 'Usuario'),
-            (3, 'Cuentas'),
-            (4, 'Presupuesto')",
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
             "DROP TABLE IF EXISTS `usuario`;",
             "CREATE TABLE `usuario` (
                 `id_usuario` int(11) NOT NULL AUTO_INCREMENT,

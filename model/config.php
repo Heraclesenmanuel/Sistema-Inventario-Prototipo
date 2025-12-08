@@ -142,24 +142,16 @@ class Config extends Base{
         }
     }
     private function addOficinasUsuario($id_usuario, $oficinas)
-<<<<<<< HEAD
     {   
         if(empty($oficinas))
         {
             return false;
         }
-=======
-    {
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
         $query = "INSERT INTO ofic_usuario VALUES (?, ?)";
         $stmt = $this->db->prepare($query);
         foreach($oficinas as $oficina)
         {
-<<<<<<< HEAD
             $num_ofic = $oficina;
-=======
-            $num_ofic = intval($oficina);
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
             $stmt->bind_param('si', $num_ofic, $id_usuario);
             $resultado = $stmt->execute();
             if (!$resultado) {

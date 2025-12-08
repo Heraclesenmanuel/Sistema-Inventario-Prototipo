@@ -74,7 +74,6 @@
 
             <!-- Table -->
             <div class="table-container">
-<<<<<<< HEAD
                 <table class="requests-table" id="requestsTable">
                     <thead>
                         <tr>
@@ -134,103 +133,6 @@
                                             </button>
                                         </div>
                                     </td>
-=======
-                <div class="table-responsive">
-                    <table class="requests-table" id="requestsTable" aria-label="Lista de solicitudes">
-                        <thead>
-                            <tr>
-                                <th scope="col">Solicitante</th>
-                                <th scope="col">Oficina de Destino</th>
-                                <th scope="col">Fecha deseada</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="requestsTableBody">
-                            <?php 
-                            $solicitudes = !empty($solicitudes) ? $solicitudes : [];
-
-                            ?>
-                            
-                            <?php if($cant_solicts_no_en_rev > 0): ?>
-                                <?php foreach($solicitudes as $solicitud): ?>
-                                    <tr data-status="<?= htmlspecialchars($solicitud['estado']) ?>" 
-                                        data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>">
-                                        <td><?= htmlspecialchars($solicitud['nombre_solicitante']) ?></td>
-                                        <td><?= htmlspecialchars($solicitud['nombre_oficina']) ?></td>
-                                        <td><?= htmlspecialchars($solicitud['fecha_deseo']) ?></td>
-
-                                        <td>
-                                            <span class="status-badge status-<?= strtolower($solicitud['estado']) ?>">
-                                                <?= htmlspecialchars($solicitud['estado']) ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <?php if($solicitud['estado'] === 'Pendiente' && $_SESSION['dpto'] == 3): ?>
-                                                    <?php if($_SESSION['dpto'] === 3) : ?>
-                                                        <button type="button" class="btn-action view" onclick="aprobarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
-                                                                data-action="approve" 
-                                                                data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
-                                                                aria-label="Verificar solicitud">
-                                                            <i class="fas fa-check"></i>
-                                                            <span>Verificar</span>
-                                                        </button>
-                                                    <?php endif; ?>
-                                                <?php else: ?>
-                                                    <?php if($_SESSION['dpto']!=4)
-                                                        {
-                                                            $aria_label = "Editar solicitud";
-                                                            $span = "Editar";
-                                                        }
-                                                        ?> 
-                                                    <?php if($_SESSION['dpto']!=3 && $_SESSION['dpto']!=4 && ($solicitud['estado'] =="Rechazado" || $solicitud['estado'] == "Pendiente")): ?>
-                                                    <button type="button" class="btn-action approve"
-                                                                onclick="editarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
-                                                                data-action="edit"
-                                                                data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
-                                                                aria-label="<?php echo $aria_label ?? "Aprobar solicitud" ?>">
-                                                            <i class="fas fa-cash-register"></i>
-                                                            <span><?php echo $span ?? "Aprobar" ?></span>
-                                                        </button>
-                                                    <?php elseif($_SESSION['dpto']==4): ?>
-                                                        <button type="button" class="btn-action approve"
-                                                                onclick="editarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
-                                                                data-action="edit"
-                                                                data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
-                                                                aria-label="<?php echo $aria_label ?? "Aprobar solicitud" ?>">
-                                                            <i class="fas fa-cash-register"></i>
-                                                            <span><?php echo $span ?? "Aprobar" ?></span>
-                                                        </button>
-                                                    <?php endif; ?>
-                                                    <?php if($solicitud['estado'] !== 'Rechazado'): ?>
-                                                    <button type="button" class="btn-action reject" 
-                                                            onclick="rechazarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
-                                                            data-action="reject"
-                                                            data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
-                                                            aria-label="Rechazar solicitud">
-                                                        <i class="fas fa-times"></i>
-                                                        <span>Rechazar</span>
-                                                    </button>
-                                                    <?php endif; ?>
-                                                <?php endif; ?>
-                                                <?php if($_SESSION['dpto'] !== 4) : ?>
-                                                    <button type="button" class="btn-action edit" 
-                                                            onclick='verDetallesSolicitud(<?= json_encode($solicitudes) ?>, <?= (int)$solicitud["id_solicitud"] ?>)'
-                                                            data-action="view"
-                                                            aria-label="Ver detalles de solicitud">
-                                                        <i class="fas fa-eye"></i>
-                                                        <span>Ver</span>
-                                                    </button>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="6" class="text-center no-data">No hay solicitudes disponibles</td>
->>>>>>> d42897694361fe8c2147c1b73232393344293c4d
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
