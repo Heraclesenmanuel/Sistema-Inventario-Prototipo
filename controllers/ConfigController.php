@@ -56,6 +56,7 @@
         {
             if (isset($_POST['bandera_cambiar_clave']))
             {
+                $clave_en_bd = $this->getM();
                 $actual = trim($_POST['clave_actual']);
                 $nueva = trim($_POST['clave_nueva']);
                 $confirmar = trim($_POST['confirmar_clave']);
@@ -69,8 +70,8 @@
                 }
 
                 // Verificar la clave actual con la constante APP_Password
-                if ($actual !== APP_Password) {
-                    $_SESSION['mensaje'] = 'La clave actual es incorrecta';
+                if ($actual !== $clave_en_bd['claveSuper']) {
+                    $_SESSION['mensaje'] = 'La clave actual es incorrecta ' . $clave_en_bd['claveSuper'];
                     $_SESSION['tipo_mensaje'] = 'error';
                     header('Location: ?action=config&method=home');
                     exit();
@@ -96,8 +97,14 @@
                 $correo = trim($_POST['correo']);
                 $id_cargo = (int)$_POST['id_cargo'];
                 $oficinas = json_decode($_POST['oficinas_seleccionadas'], true);
+                $clave_super = null;
+                if(isset($_POST['clave_Super']))
+                {
+                    $clave_super = trim($_POST['clave_Super']);
+                }
 
-                $resultado = $this->config->addUsuario($cedula, $nombre, $clave, $id_cargo, $correo, $oficinas);
+                $resultado = $this->config->addUsuario($cedula, $nombre, $clave, $id_cargo, $correo, $oficinas, $claveSuper=$clave_super);
+
                 $_SESSION['mensaje'] = $resultado['message'];
                 $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
                 
@@ -162,6 +169,23 @@
             }   
             catch(Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
+            }
+        }
+        public function getM()
+        {
+            try 
+            {
+                $clave = $this->config->verif();
+                if($clave) {
+                    return $clave;
+                } else {
+                   error_log('Clave no encontrada');
+                   return false;
+                }
+            }   
+            catch(Exception $e) {
+                error_log('Error en el servidor');
+                return false;
         }
     }
 }

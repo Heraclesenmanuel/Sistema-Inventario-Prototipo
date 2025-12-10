@@ -43,16 +43,53 @@
                 <div class="filter-group">
                     <label for="statusFilter" class="filter-label">Filtrar por estado:</label>
                     <select id="statusFilter" class="filter-select" aria-label="Filtrar por estado">
-                    <?php if ($_SESSION['dpto'] != 4) :?>
+                    <?php if ($_SESSION['dpto'] != 4 && $_SESSION['dpto'] != 3) :?>
                         <option value="">Todos los estados</option>
                         <option value="Pendiente">Pendiente</option>
                         <option value="Aprobado">Aprobado</option>
                         <option value="Rechazado">Rechazado</option>
                     <?php else: ?>
-                        <option value="En Revisión">En Revisión</option>
+                        <?php if($_SESSION['dpto'] == 4): ?>
+                            <option value="En Revisión">En Revisión</option>
+                        <?php else: ?>
+                            <option value="Pendiente">Pendiente</option>
+                        <?php endif; ?>
                     <?php endif; ?>
                     </select>
                 </div>
+                
+                <!-- Filtro de oficina (solo para dpto != 4) -->
+                <?php if($_SESSION['dpto'] != 4): ?>
+                <div class="filter-group">
+                    <label for="oficinaFilter" class="filter-label">Filtrar por oficina:</label>
+                    <select id="oficinaFilter" class="filter-select" aria-label="Filtrar por oficina">
+                        <option value="">Todas las oficinas</option>
+                        <?php if(isset($oficinas['success']) && $oficinas['success'] && !empty($oficinas['data'])): ?>
+                            <?php foreach($oficinas['data'] as $oficina): ?>
+                                <option value="<?php echo $oficina['num_oficina']?>"><?php echo htmlspecialchars($oficina['nombre'])?></option>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <option value="313">Biblioteca</option>
+                            <option value="212">Informatica</option>
+                            <option value="143">Cuentas</option>
+                            <option value="204">Deportes</option>
+                            <option value="305">Consejeria/Orientacion</option>
+                            <option value="205">Servicios Generales</option>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                <?php endif; ?>
+                
+                <!-- Filtro Propias/Todas (solo para dpto != 3 y != 4) -->
+                <?php if($_SESSION['dpto'] != 3 && $_SESSION['dpto'] != 4): ?>
+                <div class="filter-group">
+                    <label for="tipoSolicitudFilter" class="filter-label">Mostrar:</label>
+                    <select id="tipoSolicitudFilter" class="filter-select" aria-label="Filtrar tipo de solicitud">
+                        <option value="todas">Todas las solicitudes</option>
+                        <option value="propias">Mis solicitudes</option>
+                    </select>
+                </div>
+                <?php endif; ?>
             </div>
 
             <!-- Table -->
@@ -68,64 +105,11 @@
                         </tr>
                     </thead>
                     <tbody id="requestsTableBody">
-                        <?php 
-                        $solicitudes = !empty($solicitudes) ? $solicitudes : [];
-                        ?>
-                        
-                        <?php if(!empty($solicitudes)): ?>
-                            <?php foreach($solicitudes as $solicitud): ?>
-                                <tr data-status="<?= htmlspecialchars($solicitud['estado']) ?>" 
-                                    data-id="<?= htmlspecialchars($solicitud['id_solicitud']) ?>"
-                                    class="request-row">
-                                    <td>
-                                        <strong><?= htmlspecialchars($solicitud['nombre_solicitante']) ?></strong>
-                                    </td>
-                                    <td><?= htmlspecialchars($solicitud['nombre_oficina']) ?></td>
-                                    <td><?php echo date('d/m/Y', strtotime(($solicitud['fecha_deseo'])));?></td>
-
-                                    <td>
-                                        <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $solicitud['estado'])) ?>">
-                                            <?php 
-                                            // Icono según estado
-                                            $iconName = 'clock';
-                                            if($solicitud['estado'] === 'En Revisión') $iconName = 'pencil';
-                                            if($solicitud['estado'] === 'Rechazado') $iconName = 'x-circle';
-                                            if($solicitud['estado'] === 'Aprobado') $iconName = 'check-circle';
-                                            ?>
-                                            <i data-lucide="<?= $iconName ?>" style="width:14px; height:14px;"></i>
-                                            <?= htmlspecialchars($solicitud['estado']) ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <?php if($solicitud['estado'] === 'Pendiente'): ?>
-                                                <button type="button" class=<?php if($_SESSION['dpto'] == 4):?>"btn-action approve" 
-                                                                            <?php else: ?>"btn-action edit" 
-                                                                            <?php endif; ?>
-                                                        onclick="editarSolicitud(<?= htmlspecialchars($solicitud['id_solicitud']) ?>)"
-                                                        data-tippy-content="Aprobar">
-                                                    <i data-lucide="check"></i>
-                                                </button>
-                                                <button type="button" class="btn-action reject" 
-                                                        onclick='verDetallesSolicitud(<?= json_encode($solicitudes) ?>, <?= (int)$solicitud["id_solicitud"] ?>)'
-                                                        data-tippy-content="Rechazar">
-                                                    <i data-lucide="x"></i>
-                                                </button>
-                                            <?php endif; ?>
-                                            <button type="button" class="btn-action view" 
-                                                    onclick='verDetallesSolicitud(<?= json_encode($solicitudes) ?>, <?= (int)$solicitud["id_solicitud"] ?>)'
-                                                    data-tippy-content="Ver Detalles">
-                                                <i data-lucide="eye"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                        <!-- La tabla se llenará dinámicamente con JavaScript -->
                     </tbody>
                 </table>
                 
-                <div id="emptyState" class="empty-state" style="display: <?= empty($solicitudes) ? 'flex' : 'none' ?>;">
+                <div id="emptyState" class="empty-state" style="display: none;">
                     <div class="empty-state-content">
                         <i class="fas fa-inbox empty-icon"></i>
                         <h3>No hay solicitudes</h3>
@@ -309,17 +293,19 @@
     const productosData = <?= json_encode($productos['data'] ?? []) ?>;
     const solicitudesData = <?= json_encode($solicitudes) ?>;
     const userRol = <?= json_encode($_SESSION['dpto'] ?? '') ?>;
+    const userId = <?= json_encode($_SESSION['id'] ?? '') ?>;
+    const oficinasData = <?= json_encode($oficinas['data'] ?? []) ?>;
     
     // Variables para paginación y filtrado
     let currentPage = 1;
     let entriesPerPage = 10;
-    let filteredSolicitudes = [...solicitudesData];
+    let filteredSolicitudes = [...solicitudesData]; // Copia de todas las solicitudes
     
     // Inicializar filtros y paginación al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
         updateProductsCounter();
         initializeFilters();
-        updateTable();
+        updateTable(); // ¡IMPORTANTE! Renderizar la tabla inicialmente
     });
     
     // Inicializar filtros
@@ -327,6 +313,8 @@
         const searchInput = document.getElementById('searchInput');
         const statusFilter = document.getElementById('statusFilter');
         const entriesPerPageSelect = document.getElementById('entriesPerPage');
+        const oficinaFilter = document.getElementById('oficinaFilter');
+        const tipoSolicitudFilter = document.getElementById('tipoSolicitudFilter');
         
         // Filtrar al escribir en la búsqueda
         if (searchInput) {
@@ -338,6 +326,20 @@
         // Filtrar al cambiar estado
         if (statusFilter) {
             statusFilter.addEventListener('change', function() {
+                applyFilters();
+            });
+        }
+        
+        // Filtrar por oficina (si existe el filtro)
+        if (oficinaFilter) {
+            oficinaFilter.addEventListener('change', function() {
+                applyFilters();
+            });
+        }
+        
+        // Filtrar por tipo de solicitud (propias/todas) (si existe el filtro)
+        if (tipoSolicitudFilter) {
+            tipoSolicitudFilter.addEventListener('change', function() {
                 applyFilters();
             });
         }
@@ -356,6 +358,18 @@
     function applyFilters() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const statusFilterValue = document.getElementById('statusFilter').value;
+        const oficinaFilter = document.getElementById('oficinaFilter');
+        const tipoSolicitudFilter = document.getElementById('tipoSolicitudFilter');
+        
+        const oficinaFilterValue = oficinaFilter ? oficinaFilter.value : '';
+        const tipoSolicitudValue = tipoSolicitudFilter ? tipoSolicitudFilter.value : '';
+        
+        console.log('Aplicando filtros:', { 
+            searchTerm, 
+            statusFilterValue, 
+            oficinaFilterValue, 
+            tipoSolicitudValue 
+        });
         
         // Filtrar solicitudes
         filteredSolicitudes = solicitudesData.filter(solicitud => {
@@ -373,27 +387,48 @@
                 matches = matches && (solicitud.estado === statusFilterValue);
             }
             
+            // Filtrar por oficina (solo si el filtro existe y hay valor)
+            if (oficinaFilterValue) {
+                matches = matches && (solicitud.num_oficina == oficinaFilterValue);
+            }
+            
+            // Filtrar por tipo de solicitud (propias/todas)
+            if (tipoSolicitudValue === 'propias') {
+                // Mostrar solo las solicitudes del usuario actual
+                matches = matches && (solicitud.id_solicitante == userId);
+            }
+            // Si es 'todas', no se aplica filtro adicional
+            
             return matches;
         });
+        
+        console.log('Solicitudes filtradas:', filteredSolicitudes.length);
         
         currentPage = 1; // Volver a la primera página
         updateTable();
     }
     
     // Actualizar la tabla con los datos filtrados
-    // Actualizar la tabla con los datos filtrados
     function updateTable() {
         const tableBody = document.getElementById('requestsTableBody');
         const emptyState = document.getElementById('emptyState');
-        const paginationInfo = document.getElementById('paginationInfo');
         const showingText = document.getElementById('showingText');
         const paginationButtons = document.getElementById('paginationButtons');
-        let icono_edit = "check";
-        if(userRol != 4){ icono_edit="pencil" }
-
-        if (!tableBody || filteredSolicitudes.length === 0) {
-            // Mostrar estado vacío
-            if (tableBody) tableBody.innerHTML = '';
+        
+        if (!tableBody) {
+            console.error('No se encontró el elemento requestsTableBody');
+            return;
+        }
+        
+        console.log('Actualizando tabla:', {
+            total: filteredSolicitudes.length,
+            currentPage: currentPage,
+            entriesPerPage: entriesPerPage
+        });
+        
+        // Si no hay solicitudes filtradas, mostrar estado vacío
+        if (filteredSolicitudes.length === 0) {
+            tableBody.innerHTML = '';
             if (emptyState) emptyState.style.display = 'flex';
             if (showingText) showingText.textContent = 'Mostrando 0-0 de 0';
             if (paginationButtons) paginationButtons.innerHTML = '';
@@ -425,8 +460,79 @@
             // Formatear fecha
             const fechaFormateada = solicitud.fecha_deseo ? 
                 new Date(solicitud.fecha_deseo).toLocaleDateString('es-ES') : 'N/A';
-                
-            // IMPORTANTE: Usar una función para manejar el click
+            
+            // Determinar qué botones mostrar según el rol Y el estado
+            let actionButtons = '';
+            
+            // Solo mostrar botones de editar/rechazar si el estado es apropiado
+            const mostrarEditar = (solicitud.estado === 'Pendiente' || solicitud.estado === 'En Revisión');
+            
+            if ((userRol == 3 && mostrarEditar) || userRol == 1) {
+                let btn_class;
+                let data_lucide;
+                if(userRol==3)
+                {
+                    btn_class = `class="btn-action edit"`
+                    data_lucide = `<i data-lucide="send"></i>`
+                }
+                else
+                {
+                    btn_class = `class="btn-action approve"`
+                    data_lucide = `<i data-lucide="check"></i>`
+                }
+                // Departamento 3: Ver, Editar (con icono de enviar), Rechazar
+                actionButtons = `
+                    <button type="button" ${btn_class}
+                            onclick="editarSolicitud(${solicitud.id_solicitud})"
+                            data-tippy-content="Editar">
+                            ${data_lucide}
+                    </button>
+                    <button type="button" class="btn-action reject" 
+                            onclick="rechazarSolicitud(${solicitud.id_solicitud})"
+                            data-tippy-content="Rechazar">
+                        <i data-lucide="x"></i>
+                    </button>
+                    <button type="button" class="btn-action view" 
+                            onclick="verDetallesSolicitudFiltrada(${solicitud.id_solicitud})"
+                            data-tippy-content="Ver Detalles">
+                        <i data-lucide="eye"></i>
+                    </button>
+                `;
+            } else if (userRol == 4 && mostrarEditar) {
+                // Departamento 4: Editar (con icono de check), Rechazar
+                actionButtons = `
+                    <button type="button" class="btn-action approve" 
+                            onclick="editarSolicitud(${solicitud.id_solicitud})"
+                            data-tippy-content="Aprobar">
+                        <i data-lucide="check"></i>
+                    </button>
+                    <button type="button" class="btn-action reject" 
+                            onclick="rechazarSolicitud(${solicitud.id_solicitud})"
+                            data-tippy-content="Rechazar">
+                        <i data-lucide="x"></i>
+                    </button>
+                `;
+            } else {
+                // Otros departamentos: Ver y Editar (con icono de lápiz)
+                // Solo mostrar editar si el estado lo permite
+                if (mostrarEditar && solicitud.id_solicitante == userId) {
+                    actionButtons += `
+                        <button type="button" class="btn-action edit" 
+                                onclick="editarSolicitud(${solicitud.id_solicitud})"
+                                data-tippy-content="Editar">
+                            <i data-lucide="pencil"></i>
+                        </button>
+                    `;
+                }
+                actionButtons += `
+                    <button type="button" class="btn-action view" 
+                            onclick="verDetallesSolicitudFiltrada(${solicitud.id_solicitud})"
+                            data-tippy-content="Ver Detalles">
+                        <i data-lucide="eye"></i>
+                    </button>
+                `;
+            }
+            
             tableHTML += `
                 <tr data-status="${solicitud.estado || ''}" 
                     data-id="${solicitud.id_solicitud || ''}"
@@ -444,23 +550,7 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            ${solicitud.estado === 'Pendiente' ? `
-                                <button type="button" class="btn-action approve" 
-                                        onclick="editarSolicitud(${solicitud.id_solicitud})"
-                                        data-tippy-content="Aprobar">
-                                    <i data-lucide="${icono_edit}"></i>
-                                </button>
-                                <button type="button" class="btn-action reject" 
-                                        onclick="rechazarSolicitud(${solicitud.id_solicitud})"
-                                        data-tippy-content="Rechazar">
-                                    <i data-lucide="x"></i>
-                                </button>
-                            ` : ''}
-                            <button type="button" class="btn-action view" 
-                                    onclick="verDetallesSolicitudFiltrada(${solicitud.id_solicitud})"
-                                    data-tippy-content="Ver Detalles">
-                                <i data-lucide="eye"></i>
-                            </button>
+                            ${actionButtons}
                         </div>
                     </td>
                 </tr>
@@ -481,8 +571,11 @@
         
         // Activar iconos de Lucide
         lucide.createIcons();
+        
+        console.log('Tabla actualizada con', currentPageItems.length, 'elementos');
     }
-        // Nueva función para ver detalles de solicitudes filtradas
+    
+    // Nueva función para ver detalles de solicitudes filtradas
     function verDetallesSolicitudFiltrada(idSolicitud) {
         // Encontrar la solicitud en los datos filtrados
         const solicitud_seleccionada = filteredSolicitudes.find(s => s.id_solicitud == idSolicitud);
@@ -576,10 +669,13 @@
         updateTable();
         
         // Hacer scroll suave hacia la parte superior de la tabla
-        document.querySelector('.table-container').scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-        });
+        const tableContainer = document.querySelector('.table-container');
+        if (tableContainer) {
+            tableContainer.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
     }
     
     // Función para actualizar paginación (llamada desde el select)
@@ -591,6 +687,8 @@
             updateTable();
         }
     }
+    
+    // Resto del código JavaScript (funciones del modal) permanece igual...
     // Funciones básicas para el modal
     function openModal(mode = 'add') {
         const modal = document.getElementById('requestModal');
@@ -619,7 +717,15 @@
             });
             
         } else if (mode === 'edit') {
-            modalTitle.textContent = 'Editar Solicitud';
+            // Cambiar título según el rol al editar
+            if (userRol == 4 || userRol == 1) {
+                modalTitle.textContent = 'Aprobar Solicitud';
+            } else if (userRol == 3) {
+                modalTitle.textContent = 'Enviar Solicitud a Revisión';
+            } else {
+                modalTitle.textContent = 'Editar Solicitud';
+            }
+            
             formMode.value = 'edit';
             // Los datos se cargan cuando se llama a editarSolicitud()
         }
@@ -845,7 +951,7 @@
         // Si es modo editar, cambiar la acción
         if (formMode === 'edit') {
             const formData = new FormData(form);
-            if(userRol == 4)
+            if(userRol == 4 || userRol == 1)
             {
                 formData.append('nuevo_estado', 'Aprobado')
                 formData.append('id_solicitud', formData.get('request_id'))
@@ -867,9 +973,7 @@
                 // Los campos ya están en el FormData por ser arrays []
                 // Solo nos aseguramos de que tengan valores
             });
-            for (let [key, value] of formData.entries()) {
-                console.log(key, value);
-                }
+            
             fetch('?action=solicitudes&method=actualizarSolic', {
                 method: 'POST',
                 body: formData
@@ -878,10 +982,17 @@
             .then(result => {
                 swalLoading.close();
                 if (result.success) {
+                    let mensaje = 'Solicitud actualizada correctamente';
+                    if (userRol == 4 || userRol == 1) {
+                        mensaje = 'Solicitud aprobada correctamente';
+                    } else if (userRol == 3) {
+                        mensaje = 'Solicitud enviada a revisión correctamente';
+                    }
+                    
                     Swal.fire({
                         icon: 'success',
                         title: '¡Éxito!',
-                        text: 'Solicitud actualizada correctamente',
+                        text: mensaje,
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
@@ -1135,11 +1246,6 @@
         }
     }
 
-    // Inicializar contador al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
-        updateProductsCounter();
-    });
-
     // Función para aprobar una solicitud
     function aprobarSolicitud(idSolicitud) {
         Swal.fire({
@@ -1370,22 +1476,6 @@
             }
         });
     }
-    
-    // Agregar botón de editar en la tabla si es necesario
-    document.addEventListener('DOMContentLoaded', function() {
-        // Si necesitas agregar botones de editar dinámicamente
-        const tableBody = document.getElementById('requestsTableBody');
-        if (tableBody) {
-            tableBody.addEventListener('click', function(e) {
-                if (e.target.closest('[data-action="edit"]')) {
-                    const solicitudId = e.target.closest('[data-action="edit"]').getAttribute('data-id');
-                    if (solicitudId) {
-                        editarSolicitud(solicitudId);
-                    }
-                }
-            });
-        }
-    });
 </script>
 </body>
 </html>

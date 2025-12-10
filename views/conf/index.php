@@ -464,6 +464,63 @@
                                     maxlength="100">
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="correo" class="form-label">
+                                <i data-lucide="mail" class="label-icon"></i>
+                                <span>Correo<span class="required">*</span></span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i data-lucide="user-circle" class="input-icon"></i>
+                                <input 
+                                    type="email" 
+                                    id="correo" 
+                                    name="correo"
+                                    class="form-input"
+                                    placeholder="Correo Electrónico" 
+                                    required 
+                                    maxlength="100">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clave_usuario" class="form-label">
+                                <i data-lucide="id-card" class="label-icon"></i>
+                                <span>Contraseña<span class="required">*</span></span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i data-lucide="hash" class="input-icon"></i>
+                                <input 
+                                    type="text" 
+                                    id="clave_usuario" 
+                                    name="clave_usuario"
+                                    class="form-input"
+                                    placeholder="Ej: 12345678" 
+                                    required 
+                                    maxlength="10"
+                                    pattern="[0-9]+">
+                            </div>
+                        </div>
+                        <div class="form-group" id="super-group" style="display:block;">
+                        <label for="clave_Super" class="form-label">
+                            <i data-lucide="key-round" class="label-icon"></i>
+                            <span>Clave Maestra<span class="required">*</span></span>
+                        </label>
+                            <div class="input-wrapper password-wrapper">
+                                <i data-lucide="lock-keyhole" class="input-icon"></i>
+                                <input 
+                                    type="password" 
+                                    id="clave_Super" 
+                                    name="clave_Super"
+                                    class="form-input"
+                                    placeholder="Ingrese la clave maestra del administrador"
+                                    required
+                                    minlength="6"
+                                    autocomplete="new-password">
+                                <button type="button" class="btn-toggle" data-target="clave_nueva">
+                                    <i data-lucide="eye" class="toggle-icon"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -496,7 +553,7 @@
                         </div>
                         <input type="hidden" name="oficinas_seleccionadas" id="oficinasSeleccionadasInput">
                     </div>
-                    <button type="submit" name="bandera_agregar_usuario" onclick="enviarOficinas()">
+                    <button type="submit" name="bandera_agregar_usuario" class="btn-submit"onclick="enviarOficinas()">
                         <i class="fas fa-user-plus"></i> Agregar Usuario
                     </button>
                 </form>
@@ -706,9 +763,12 @@
                 if (cuentasCheckbox) {
                     cuentasCheckbox.checked = true;
                 }
-
+                document.getElementById("super-group").style.display = "none"
+                document.getElementById("clave_Super").removeAttribute("required");
             } else if (this.value == 4) { 
                 // Si es Presupuesto
+                document.getElementById("super-group").style.display = "none"
+                document.getElementById("clave_Super").removeAttribute("required");
                 checkboxes.forEach((chk) => {
                     chk.checked = false;
                     chk.disabled = true;
@@ -718,6 +778,16 @@
                     presupuestoCheckbox.checked = true;
                 }
             } else {
+                if(this.value == 1)
+                {
+                    document.getElementById("super-group").style.display = "block"
+                    document.getElementById("clave_Super").setAttribute("required", "true");
+                }
+                else
+                {
+                    document.getElementById("super-group").style.display = "none"
+                    document.getElementById("clave_Super").removeAttribute("required");
+                }
                 checkboxes.forEach((chk) => {
                     chk.checked = false;
                     chk.disabled = false;

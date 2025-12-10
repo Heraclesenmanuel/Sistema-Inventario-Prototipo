@@ -108,7 +108,16 @@ class Config extends Base{
         }
         $stmtCheck->close();
     }
-    public function addUsuario($cedula, $nombre, $clave_usuario, $id_cargo, $correo, $oficinas) {
+    public function addClaveM($clave, $id_usuario)
+    {
+        $sql = "INSERT INTO usuario_super VALUES(?, ?)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('is', $id_usuario, $clave);
+        $resultado = $stmt->execute();
+
+        return $resultado;
+    }
+    public function addUsuario($cedula, $nombre, $clave_usuario, $id_cargo, $correo, $oficinas, $claveSuper=null) {
         // Validaciones básicas
         if (!preg_match('/^[0-9]{7,10}$/', $cedula)) {
             return [
@@ -127,18 +136,51 @@ class Config extends Base{
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("sssis", $cedula, $nombre, $clave_usuario, $id_cargo, $correo);
 
-        if (!$stmt->execute() || !$this->addOficinasUsuario($this->db->insert_id, $oficinas)) {
+        if (!$stmt->execute()) {
             $this->db->rollback();
             return [
                 'success' => false,
                 'message' => 'Error al agregar usuario: ' . $stmt->error
             ];
-        } else {
-            $this->db->commit();
-            return [
-                'success' => true,
-                'message' => 'Usuario agregado exitosamente.'
-            ];
+        }
+        $user_id = $this->db->insert_id;
+        if(!$this->addOficinasUsuario($user_id , $oficinas))
+            {
+                $this->db->rollback();
+                return [
+                    'success' => false,
+                    'message' => 'Error al agregar usuario: ' . $stmt->error
+                ];
+            } 
+            else 
+            {
+            if($claveSuper)
+            {
+                if($this->addClaveM($claveSuper,$user_id))
+                {
+                    $this->db->commit();
+                    return [
+                        'success' => true,
+                        'message' => 'Usuario agregado exitosamente.'
+                    ];
+                }
+                else
+                {
+                    $this->db->rollback();
+                    return [
+                        'success' => false,
+                        'message' => 'Error al agregar superClave: ' . $stmt->error
+                    ];
+                }
+            }
+            else
+            {
+                $this->db->commit();
+                return [
+                    'success' => true,
+                    'message' => 'Usuario agregado exitosamente.'
+                ];
+            }
         }
     }
     private function addOficinasUsuario($id_usuario, $oficinas)

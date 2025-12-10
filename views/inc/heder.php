@@ -36,9 +36,11 @@
             </button>
             
             <div class="menu-desplegable" id="menuDesplegableUsuario" role="menu">
+                <?php if($_SESSION['dpto'] == 4): ?>
                 <button id="abrirConfiguracion" name="abrirConfiguracion" class="menu-item" role="menuitem">
                     <i data-lucide="settings" class="menu-item-icon"></i>
                     <span>Configuración</span>
+                <?php endif; ?>
                 </button>
                 <a href="./" class="menu-item" role="menuitem">
                     <i data-lucide="log-out" class="menu-item-icon"></i>
