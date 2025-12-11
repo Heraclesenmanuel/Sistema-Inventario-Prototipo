@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 08-12-2025 a las 18:09:45
+-- Tiempo de generación: 11-12-2025 a las 09:52:05
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -149,11 +149,19 @@ INSERT INTO `ofic_usuario` (`num_oficina`, `id_usuario`) VALUES
 ('143', 1),
 ('143', 8),
 ('143', 20),
+('143', 23),
+('143', 27),
+('143', 28),
 ('205', 1),
 ('212', 8),
+('212', 23),
+('305', 23),
+('305', 27),
 ('313', 1),
 ('313', 8),
-('325', 21);
+('313', 28),
+('325', 21),
+('325', 27);
 
 -- --------------------------------------------------------
 
@@ -202,14 +210,15 @@ INSERT INTO `prod_solic` (`id_solicitud`, `num_linea`, `nombre`, `un_deseadas`, 
 (1, 1, 'Tornillo', 4, 'Unidades', 4),
 (2, 1, 'Pelota Futbol', 4, 'Unidades', 3),
 (3, 0, 'RAM', 6, 'Unidades', 4),
-(27, 1, 'RAM', 5, 'Unidades', 4),
 (28, 1, 'RAM', 90, 'Unidades', 4),
 (31, 1, 'Hoja Carta', 100, 'Unidades', 1),
 (32, 1, 'Marcador', 200, 'Unidades', 2),
 (32, 2, 'Hoja Carta', 20, 'Unidades', 3),
 (33, 1, 'Cargador Laptop', 4, 'Unidades', 4),
 (33, 2, 'Tornillo', 5, 'Unidades', 4),
-(34, 0, 'RAM', 90, 'Kilogramos', 5);
+(34, 0, 'RAM', 90, 'Kilogramos', 5),
+(37, 1, 'Tornillo', 6, 'Unidades', 4),
+(42, 1, 'Cargador Laptop', 1, 'Unidades', 4);
 
 -- --------------------------------------------------------
 
@@ -317,8 +326,8 @@ CREATE TABLE `servicio_proveedor` (
 CREATE TABLE `solicitud` (
   `id_solicitud` int(11) NOT NULL,
   `id_solicitante` int(11) NOT NULL,
-  `fecha_solic` date NOT NULL,
-  `fecha_deseo` date NOT NULL,
+  `fecha_solic` datetime DEFAULT NULL,
+  `fecha_deseo` date DEFAULT NULL,
   `comentarios` varchar(500) NOT NULL,
   `num_oficina` varchar(10) DEFAULT NULL,
   `estado` varchar(20) DEFAULT 'Pendiente',
@@ -330,15 +339,16 @@ CREATE TABLE `solicitud` (
 --
 
 INSERT INTO `solicitud` (`id_solicitud`, `id_solicitante`, `fecha_solic`, `fecha_deseo`, `comentarios`, `num_oficina`, `estado`, `apelada`) VALUES
-(1, 1, '2025-12-05', '2025-12-11', '', '143', 'Rechazado', 0),
-(2, 1, '2025-12-05', '2025-12-11', '', '204', 'Aprobado', 0),
-(3, 1, '2025-12-04', '2025-12-11', '', '313', 'En Revisión', 0),
-(27, 7, '2025-12-05', '2025-12-12', '', '143', 'En Revisión', 0),
-(28, 1, '2025-12-05', '2025-12-12', '', '212', 'Aprobado', 0),
-(31, 1, '2025-12-05', '2025-12-12', '', '143', 'En Revisión', 0),
-(32, 1, '2025-12-05', '2025-12-12', '', '212', 'Aprobado', 0),
-(33, 1, '2025-12-05', '2025-12-12', '', '212', 'Aprobado', 0),
-(34, 1, '2025-12-07', '2025-12-14', '', '143', 'En Revisión', 0);
+(1, 1, '2025-12-05 00:00:00', '2025-12-11', '', '143', 'Rechazado', 0),
+(2, 1, '2025-12-05 01:00:00', '2025-12-11', '', '204', 'Aprobado', 0),
+(3, 1, '2025-12-04 02:00:00', '2025-12-11', '', '313', 'En Revisión', 0),
+(28, 1, '2025-12-05 04:00:00', '2025-12-12', '', '212', 'Aprobado', 0),
+(31, 1, '2025-12-05 05:00:00', '2025-12-12', '', '143', 'En Revisión', 0),
+(32, 1, '2025-12-05 06:00:00', '2025-12-12', '', '212', 'Aprobado', 0),
+(33, 1, '2025-12-05 07:00:00', '2025-12-12', '', '212', 'Aprobado', 0),
+(34, 1, '2025-12-07 08:00:00', '2025-12-14', '', '143', 'En Revisión', 0),
+(37, 20, '2025-12-08 23:04:28', '2025-12-15', '', '212', 'Pendiente', 0),
+(42, 8, '2025-12-08 23:46:10', '2025-12-15', 'Chamo', '212', 'Pendiente', 0);
 
 -- --------------------------------------------------------
 
@@ -387,7 +397,10 @@ INSERT INTO `usuario` (`id_usuario`, `cedula`, `clave`, `id_cargo`, `correo`, `n
 (1, '31987430', '12345678', 4, 'heracles.sanchez@gmail.com', 'HERACLES SANCHEZ'),
 (8, '31414098', '123456', 1, 'heracles.edizahir@gmail.com', 'Luis Nuñez'),
 (20, '30987788', '12345678', 3, 'francesca@gmail.com', 'Franchesca Izquierdo'),
-(21, '31466704', '12345678', 4, 'sistemasuarez4@gmail.com', 'Eduar Suarez');
+(21, '31466704', '12345678', 4, 'sistemasuarez4@gmail.com', 'Eduar Suarez'),
+(23, '30000000', '12345678', 2, '', 'Ezequiel Angulo'),
+(27, '12345678', '12345678', 1, 'lolsapo@gmail.com', 'Hernandez Hector'),
+(28, '87654321', '12345678', 2, 'juanjuan@gmail.juan', 'JUan juanito');
 
 -- --------------------------------------------------------
 
@@ -405,7 +418,8 @@ CREATE TABLE `usuario_super` (
 --
 
 INSERT INTO `usuario_super` (`id_usuario`, `claveSuper`) VALUES
-(1, '12345678');
+(1, 'loljajaqmal'),
+(27, '12345678');
 
 --
 -- Índices para tablas volcadas
@@ -557,7 +571,7 @@ ALTER TABLE `rol_usuario`
 -- AUTO_INCREMENT de la tabla `solicitud`
 --
 ALTER TABLE `solicitud`
-  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT de la tabla `tipo_prod`
@@ -569,7 +583,7 @@ ALTER TABLE `tipo_prod`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- Restricciones para tablas volcadas
