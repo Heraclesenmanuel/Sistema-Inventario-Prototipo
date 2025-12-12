@@ -973,7 +973,6 @@
                 // Los campos ya están en el FormData por ser arrays []
                 // Solo nos aseguramos de que tengan valores
             });
-            
             fetch('?action=solicitudes&method=actualizarSolic', {
                 method: 'POST',
                 body: formData
@@ -1020,6 +1019,7 @@
             // Modo agregar - enviar formulario normalmente
             form.submit();
         }
+        closeModal();
         
         return false;
     }

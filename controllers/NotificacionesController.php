@@ -13,29 +13,9 @@ class NotificacionesController extends AdminController
     public function home() {
         $this->validarSesion();
         $titulo = 'Notificaciones';
-        $datosInven = $this->notif->obtenerDatos();
+        $notificaciones = $this->notif->obtenerDatos();
+        $unreadCount = $this->notif->obtenerNoLeidas();
 
-        if (isset($_POST['add'])) {
-            // Sanitizar y validar datos antes de guardar
-            $datos = [
-                'codigo' => trim($_POST['productCode'] ?? 'N/A'),
-                'nombre' => trim($_POST['productName'] ?? 'N/A'),
-                'un_disponibles' => (int)(trim($_POST['productStock'] ?? 0)),
-                'tipo_p' => ($_POST['tipo_p']),
-                'medida' => trim($_POST['productMeasure'] ?? 'N/A')
-            ];
-
-            if (empty($datos['codigo'])){
-                echo '<script>alert("El código del producto no puede estar vacío")</script>';
-            } 
-            else if ($this->inventario->guardarDatos($datos)) {
-                header('Location: ?action=notifiacciones&method=home&mensaje=exito');
-                exit();
-            } 
-            else {
-                echo '<script>alert("Error al guardar el producto. Intente nuevamente.")</script>';
-            }
-        }
         require_once 'views/notificaciones/index.php';
     }
     public function eliminarProducto() {

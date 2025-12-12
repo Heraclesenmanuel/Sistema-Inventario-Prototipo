@@ -2,18 +2,53 @@
 require_once 'model/base.php';
 class Notificaciones extends Base{
     public function obtenerDatos(){
-        $sql = 'SELECT * FROM notificacion';
-        $resultado = $this->db->query($sql);
-
-        if(!$resultado) {
-            return [];
+        $sql = 'SELECT n.* 
+                FROM receptor_notif rn
+                INNER JOIN notificacion n ON rn.id_notif=n.id_notif
+                WHERE rn.id_usuario = ?';
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+                throw new Exception("Error al preparar la consulta: " . $this->db->error);
+            }
+        try
+        {
+            $stmt->bind_param('i', $_SESSION['id']);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+            if(!$resultado) {
+                return [];
+            }
+            $datos = [];
+            while($row = $resultado->fetch_assoc()) {
+                $datos[] = $row;
+            }
+            return $datos;
+        } 
+        finally 
+        {
+            $stmt->close();
         }
-
-        $datos = [];
-        while($row = $resultado->fetch_assoc()) {
-            $datos[] = $row;
+    }
+    public function obtenerNoLeidas(){
+        $stmt = $this->db->prepare('SELECT COUNT(leido) FROM receptor_notif WHERE leido=1 AND id_usuario = ?');
+        if (!$stmt) {
+                throw new Exception("Error al preparar la consulta: " . $this->db->error);
+            }
+        try
+        {
+            $stmt->bind_param('i', $_SESSION['id']);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+            if(!$resultado) {
+                return 0;
+            }
+            $datos = $resultado->fetch_row();
+            return $datos[0];
         }
-        return $datos;
+        finally 
+        {
+            $stmt->close();
+        }
     }
     public function validarTiposDatos($datos, $stmt)
     {
