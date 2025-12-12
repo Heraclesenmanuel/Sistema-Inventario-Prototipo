@@ -2,9 +2,10 @@
 require_once 'model/base.php';
 class Notificaciones extends Base{
     public function obtenerDatos(){
-        $sql = 'SELECT n.* 
+        $sql = 'SELECT n.*, tn.mensaje as mensaje, rn.leido as leido
                 FROM receptor_notif rn
                 INNER JOIN notificacion n ON rn.id_notif=n.id_notif
+                INNER JOIN tipo_notif tn ON tn.id_tipo_notif=n.tipo
                 WHERE rn.id_usuario = ?';
         $stmt = $this->db->prepare($sql);
         if (!$stmt) {
@@ -24,27 +25,6 @@ class Notificaciones extends Base{
             }
             return $datos;
         } 
-        finally 
-        {
-            $stmt->close();
-        }
-    }
-    public function obtenerNoLeidas(){
-        $stmt = $this->db->prepare('SELECT COUNT(leido) FROM receptor_notif WHERE leido=1 AND id_usuario = ?');
-        if (!$stmt) {
-                throw new Exception("Error al preparar la consulta: " . $this->db->error);
-            }
-        try
-        {
-            $stmt->bind_param('i', $_SESSION['id']);
-            $stmt->execute();
-            $resultado = $stmt->get_result();
-            if(!$resultado) {
-                return 0;
-            }
-            $datos = $resultado->fetch_row();
-            return $datos[0];
-        }
         finally 
         {
             $stmt->close();

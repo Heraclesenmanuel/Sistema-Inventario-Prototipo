@@ -13,8 +13,7 @@ class NotificacionesController extends AdminController
     public function home() {
         $this->validarSesion();
         $titulo = 'Notificaciones';
-        $notificaciones = $this->notif->obtenerDatos();
-        $unreadCount = $this->notif->obtenerNoLeidas();
+        $notificacionesConUsuarios = $this->notif->obtenerDatos();
 
         require_once 'views/notificaciones/index.php';
     }
