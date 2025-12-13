@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 13-12-2025 a las 10:18:45
+-- Tiempo de generación: 13-12-2025 a las 16:14:40
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -316,17 +316,9 @@ INSERT INTO `prov_recomendaciones` (`rif_proveedor`, `id_tipo`) VALUES
 CREATE TABLE `receptor_notif` (
   `id_usuario` int(11) NOT NULL,
   `id_notif` int(11) NOT NULL,
-  `leido` tinyint(4) DEFAULT 0
+  `leido` tinyint(4) DEFAULT 0,
+  `subtitulo` varchar(200) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `receptor_notif`
---
-
-INSERT INTO `receptor_notif` (`id_usuario`, `id_notif`, `leido`) VALUES
-(1, 2, 0),
-(1, 4, 0),
-(1, 7, 1);
 
 -- --------------------------------------------------------
 
