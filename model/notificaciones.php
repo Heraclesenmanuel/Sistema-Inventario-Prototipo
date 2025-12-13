@@ -1,7 +1,7 @@
 <?php
 require_once 'model/base.php';
 class Notificaciones extends Base{
-    public function obtenerDatos(){
+    public function obtenerDatos($id_usuario){
         $sql = 'SELECT n.*, tn.mensaje as mensaje, rn.leido as leido
                 FROM receptor_notif rn
                 INNER JOIN notificacion n ON rn.id_notif=n.id_notif
@@ -13,7 +13,7 @@ class Notificaciones extends Base{
             }
         try
         {
-            $stmt->bind_param('i', $_SESSION['id']);
+            $stmt->bind_param('i', $id_usuario);
             $stmt->execute();
             $resultado = $stmt->get_result();
             if(!$resultado) {
@@ -56,18 +56,54 @@ class Notificaciones extends Base{
         
         return $result;
     }
-        public function eliminarDatos($id) {
-            $stmt = $this->db->prepare("DELETE FROM notificacion WHERE id_producto = ?");
+        public function eliminarNotif($id, $id_usuario) {
+            $stmt = $this->db->prepare("DELETE FROM receptor_notif WHERE id_notif = ? AND id_usuario = ?");
+            if (!$stmt) {
+                throw new Exception("Error al preparar la consulta: " . $this->db->error);
+            }
+            try {
+                $stmt->bind_param("ii", $id, $id_usuario);
+                $stmt->execute();
+                if ($stmt->affected_rows > 0) {
+                    return true;
+                } else {
+                    throw new Exception("No se encontró la notificacion con ID $id");
+                }
+            } finally {
+                $stmt->close();
+            }
+        }
+        public function leerNotif($id, $id_usuario) {
+            $stmt = $this->db->prepare("UPDATE receptor_notif 
+                                        SET leido=1 
+                                        WHERE id_notif = ? AND id_usuario = ?");
+            if (!$stmt) {
+                throw new Exception("Error al preparar la consulta: " . $this->db->error);
+            }
+            try {
+                $stmt->bind_param("ii", $id, $id_usuario);
+                $stmt->execute();
+                if ($stmt->affected_rows > 0) {
+                    return true;
+                } else {
+                    throw new Exception("No se encontró la notificacion con ID $id");
+                }
+            } finally {
+                $stmt->close();
+            }
+        }
+        public function limpiarNotifs($id) {
+            $stmt = $this->db->prepare("DELETE FROM receptor_notif WHERE id_usuario = ? AND leido=1");
             if (!$stmt) {
                 throw new Exception("Error al preparar la consulta: " . $this->db->error);
             }
             try {
                 $stmt->bind_param("i", $id);
-                $stmt->execute();
-                if ($stmt->affected_rows > 0) {
+                $resultado = $stmt->execute();
+                if ($resultado) {
                     return true;
                 } else {
-                    throw new Exception("No se encontró el producto con ID $id");
+                    throw new Exception("No se encontró la notificacion con ID $id");
                 }
             } finally {
                 $stmt->close();

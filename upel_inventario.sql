@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 12-12-2025 a las 11:12:07
+-- Tiempo de generación: 13-12-2025 a las 10:18:45
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -110,7 +110,6 @@ INSERT INTO `notificacion` (`id_notif`, `tipo`, `fecha_notif`) VALUES
 (2, 1, '2024-03-15 10:15:00'),
 (3, 1, '2024-03-14 14:20:00'),
 (4, 2, '2024-03-15 11:00:00'),
-(5, 2, '2024-03-14 16:45:00'),
 (6, 2, '2024-03-13 09:20:00'),
 (7, 3, '2024-03-15 12:30:00'),
 (8, 3, '2024-03-14 17:10:00'),
@@ -326,8 +325,8 @@ CREATE TABLE `receptor_notif` (
 
 INSERT INTO `receptor_notif` (`id_usuario`, `id_notif`, `leido`) VALUES
 (1, 2, 0),
-(1, 5, 0),
-(1, 8, 0);
+(1, 4, 0),
+(1, 7, 1);
 
 -- --------------------------------------------------------
 
@@ -410,9 +409,9 @@ CREATE TABLE `tipo_notif` (
 --
 
 INSERT INTO `tipo_notif` (`id_tipo_notif`, `mensaje`) VALUES
-(1, 'Stock crítico: El producto está por debajo del nivel mínimo'),
-(2, 'Solicitud pendiente de aprobación'),
-(3, 'Pedido completado exitosamente'),
+(1, 'Solicitud rechazada'),
+(2, 'Revisión pendiente'),
+(3, 'Pedido aceptado exitosamente'),
 (4, 'Nuevo usuario registrado en el sistema'),
 (5, 'Error en el sistema de inventario'),
 (6, 'Recordatorio: Revisar inventario mensual'),

@@ -13,45 +13,65 @@ class NotificacionesController extends AdminController
     public function home() {
         $this->validarSesion();
         $titulo = 'Notificaciones';
-        $notificacionesConUsuarios = $this->notif->obtenerDatos();
+        $notificacionesConUsuarios = $this->notif->obtenerDatos(1);
 
         require_once 'views/notificaciones/index.php';
     }
-    public function eliminarProducto() {
+    public function eliminarNotif() {
         try{
-            if(!isset($_GET['id'])){
-                echo '<script>alert("ID del producto no encontra a surguido un error")</script>';
+            if(!isset($_POST['id_notif']) || !isset($_POST['id_usuario'])){
+                echo json_encode(['success' => false, 'message' =>"ID de la notificacion o usuario no encontrado, ha surgido un error al capturar datos."]);
             }
 
-            $id = $_GET['id'];
-            if($this->inventario->eliminarDatos($id)){
-                echo '<script>alert("Producto eliminado exitosamente")</script>';
+            $id = $_POST['id_notif'];
+            $id_usuario = $_POST['id_usuario'];
+            if($this->notif->eliminarNotif($id, $id_usuario)){
+                echo json_encode(['success'=> true, 'message' => "Notificación eliminada exitosamente"]);
             }else{
-                echo '<script>alert("Error al eliminar")</script>';
+                echo json_encode(['success' => false, 'message' =>"Error al eliminar en la base de datos."]);
             }
         }
         catch(Exception $e){
-            echo '<script>alert("Error en el servidor")</script>';
+                echo json_encode(['success' => false, 'message' =>"Error en el servidor."]);
         }
-        header('Location: ?action=inventario&method=home');
         exit();
     }
-    public function obtenerProducto() {
-        try {
-            if(!isset($_GET['id'])) {
-                echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
-                return;
+    public function leerNotif() {
+        try{
+            if(!isset($_POST['id_notif']) || !isset($_POST['id_usuario'])){
+                echo json_encode(['success' => false, 'message' =>"ID de la notificacion o usuario no encontrado, ha surgido un error al capturar datos."]);
             }
 
-            $id = $_GET['id'];
-            $producto = $this->inventario->obtenerProductoPorId($id);
-            if($producto) {
-                echo json_encode(['success' => true, 'producto' => $producto, 'message' => 'obtenido']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Producto no encontrado']);
+            $id = $_POST['id_notif'];
+            $id_usuario = $_POST['id_usuario'];
+            if($this->notif->leerNotif($id, $id_usuario)){
+                echo json_encode(['success'=> true, 'message' => "Notificación leida exitosamente"]);
+            }else{
+                echo json_encode(['success' => false, 'message' =>"Error al leer en la base de datos."]);
             }
-        } catch(Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
         }
+        catch(Exception $e){
+                echo json_encode(['success' => false, 'message' =>"Error en el servidor."]);
+        }
+        exit();
+    }
+    public function limpiarLeidas()
+    {
+        try{
+            if(!isset($_POST['id_usuario'])){
+                echo json_encode(['success' => false, 'message' =>"ID de la notificacion o usuario no encontrado, ha surgido un error al capturar datos."]);
+            }
+
+            $id_usuario = $_POST['id_usuario'];
+            if($this->notif->limpiarNotifs($id_usuario)){
+                echo json_encode(['success'=> true, 'message' => "¡Tu menú de notificaciones ha sido limpiado!"]);
+            }else{
+                echo json_encode(['success' => false, 'message' =>"Error al eliminar en la base de datos."]);
+            }
+        }
+        catch(Exception $e){
+                echo json_encode(['success' => false, 'message' =>"Error en el servidor."]);
+        }
+        exit();
     }
 }

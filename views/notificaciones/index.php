@@ -255,12 +255,6 @@
                                                 title="Marcar como leída">
                                                 <i data-lucide="mail-open"></i>
                                             </button>
-                                        <?php else: ?>
-                                            <button class="action-btn-small"
-                                                onclick="marcarComoNoLeida(<?= $notif['id_notif'] ?>, this)"
-                                                title="Marcar como no leída">
-                                                <i data-lucide="mail"></i>
-                                            </button>
                                         <?php endif; ?>
 
                                         <button class="action-btn-small"
@@ -444,7 +438,7 @@
             // Función para marcar como leída (llamada desde onclick)
             async function marcarComoLeida(idNotif, btnElement) {
                 try {
-                    const response = await fetch('ajax/marcar_leida.php', {
+                    const response = await fetch('?action=notificaciones&method=leerNotif', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -457,74 +451,22 @@
                     if (result.success) {
                         // Actualizar UI
                         const item = btnElement.closest('.notification-item');
+                        const btnLeerEnDetalles = btnElement.closest('.')
                         if (item) {
                             item.classList.remove('unread');
                             item.dataset.leido = '1';
 
                             // Cambiar botón
-                            btnElement.innerHTML = '<i data-lucide="mail"></i>';
-                            btnElement.onclick = (e) => marcarComoNoLeida(idNotif, e.target.closest('button'));
-                            btnElement.title = "Marcar como no leída";
-                            btnElement.classList.remove('mark-read');
+                            btnElement.remove();
 
                             // Actualizar contadores
                             aplicarFiltros();
-
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Marcada como leída!',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
                         }
                     } else {
                         throw new Error(result.message || 'Error desconocido');
                     }
                 } catch (error) {
                     Swal.fire('Error', 'No se pudo marcar como leída', 'error');
-                    console.error('Error:', error);
-                }
-            }
-
-            // Función para marcar como no leída (llamada desde onclick)
-            async function marcarComoNoLeida(idNotif, btnElement) {
-                try {
-                    const response = await fetch('ajax/marcar_no_leida.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: `id_notif=${idNotif}&id_usuario=${currentUserId}`
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        // Actualizar UI
-                        const item = btnElement.closest('.notification-item');
-                        if (item) {
-                            item.classList.add('unread');
-                            item.dataset.leido = '0';
-
-                            // Cambiar botón
-                            btnElement.innerHTML = '<i data-lucide="mail-open"></i>';
-                            btnElement.onclick = (e) => marcarComoLeida(idNotif, e.target.closest('button'));
-                            btnElement.title = "Marcar como leída";
-                            btnElement.classList.add('mark-read');
-
-                            // Actualizar contadores
-                            aplicarFiltros();
-
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Marcada como no leída!',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-                        }
-                    }
-                } catch (error) {
-                    Swal.fire('Error', 'No se pudo marcar como no leída', 'error');
                     console.error('Error:', error);
                 }
             }
@@ -563,10 +505,7 @@
                                 // Cambiar botones
                                 const btn = item.querySelector('.mark-read');
                                 if (btn) {
-                                    btn.innerHTML = '<i data-lucide="mail"></i>';
-                                    btn.onclick = (e) => marcarComoNoLeida(item.dataset.id, e.target.closest('button'));
-                                    btn.classList.remove('mark-read');
-                                    btn.title = "Marcar como no leída";
+                                    btn.remove()
                                 }
                             });
 
@@ -599,7 +538,7 @@
 
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch('ajax/eliminar_notificacion.php', {
+                        const response = await fetch('?action=notificaciones&method=eliminarNotif', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -647,7 +586,7 @@
 
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch('ajax/limpiar_leidas.php', {
+                        const response = await fetch('?action=notificaciones&method=limpiarLeidas', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -663,6 +602,7 @@
                                 item.style.opacity = '0';
                                 item.style.transform = 'translateX(100px)';
                                 setTimeout(() => item.remove(), 300);
+                                console.log("hecho sin problema")
                             });
 
                             aplicarFiltros();
@@ -674,7 +614,8 @@
                             );
                         }
                     } catch (error) {
-                        Swal.fire('Error', 'No se pudieron limpiar las notificaciones', 'error');
+                        console.error(error);
+                        Swal.fire('Error', `No se pudieron limpiar las notificaciones: ${error}`, 'error');
                     }
                 }
             }
@@ -791,12 +732,7 @@
                         style="flex: 1; padding: 0.75rem; background: var(--primary-color); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                     <i data-lucide="mail-open"></i> Marcar como leída
                 </button>
-            ` : `
-                <button onclick="marcarComoNoLeida(${notif.id_notif}, document.querySelector('.notification-item[data-id=\\'${notif.id_notif}\\'] .action-btn-small:not(.delete)')); cerrarModal();" 
-                        style="flex: 1; padding: 0.75rem; background: var(--gray-200); color: var(--gray-700); border: none; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                    <i data-lucide="mail"></i> Marcar como no leída
-                </button>
-            `}
+            ` : ``}
             
             <button onclick="eliminarNotificacion(${notif.id_notif}, document.querySelector('.notification-item[data-id=\\'${notif.id_notif}\\'] .delete')); cerrarModal();" 
                     style="flex: 1; padding: 0.75rem; background: #FFEBEE; color: var(--danger-color); border: none; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
