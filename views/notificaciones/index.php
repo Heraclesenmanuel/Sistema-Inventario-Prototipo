@@ -53,7 +53,7 @@
                         </div>
                     </div>
                 </div>
-                                    <br>
+                <br>
                 <!-- Filtros dentro del mismo panel -->
                 <div class="panel-filters">
                     <div class="filters-grid">
@@ -84,7 +84,7 @@
                         </button>
                     </div>
                 </div>
-                                    <br><br>
+                <br><br>
                 <!-- Contenedor Principal -->
                 <div class="notifications-container">
                     <!-- Estadísticas -->
@@ -303,6 +303,7 @@
 
             // Estado global
             let currentUserId = <?= $_SESSION['id'] ?? 0 ?>;
+            let notificacionesData = <?= json_encode($notificacionesConUsuarios ?? []) ?>;
             let currentName = "<?= $_SESSION['nombre'] ?? '' ?>";
             let currentFilter = 'todas';
 
@@ -449,15 +450,24 @@
                     const result = await response.json();
 
                     if (result.success) {
+                        const index = notificacionesData.findIndex(n => n.id_notif == idNotif);
+                        if (index !== -1) {
+                            notificacionesData[index].leido = true;
+                        }
                         // Actualizar UI
                         const item = btnElement.closest('.notification-item');
-                        const btnLeerEnDetalles = btnElement.closest('.')
                         if (item) {
                             item.classList.remove('unread');
                             item.dataset.leido = '1';
 
-                            // Cambiar botón
+                            // Cambiar botón y circulo morao
                             btnElement.remove();
+
+                            const unreadDot = item.querySelector('.unread-dot');
+                            if (unreadDot) {
+                                console.log('Eliminando círculo morado...');
+                                unreadDot.remove();
+                            }
 
                             // Actualizar contadores
                             aplicarFiltros();
@@ -486,7 +496,7 @@
 
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch('ajax/marcar_todas_leidas.php', {
+                        const response = await fetch('?action=notificaciones&method=leerTodas', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -497,11 +507,18 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            // Actualizar todas las notificaciones en UI
+                            // Actualizar todas las notificaciones en UI y sus circulos moraos
+                            notificacionesData.forEach(notif => {
+                                notif.leido = 1;
+                            });
                             document.querySelectorAll('.notification-item').forEach(item => {
                                 item.classList.remove('unread');
                                 item.dataset.leido = '1';
 
+                                const unreadDot = item.querySelector('.unread-dot');
+                                if (unreadDot) {
+                                    unreadDot.remove();
+                                }
                                 // Cambiar botones
                                 const btn = item.querySelector('.mark-read');
                                 if (btn) {
@@ -606,12 +623,6 @@
                             });
 
                             aplicarFiltros();
-
-                            Swal.fire(
-                                '¡Limpio!',
-                                'Todas las notificaciones leídas han sido eliminadas.',
-                                'success'
-                            );
                         }
                     } catch (error) {
                         console.error(error);
@@ -621,7 +632,23 @@
             }
 
             // ========== FUNCIÓN VER DETALLES ==========
-            function verDetalles(notif) {
+            function verDetalles(notifParam) {
+                const notif = notificacionesData.find(n => n.id_notif == notifParam.id_notif) || notifParam;
+                // Marcar como leída si no lo está
+                if (!notif.leido) {
+                    // Encontrar y hacer clic en el botón de marcar como leída
+                    const markReadBtn = document.querySelector(`.notification-item[data-id="${notif.id_notif}"] .mark-read`);
+                    if (markReadBtn) {
+                        // Simular clic
+                        marcarComoLeida(notif.id_notif, markReadBtn);
+                        
+                        // Actualizar el objeto local inmediatamente
+                        const index = notificacionesData.findIndex(n => n.id_notif == notif.id_notif);
+                        if (index !== -1) {
+                            notificacionesData[index].leido = true;
+                        }
+                    }
+                }
                 // Determinar tipo
                 let tipoTexto, icono, color;
                 switch (notif.tipo) {
@@ -650,7 +677,7 @@
                         icono = 'info';
                         color = '#2196F3';
                 }
-
+                
                 const destinatarios = notif.usuarios || [];
                 const esParaMi = destinatarios.some(u => u.id_usuario == currentUserId);
 
@@ -727,13 +754,6 @@
             </div>
             
             <div style="display: flex; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-200);">
-            ${!notif.leido ? `
-                <button onclick="marcarComoLeida(${notif.id_notif}, document.querySelector('.notification-item[data-id=\\'${notif.id_notif}\\'] .mark-read')); cerrarModal();" 
-                        style="flex: 1; padding: 0.75rem; background: var(--primary-color); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                    <i data-lucide="mail-open"></i> Marcar como leída
-                </button>
-            ` : ``}
-            
             <button onclick="eliminarNotificacion(${notif.id_notif}, document.querySelector('.notification-item[data-id=\\'${notif.id_notif}\\'] .delete')); cerrarModal();" 
                     style="flex: 1; padding: 0.75rem; background: #FFEBEE; color: var(--danger-color); border: none; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                 <i data-lucide="trash-2"></i> Eliminar
@@ -815,6 +835,9 @@
                 console.log('Usuario actual ID:', currentUserId);
                 console.log('Notificaciones cargadas:', document.querySelectorAll('.notification-item').length);
 
+                // Verificar que los círculos morados existen
+                const unreadDots = document.querySelectorAll('.unread-dot');
+                console.log('Círculos morados encontrados:', unreadDots.length);
                 // Mostrar mensaje si no hay notificaciones
                 const items = document.querySelectorAll('.notification-item');
                 if (items.length === 0) {
