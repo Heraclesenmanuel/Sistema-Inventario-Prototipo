@@ -1,12 +1,10 @@
 <?php
 class ProveedorController extends AdminController
 {
-    private $proveedores;
 
     public function __construct()
     {
         parent::__construct();
-        $this->proveedores = new Proveedores();
     }
 //Funciones de Proveedores
     public function home(){

@@ -13,7 +13,7 @@ class SolicitudesController extends AdminController
         $this->validarSesion();
         $titulo = 'Solicitar';
         $oficinas = $this->solicitudes->cargarOficinas();
-        $tipos_p = $this->solicitudes->getTipos();
+        $tiposProducto = $this->solicitudes->getTipos();
         $solicitudes = $this->solicitudes->obtenerSolicitudes();
         $cant_solicts_no_en_rev = $this->solicitudes->contarSolictsNoEnRev($solicitudes);
         $productos = $this->getProductos();
@@ -22,7 +22,15 @@ class SolicitudesController extends AdminController
             $this->agregarSolic();
             header('Location: ?action=solicitudes&method=home');
         }
-        require_once 'views/solicitudes/index.php';
+        if($_SESSION['dpto'] == 4)
+        {
+            $proveedores = $this->proveedores->obtenerProveedores();
+            require_once 'views/solicitudes/movimientos.php';
+        }
+        else
+        {
+            require_once 'views/solicitudes/index.php';
+        }
     }
     public function agregarSolic($edit = null)
     {

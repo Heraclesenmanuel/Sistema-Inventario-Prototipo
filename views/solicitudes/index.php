@@ -233,8 +233,8 @@
     <div class="form-group">
         <label for="tipo_producto_0" class="required">Tipo de Producto</label>
         <select id="tipo_producto_0" name="tipo_producto[]" class="form-select-sm">
-            <?php if(isset($tipos_p['success']) && $tipos_p['success'] && !empty($tipos_p['data'])): ?>
-                <?php foreach($tipos_p['data'] as $tipo): ?>
+            <?php if(isset($tiposProducto['success']) && $tiposProducto['success'] && !empty($tiposProducto['data'])): ?>
+                <?php foreach($tiposProducto['data'] as $tipo): ?>
                         <option value="<?php echo $tipo['id_tipo']?>"><?php echo $tipo['nombre']?></option>
                 <?php endforeach; ?>
             <?php else: ?>

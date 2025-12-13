@@ -10,10 +10,12 @@ class AdminController
 {
     protected $bdatos;
     protected $pos;
+    protected $proveedores;
     public function __construct() 
     {
         $this->iniciarSesion();
         $this->bdatos = new Inicio();
+        $this->proveedores = new Proveedores();
     }
     protected function iniciarSesion()
     {
