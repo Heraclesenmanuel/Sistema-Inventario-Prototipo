@@ -8,65 +8,59 @@ class SolicitudesController extends AdminController
         parent::__construct();
         $this->solicitudes = new Solicitud();
     }
-    public function home() 
+    public function home()
     {
         $this->validarSesion();
         $titulo = 'Solicitar';
         $oficinas = $this->solicitudes->cargarOficinas();
         $tiposProducto = $this->solicitudes->getTipos();
         $solicitudes = $this->solicitudes->obtenerSolicitudes();
-        $cant_solicts_no_en_rev = $this->solicitudes->contarSolictsNoEnRev($solicitudes);
         $productos = $this->getProductos();
 
         if (isset($_POST['departamento'])) {
             $this->agregarSolic();
             header('Location: ?action=solicitudes&method=home');
         }
-        if($_SESSION['dpto'] == 4)
-        {
+        if ($_SESSION['dpto'] == 4) {
             $proveedores = $this->proveedores->obtenerProveedores();
+            $solicitudes = $this->obtenerDetallesMultiples($solicitudes);
             require_once 'views/solicitudes/movimientos.php';
-        }
-        else
-        {
+        } else {
+            $cant_solicts_no_en_rev = $this->solicitudes->contarSolictsNoEnRev($solicitudes);
             require_once 'views/solicitudes/index.php';
         }
     }
     public function agregarSolic($edit = null)
     {
 
-            // Sanitizar y validar datos antes de guardar
+        // Sanitizar y validar datos antes de guardar
         $datosSolic = [
             'oficina' => trim($_POST['departamento'] ?? 'N/A'),
             'fecha_deseada' => trim($_POST['fecha_requerida'] ?? 'N/A'),
             'oficina_solic' => trim($_POST['departamento'] ?? 'N/A'),
             'comentarios' => trim($_POST['notas'] ?? 'N/A')
         ];
-        if($edit)
-        {
-            $datosSolic['id_solicitud'] = (int)$_POST['request_id'];
+        if ($edit) {
+            $datosSolic['id_solicitud'] = (int) $_POST['request_id'];
         }
-        
+
         $productos = $this->procesarProds();
-        if (empty($datosSolic['oficina']) && empty($productos[0]['nombre'])){
+        if (empty($datosSolic['oficina']) && empty($productos[0]['nombre'])) {
             return false;
-        } 
-        else if ($edit)
-        {
+        } else if ($edit) {
             $set_aceptar = $_SESSION['dpto'] == 4;
             if ($this->solicitudes->eliminarSolicitud($datosSolic['id_solicitud']) && $this->solicitudes->guardarSolicitud($datosSolic, $datosSolic['id_solicitud']) && $this->solicitudes->guardarProds($productos)) {
                 return true;
             }
-        } 
-        else if ($this->solicitudes->guardarSolicitud($datosSolic) && $this->solicitudes->guardarProds($productos)) {
+        } else if ($this->solicitudes->guardarSolicitud($datosSolic) && $this->solicitudes->guardarProds($productos)) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
         exit();
     }
-    public function procesarProds() {
+    public function procesarProds()
+    {
         $nombres = $_POST['nombre_producto'] ?? [];
         $un_deseadas = $_POST['cantidad'] ?? [];
         $tipos_p = $_POST['tipo_producto'] ?? [];
@@ -76,14 +70,16 @@ class SolicitudesController extends AdminController
         if (!is_array($nombres)) {
             return $productos;
         }
-        
+
         for ($i = 0; $i < count($nombres); $i++) {
             // Validar que todos los campos existan
-            if (!empty($nombres[$i]) && 
-                isset($un_deseadas[$i]) && 
-                isset($tipos_p[$i]) && 
-                isset($medidas[$i])) {
-                
+            if (
+                !empty($nombres[$i]) &&
+                isset($un_deseadas[$i]) &&
+                isset($tipos_p[$i]) &&
+                isset($medidas[$i])
+            ) {
+
                 $productos[] = [
                     'nombre_producto' => trim($nombres[$i]),
                     'unidad_medida' => $medidas[$i],
@@ -94,9 +90,10 @@ class SolicitudesController extends AdminController
         }
         return $productos;
     }
-    public function eliminarSolic() {
-        try{
-            if(!isset($_GET['id'])){
+    public function eliminarSolic()
+    {
+        try {
+            if (!isset($_GET['id'])) {
                 echo json_encode([
                     'success' => false,
                     'message' => 'ID del producto no encontrado, ha surguido un error'
@@ -104,34 +101,34 @@ class SolicitudesController extends AdminController
             }
 
             $id = $_GET['id'];
-            if($this->solicitudes->eliminarSolicitud($id)){
+            if ($this->solicitudes->eliminarSolicitud($id)) {
                 echo json_encode([
                     'success' => false,
                     'message' => 'Producto eliminado exitosamente.'
                 ]);
-            }else{
+            } else {
                 echo json_encode([
                     'success' => false,
                     'message' => 'Error al eliminar'
                 ]);
-                
+
             }
-        }
-        catch(Exception $e){
+        } catch (Exception $e) {
             echo json_encode([
-                    'success' => false,
-                    'message' => 'Error en el servidor'
-                ]);
+                'success' => false,
+                'message' => 'Error en el servidor'
+            ]);
         }
         echo json_encode([
-                    'success' => true,
-                    'message' => 'Solicitud Eliminada exitosamente.'
-                ]);
+            'success' => true,
+            'message' => 'Solicitud Eliminada exitosamente.'
+        ]);
         exit();
     }
-    public function cambiarEstado() {
+    public function cambiarEstado()
+    {
         header('Content-Type: application/json');
-        
+
         try {
             // Verificar si es una solicitud POST
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -144,7 +141,7 @@ class SolicitudesController extends AdminController
             $idSolicitud = $_POST['id_solicitud'] ?? null;
             $nuevoEstado = $_POST['nuevo_estado'] ?? null;
             $motivo = $_POST['motivo'] ?? '';
-            
+
             // Validar datos requeridos
             if (!$idSolicitud || !$nuevoEstado) {
                 echo json_encode([
@@ -152,7 +149,7 @@ class SolicitudesController extends AdminController
                     'message' => 'Datos incompletos'
                 ]);
             }
-            
+
             // Validar estado permitido
             $estadosPermitidos = ['Aprobado', 'Rechazado', 'En Revisión'];
             if (!in_array($nuevoEstado, $estadosPermitidos)) {
@@ -163,7 +160,7 @@ class SolicitudesController extends AdminController
             }
             $actualizado = $this->solicitudes->actualizarEstadoSolicitud($idSolicitud, $nuevoEstado, $motivo);
 
-            if ($actualizado) {            
+            if ($actualizado) {
                 echo json_encode([
                     'success' => true,
                     'message' => 'Solicitud colocada ' . strtolower($nuevoEstado) . ' correctamente'
@@ -181,9 +178,10 @@ class SolicitudesController extends AdminController
             ]);
         }
     }
-    public function obtenerDetalles() {
+    public function obtenerDetalles()
+    {
         header('Content-Type: application/json');
-        
+
         try {
             // Verificar si es una solicitud POST
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -193,13 +191,13 @@ class SolicitudesController extends AdminController
                 ]);
                 return;
             }
-            
+
             // Obtener ID de la solicitud
-            $idSolicitud = (int)$_POST['id_solicitud'] ?? null;
+            $idSolicitud = (int) $_POST['id_solicitud'] ?? null;
             $solicitud = isset($_POST['solicitud_seleccionada'])
-                            ? json_decode($_POST['solicitud_seleccionada'], true)
-                            : null;
-            
+                ? json_decode($_POST['solicitud_seleccionada'], true)
+                : null;
+
             if (!$idSolicitud || !$solicitud) {
                 echo json_encode([
                     'success' => false,
@@ -208,15 +206,15 @@ class SolicitudesController extends AdminController
                 return;
             }
             $productos_solic = $this->solicitudes->getProdsPorIdSolic($idSolicitud);
-            
+
             $solicitud['productos'] = $productos_solic['data'];
-            
+
             echo json_encode([
                 'success' => true,
                 'message' => 'Detalles obtenidos correctamente',
                 'data' => $solicitud
             ]);
-            
+
         } catch (Exception $e) {
             echo json_encode([
                 'success' => false,
@@ -224,21 +222,49 @@ class SolicitudesController extends AdminController
             ]);
         }
     }
-    public function obtenerProducto() {
+    public function obtenerDetallesMultiples(array $solicitudes)
+    {
+        $resultado = [];
+
         try {
-            if(!isset($_GET['id'])) {
+            foreach ($solicitudes as $solicitud) {
+
+                $idSolicitud = (int) $solicitud['id_solicitud'];
+                $productos_solic = $this->solicitudes->getProdsPorIdSolic($idSolicitud);
+                $solicitud['productos'] = $productos_solic['data'] ?? [];
+
+                $resultado[] = $solicitud;
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Detalles obtenidos correctamente',
+                'data' => $resultado
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error al obtener detalles: ' . $e->getMessage()
+            ];
+        }
+    }
+    public function obtenerProducto()
+    {
+        try {
+            if (!isset($_GET['id'])) {
                 echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
                 return;
             }
 
             $id = $_GET['id'];
             $producto = $this->solicitudes->obtenerSolicPorId($id);
-            if($producto) {
+            if ($producto) {
                 echo json_encode(['success' => true, 'producto' => $producto, 'message' => 'obtenido']);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Producto no encontrado']);
             }
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
         }
     }
@@ -246,25 +272,24 @@ class SolicitudesController extends AdminController
     {
         try {
             $productos = $this->solicitudes->cargarProds();
-            if($productos) {
+            if ($productos) {
                 return $productos;
             } else {
                 return [];
             }
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return [];
         }
     }
-    public function actualizarSolic() {
+    public function actualizarSolic()
+    {
         header('Content-Type: application/json; charset=utf-8');
         try {
             if ($this->agregarSolic(true)) {
                 if (isset($_POST['nuevo_estado'])) {
                     $this->cambiarEstado();
                     exit();
-                }
-                else
-                {
+                } else {
                     echo json_encode(['success' => true, 'message' => '¡Se ha actualizado su solicitud!']);
                     exit();
                 }
@@ -272,7 +297,7 @@ class SolicitudesController extends AdminController
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
         }
-            // Si no entra en el if, devuelve algo por defecto
+        // Si no entra en el if, devuelve algo por defecto
         echo json_encode(['success' => false, 'message' => 'No se pudo actualizar']);
         exit();
     }

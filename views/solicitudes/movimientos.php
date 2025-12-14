@@ -1,10 +1,3 @@
-<?php
-// Controlador debería pasar estos datos:
-// $solicitudesRevision - Array con solicitudes EN REVISIÓN para presupuesto
-// $proveedores - Array de proveedores disponibles
-// $tiposProducto - Array de tipos de producto
-?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -38,8 +31,8 @@
                             <h1>
                                 <i data-lucide="calculator"></i>
                                 Gestión de Presupuesto
-                                <?php if(count($solicitudesRevision ?? []) > 0): ?>
-                                    <span class="badge"><?= count($solicitudesRevision) ?> en revisión</span>
+                                <?php if(count($solicitudes['data'] ?? []) > 0): ?>
+                                    <span class="badge"><?= count($solicitudes['data']) ?> en revisión</span>
                                 <?php endif; ?>
                             </h1>
                             <p>Asignación de proveedores y presupuesto para solicitudes en revisión</p>
@@ -81,7 +74,7 @@
                             <select class="filter-select" id="filterTipo" onchange="filtrarSolicitudes()">
                                 <option value="todos">Todos los tipos</option>
                                 <?php foreach($tiposProducto['data'] ?? [] as $tipo): ?>
-                                    <option value="<?= $tipo['id_tipo'] ?>">
+                                    <option value="<?= $tipo['id_tipo']?>"> <!---Verificar si debe estar en STRING o INT-->
                                         <?= htmlspecialchars($tipo['nombre']) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -107,13 +100,13 @@
                     <div class="stats-row">
                         <?php
                         // Calcular estadísticas
-                        $totalSolicitudes = count($solicitudesRevision ?? []);
-                        $totalProductos = 0;
+                        $totalSolicitudes = count($solicitudes['data'] ?? []);
                         $totalMonto = 0;
-                        $sinProveedor = 0;
+                        $totalTodosProductos = 0;
+                        $totalTodosProdsSinProv = 0;
                         $urgentes = 0;
                         
-                        foreach($solicitudesRevision ?? [] as $solicitud) {
+                        foreach($solicitudes['data'] ?? [] as $solicitud) {
                             $hoy = new DateTime();
                             $fechaDeseo = new DateTime($solicitud['fecha_deseo']);
                             $diasDiferencia = $hoy->diff($fechaDeseo)->days;
@@ -121,9 +114,8 @@
                             if($diasDiferencia <= 3) $urgentes++;
                             
                             foreach($solicitud['productos'] ?? [] as $producto) {
-                                $totalProductos++;
-                                if(empty($producto['rif_proveedor'])) $sinProveedor++;
-                                $totalMonto += ($producto['precio_unitario'] ?? 0) * ($producto['un_deseadas'] ?? 0);
+                                $totalTodosProductos++;
+                                if(empty($producto['rif_proveedor'])) $totalTodosProdsSinProv++;
                             }
                         }
                         ?>
@@ -143,7 +135,7 @@
                                 <i data-lucide="package"></i>
                             </div>
                             <div class="stat-info">
-                                <h3 id="countSinProveedor"><?= $sinProveedor ?></h3>
+                                <h3 id="countSinProveedor"><?= $totalTodosProdsSinProv ?></h3>
                                 <p>Productos sin proveedor</p>
                             </div>
                         </div>
@@ -157,25 +149,17 @@
                                 <p>Proveedores disponibles</p>
                             </div>
                         </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-icon monto">
-                                <i data-lucide="dollar-sign"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>$<span id="totalMonto"><?= number_format($totalMonto, 2) ?></span></h3>
-                                <p>Monto total estimado</p>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Lista de Solicitudes EN REVISIÓN -->
                     <div class="solicitudes-container" id="solicitudesList">
-                        <?php if(!empty($solicitudes)): ?>
-                            <?php foreach($solicitudes as $solicitud): ?>
+                        <?php if(!empty($solicitudes['data'])): ?>
+                            <?php foreach($solicitudes['data'] as $solicitud): ?>
                                 <?php 
                                 $productos = $solicitud['productos'] ?? [];
-                                
+                                $totalProductos = 0;
+                                $totalUnidades = 0;
+                                $sinProveedor = 0;
                                 // Calcular prioridad basada en fecha deseada
                                 $hoy = new DateTime();
                                 $fechaDeseo = new DateTime($solicitud['fecha_deseo']);
@@ -195,14 +179,9 @@
                                     $prioridadClass = 'priority-low';
                                 }
                                 
-                                // Contar productos sin proveedor
-                                $sinProveedor = 0;
-                                $totalProductos = count($productos);
-                                $montoTotal = 0;
-                                
                                 foreach($productos as $producto) {
-                                    if(empty($producto['rif_proveedor'])) $sinProveedor++;
-                                    $montoTotal += ($producto['precio_unitario'] ?? 0) * ($producto['un_deseadas'] ?? 0);
+                                    $totalProductos++;
+                                    $totalUnidades += $producto['un_deseadas'];
                                 }
                                 ?>
                                 
@@ -220,9 +199,9 @@
                                                 <span class="solicitud-priority <?= $prioridadClass ?>">
                                                     <i data-lucide="clock"></i> <?= $prioridadText ?>
                                                 </span>
-                                                <?php if($sinProveedor > 0): ?>
-                                                    <span class="badge" style="background: var(--warning-color); color: white;">
-                                                        <i data-lucide="alert-circle"></i> <?= $sinProveedor ?> sin proveedor
+                                                <?php if($totalProductos > 0): ?>
+                                                    <span class="badge" style="background: var(--primary-light); color: white;">
+                                                        <i data-lucide="alert-circle"></i> <?= $totalProductos ?> productos distintos
                                                     </span>
                                                 <?php endif; ?>
                                             </div>
@@ -265,18 +244,26 @@
                                             <h4 style="font-weight: 600; color: var(--review-color);">
                                                 <i data-lucide="clipboard-check"></i> Resumen de asignación
                                             </h4>
-                                            <span class="badge"><?= $totalProductos ?> productos</span>
+                                            <span class="badge"><?= $totalProductos ?> unidades</span>
                                         </div>
                                         <div class="summary-content">
                                             <div class="summary-item">
-                                                <h4>Productos sin proveedor</h4>
-                                                <p style="color: <?= $sinProveedor > 0 ? 'var(--warning-color)' : 'var(--success-color)' ?>;">
-                                                    <?= $sinProveedor ?> de <?= $totalProductos ?>
+                                                <h4>Productos concretos</h4>
+                                                <p style="color: var(--primary-color)">
+                                                    <?php for($i=0; $i < count($productos); $i++): ?>
+                                                        <?php if($i+1 == count($productos)): ?>
+                                                            <span><?= $productos[$i]['nombre']?>.</span>
+                                                        <?php else: ?>
+                                                            <span><?= $productos[$i]['nombre']?>, </span>
+                                                        <?php endif; ?>
+                                                    <?php endfor; ?>
                                                 </p>
                                             </div>
                                             <div class="summary-item">
-                                                <h4>Monto total estimado</h4>
-                                                <p>$<?= number_format($montoTotal, 2) ?></p>
+                                                <h4>Proveedores asignados</h4>
+                                                <p style="color: <?= $sinProveedor > 0 ? 'var(--success-color)' : 'var(--warning-color)'?>;">
+                                                    <?= $sinProveedor ?> de <?= $totalProductos ?>
+                                                </p>
                                             </div>
                                             <div class="summary-item">
                                                 <h4>Días para entrega</h4>
@@ -292,7 +279,6 @@
                                         <div class="productos-grid">
                                             <?php foreach($productos as $producto): ?>
                                                 <?php 
-                                                $proveedoresTipo = $proveedoresPorTipo[$producto['id_tipo']] ?? [];
                                                 $tieneProveedor = !empty($producto['rif_proveedor']);
                                                 ?>
                                                 <div class="producto-item" data-tipo="<?= $producto['id_tipo'] ?>">
@@ -300,7 +286,7 @@
                                                         <div>
                                                             <span class="producto-name"><?= htmlspecialchars($producto['nombre']) ?></span>
                                                             <div class="producto-details">
-                                                                <span>Tipo: <?= htmlspecialchars($producto['tipo_nombre'] ?? 'N/A') ?></span>
+                                                                <span>Tipo: <?= htmlspecialchars($producto['nombre_tipo'] ?? 'N/A') ?></span>
                                                             </div>
                                                         </div>
                                                         <span class="producto-quantity"><?= $producto['un_deseadas'] ?> <?= htmlspecialchars($producto['medida']) ?></span>
@@ -316,9 +302,8 @@
                                                                             data-tipo="<?= $producto['id_tipo'] ?>"
                                                                             onchange="cambiarProveedor(<?= $solicitud['id_solicitud'] ?>, <?= $producto['num_linea'] ?>, this.value)">
                                                                         <option value="">Seleccionar proveedor</option>
-                                                                        <?php foreach($proveedoresTipo as $prov): ?>
-                                                                            <option value="<?= $prov['rif'] ?>" 
-                                                                                    <?= ($producto['rif_proveedor'] ?? '') == $prov['rif'] ? 'selected' : '' ?>
+                                                                        <?php foreach($proveedores as $prov): ?>
+                                                                            <option value="<?= $prov['rif'] ?>"
                                                                                     data-info='<?= json_encode($prov) ?>'>
                                                                                 <?= htmlspecialchars($prov['nombre']) ?>
                                                                             </option>
@@ -329,28 +314,6 @@
                                                                             title="Buscar más proveedores">
                                                                         <i data-lucide="search"></i>
                                                                     </button>
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <div class="form-group">
-                                                                <label class="form-label">Precio unitario ($)</label>
-                                                                <input type="number" 
-                                                                       class="form-input precio-input"
-                                                                       data-tipo="<?= $producto['id_tipo'] ?>"
-                                                                       placeholder="0.00"
-                                                                       step="0.01"
-                                                                       min="0"
-                                                                       value="<?= $producto['precio_unitario'] ?? '' ?>"
-                                                                       onchange="actualizarPrecio(<?= $solicitud['id_solicitud'] ?>, <?= $producto['num_linea'] ?>, this.value)"
-                                                                       <?= !$tieneProveedor ? 'disabled' : '' ?>>
-                                                            </div>
-                                                            
-                                                            <div class="form-group">
-                                                                <label class="form-label">Subtotal</label>
-                                                                <div class="form-input" style="background: var(--gray-100); font-weight: 600;">
-                                                                    $<span id="subtotal_<?= $solicitud['id_solicitud'] ?>_<?= $producto['num_linea'] ?>">
-                                                                        <?= number_format(($producto['precio_unitario'] ?? 0) * ($producto['un_deseadas'] ?? 0), 2) ?>
-                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -604,8 +567,9 @@
             selects.forEach(select => {
                 if (!select.value) sinProveedor++;
             });
-            
-            solicitudDiv.dataset.sinProveedor = sinProveedor;
+            console.log(solicitudDiv.dataset.sinProveedor)
+            solicitudDiv.dataset.sinproveedor = sinProveedor;
+            console.log(solicitudDiv.dataset.sinProveedor)
             
             // Actualizar badge
             let badge = solicitudDiv.querySelector('.badge');
@@ -1048,8 +1012,7 @@
         
         async function buscarProveedor(idTipo) {
             try {
-                const response = await fetch(`controller/ProveedorController.php?action=getByTipo&id_tipo=${idTipo}`);
-                const proveedores = await response.json();
+                const proveedores = <?= json_encode($proveedores) ?>;
                 
                 if (!proveedores || proveedores.length === 0) {
                     Swal.fire({
