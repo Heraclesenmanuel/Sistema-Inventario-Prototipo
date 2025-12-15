@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 15-12-2025 a las 14:04:08
+-- Tiempo de generación: 15-12-2025 a las 21:26:39
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -74,20 +74,6 @@ INSERT INTO `director` (`ced_dir`, `nombre`, `telf`) VALUES
 ('31466704', 'Juanito Pulga', '04125555555'),
 ('34566777', 'Jose Jose', '04124326789'),
 ('8514695', 'Roselys Sanchez', '04145544899');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `movimiento`
---
-
-CREATE TABLE `movimiento` (
-  `id_producto` int(11) NOT NULL,
-  `id_solicitud` int(11) NOT NULL,
-  `un_anadidas` int(11) DEFAULT NULL,
-  `fecha_movimiento` date DEFAULT NULL,
-  `id_prod` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -198,17 +184,18 @@ CREATE TABLE `producto` (
   `un_disponibles` int(11) DEFAULT 0,
   `medida` varchar(100) DEFAULT NULL,
   `id_tipo` int(11) DEFAULT NULL,
-  `fecha_r` date NOT NULL
+  `fecha_r` date NOT NULL,
+  `valido` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `producto`
 --
 
-INSERT INTO `producto` (`id_producto`, `nombre`, `un_disponibles`, `medida`, `id_tipo`, `fecha_r`) VALUES
-(1, 'Tornillo', 0, 'Unidades', 4, '0000-00-00'),
-(2, 'RAM', 0, 'Unidades', 4, '0000-00-00'),
-(3, 'Cargador Laptop', 0, 'Unidades', 4, '0000-00-00');
+INSERT INTO `producto` (`id_producto`, `nombre`, `un_disponibles`, `medida`, `id_tipo`, `fecha_r`, `valido`) VALUES
+(1, 'Tornillo', 0, 'Unidades', 4, '0000-00-00', 1),
+(2, 'RAM', 0, 'Unidades', 4, '0000-00-00', 1),
+(3, 'Cargador Laptop', 0, 'Unidades', 4, '0000-00-00', 1);
 
 -- --------------------------------------------------------
 
@@ -219,30 +206,9 @@ INSERT INTO `producto` (`id_producto`, `nombre`, `un_disponibles`, `medida`, `id
 CREATE TABLE `prod_solic` (
   `id_solicitud` int(11) NOT NULL,
   `num_linea` int(11) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
   `un_deseadas` int(11) DEFAULT 0,
-  `medida` varchar(100) DEFAULT NULL,
-  `id_tipo` int(11) DEFAULT NULL
+  `id_producto` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `prod_solic`
---
-
-INSERT INTO `prod_solic` (`id_solicitud`, `num_linea`, `nombre`, `un_deseadas`, `medida`, `id_tipo`) VALUES
-(1, 1, 'Tornillo', 4, 'Unidades', 4),
-(2, 1, 'Pelota Futbol', 4, 'Unidades', 3),
-(3, 0, 'RAM', 6, 'Unidades', 4),
-(28, 1, 'RAM', 90, 'Unidades', 4),
-(31, 1, 'Hoja Carta', 100, 'Unidades', 1),
-(32, 1, 'Marcador', 200, 'Unidades', 2),
-(32, 2, 'Hoja Carta', 20, 'Unidades', 3),
-(33, 1, 'Cargador Laptop', 4, 'Unidades', 4),
-(33, 2, 'Tornillo', 5, 'Unidades', 4),
-(34, 0, 'RAM', 90, 'Kilogramos', 5),
-(42, 1, 'RAM', 1, 'Unidades', 4),
-(43, 1, 'RAM', 4, 'Unidades', 4),
-(43, 2, 'Cargador Laptop', 6, 'Unidades', 4);
 
 -- --------------------------------------------------------
 
@@ -325,6 +291,19 @@ CREATE TABLE `receptor_notif` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `registro_prod`
+--
+
+CREATE TABLE `registro_prod` (
+  `id_solicitud` int(11) NOT NULL,
+  `num_linea` int(11) NOT NULL,
+  `un_anadidas` int(11) DEFAULT NULL,
+  `fecha_r` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `rol_usuario`
 --
 
@@ -376,16 +355,8 @@ CREATE TABLE `solicitud` (
 --
 
 INSERT INTO `solicitud` (`id_solicitud`, `id_solicitante`, `fecha_solic`, `fecha_deseo`, `comentarios`, `num_oficina`, `estado`, `apelada`) VALUES
-(1, 20, '2025-12-05 00:00:00', '2025-12-11', '', '143', 'Rechazado', 0),
-(2, 1, '2025-12-05 01:00:00', '2025-12-11', '', '204', 'Aprobado', 0),
-(3, 1, '2025-12-04 02:00:00', '2025-12-11', '', '313', 'En Revisión', 0),
-(28, 1, '2025-12-05 04:00:00', '2025-12-12', '', '212', 'Pendiente', 0),
-(31, 1, '2025-12-05 05:00:00', '2025-12-12', '', '143', 'En Revisión', 0),
-(32, 1, '2025-12-05 06:00:00', '2025-12-12', '', '212', 'Aprobado', 0),
-(33, 1, '2025-12-05 07:00:00', '2025-12-12', 'lol porfa', '212', 'Aprobado', 0),
-(34, 1, '2025-12-07 08:00:00', '2025-12-14', 'lol porfa', '143', 'En Revisión', 0),
-(42, 1, '2025-12-11 10:03:59', '2025-12-15', '', '212', 'En Revisión', 0),
-(43, 20, '2025-12-15 08:40:45', '2025-12-22', '', '305', 'En Revisión', 0);
+(44, 1, '2025-12-15 21:02:25', '2025-12-22', '', '143', 'Rechazado', 0),
+(45, 1, '2025-12-15 21:13:41', '2025-12-22', '', '143', 'Pendiente', 0);
 
 -- --------------------------------------------------------
 
@@ -508,14 +479,6 @@ ALTER TABLE `director`
   ADD PRIMARY KEY (`ced_dir`);
 
 --
--- Indices de la tabla `movimiento`
---
-ALTER TABLE `movimiento`
-  ADD PRIMARY KEY (`id_producto`,`id_solicitud`),
-  ADD KEY `id_solic_movm_fk` (`id_solicitud`),
-  ADD KEY `id_prod_mov_fk` (`id_prod`);
-
---
 -- Indices de la tabla `notificacion`
 --
 ALTER TABLE `notificacion`
@@ -547,8 +510,9 @@ ALTER TABLE `producto`
 -- Indices de la tabla `prod_solic`
 --
 ALTER TABLE `prod_solic`
-  ADD PRIMARY KEY (`id_solicitud`,`num_linea`),
-  ADD KEY `id_tipo_solic_fk` (`id_tipo`);
+  ADD PRIMARY KEY (`id_solicitud`,`num_linea`,`id_producto`),
+  ADD KEY `id_solicitud` (`id_solicitud`,`num_linea`),
+  ADD KEY `id_producto` (`id_producto`);
 
 --
 -- Indices de la tabla `proveedor`
@@ -569,6 +533,12 @@ ALTER TABLE `prov_recomendaciones`
 ALTER TABLE `receptor_notif`
   ADD PRIMARY KEY (`id_usuario`,`id_notif`),
   ADD KEY `id_notif_rec_notif_fk` (`id_notif`);
+
+--
+-- Indices de la tabla `registro_prod`
+--
+ALTER TABLE `registro_prod`
+  ADD PRIMARY KEY (`id_solicitud`,`num_linea`);
 
 --
 -- Indices de la tabla `rol_usuario`
@@ -647,7 +617,7 @@ ALTER TABLE `rol_usuario`
 -- AUTO_INCREMENT de la tabla `solicitud`
 --
 ALTER TABLE `solicitud`
-  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT de la tabla `tipo_prod`
@@ -670,14 +640,6 @@ ALTER TABLE `usuario`
 --
 ALTER TABLE `codigo_recuperacion`
   ADD CONSTRAINT `id_user_code_fk` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
-
---
--- Filtros para la tabla `movimiento`
---
-ALTER TABLE `movimiento`
-  ADD CONSTRAINT `id_prod_fk` FOREIGN KEY (`id_producto`) REFERENCES `producto` (`id_producto`),
-  ADD CONSTRAINT `id_prod_mov_fk` FOREIGN KEY (`id_prod`) REFERENCES `producto` (`id_producto`),
-  ADD CONSTRAINT `id_solic_movm_fk` FOREIGN KEY (`id_solicitud`) REFERENCES `solicitud` (`id_solicitud`);
 
 --
 -- Filtros para la tabla `notificacion`
@@ -708,8 +670,7 @@ ALTER TABLE `producto`
 -- Filtros para la tabla `prod_solic`
 --
 ALTER TABLE `prod_solic`
-  ADD CONSTRAINT `id_solic_fk` FOREIGN KEY (`id_solicitud`) REFERENCES `solicitud` (`id_solicitud`) ON DELETE CASCADE,
-  ADD CONSTRAINT `id_tipo_solic_fk` FOREIGN KEY (`id_tipo`) REFERENCES `tipo_prod` (`id_tipo`);
+  ADD CONSTRAINT `id_solic_fk` FOREIGN KEY (`id_solicitud`) REFERENCES `solicitud` (`id_solicitud`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `prov_recomendaciones`
@@ -724,6 +685,12 @@ ALTER TABLE `prov_recomendaciones`
 ALTER TABLE `receptor_notif`
   ADD CONSTRAINT `id_notif_rec_notif_fk` FOREIGN KEY (`id_notif`) REFERENCES `notificacion` (`id_notif`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `id_usuario_rec_notif_fk` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `registro_prod`
+--
+ALTER TABLE `registro_prod`
+  ADD CONSTRAINT `prod_solic_registro_fk` FOREIGN KEY (`id_solicitud`,`num_linea`) REFERENCES `prod_solic` (`id_solicitud`, `num_linea`);
 
 --
 -- Filtros para la tabla `servicio_proveedor`
@@ -750,3 +717,7 @@ ALTER TABLE `usuario`
 ALTER TABLE `usuario_super`
   ADD CONSTRAINT `id_user_fk` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON UPDATE CASCADE;
 COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
