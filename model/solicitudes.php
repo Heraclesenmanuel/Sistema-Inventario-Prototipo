@@ -27,7 +27,10 @@ class Solicitud extends Base{
         }
         else
         {
-            $sql_extra = 'WHERE of_u.id_usuario = '. $_SESSION["id"] /*.' AND estado = '*/;
+            $sql_extra = 'INNER JOIN ofic_usuario of_u 
+                      ON of_u.num_oficina = s.num_oficina 
+                  WHERE of_u.id_usuario = ' . $_SESSION["id"] . ' 
+                  AND s.estado != "En Revisión"';
         }
             $sql = 'SELECT s.*, 
                 u.nombre AS nombre_solicitante, 
@@ -40,7 +43,7 @@ class Solicitud extends Base{
             . $sql_extra . '
             ORDER BY s.fecha_solic DESC;
                 ';
-        if($_SESSION['dpto'] < 3)
+        /*if($_SESSION['dpto'] < 3)
         {
             $sql = 'SELECT 
                         s.*,
@@ -56,7 +59,7 @@ class Solicitud extends Base{
                         ON s.num_oficina = of_u.num_oficina ' .
                         $sql_extra .
                     ' ORDER BY s.fecha_solic DESC;';
-        }
+        }*/
         $resultado = $this->db->query($sql);
 
         if(!$resultado) {

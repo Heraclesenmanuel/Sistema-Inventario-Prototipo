@@ -64,7 +64,6 @@
                     <span class="nav-text">Inicio</span>
                 </a>
             </li>
-            
             <li class="has-submenu <?= $currentAction == 'inventario' ? 'open' : '' ?>" role="none">
                 <a href="#" class="nav-link <?= $currentAction == 'inventario' ? 'active' : '' ?>" role="menuitem" aria-haspopup="true" aria-expanded="<?= $currentAction == 'inventario' ? 'true' : 'false' ?>">
                     <i data-lucide="package" class="nav-icon"></i>
@@ -72,12 +71,14 @@
                     <i data-lucide="chevron-down" class="submenu-arrow" style="<?= $currentAction == 'inventario' ? 'transform: rotate(180deg)' : '' ?>"></i>
                 </a>
                 <ul class="submenu" role="menu">
+                    <?php if($_SESSION['dpto'] != 2 && $_SESSION['dpto'] != 4): ?>
                     <li role="none">
                         <a href="?action=inventario&method=categorias" class="submenu-link <?= ($currentAction == 'inventario' && $currentMethod == 'categorias') ? 'active' : '' ?>" role="menuitem">
                             <i data-lucide="folder" class="submenu-icon"></i>
                             <span>Categorías</span>
                         </a>
                     </li>
+                <?php endif; ?>
                     <li role="none">
                         <a href="?action=inventario&method=home" class="submenu-link <?= ($currentAction == 'inventario' && $currentMethod == 'home') ? 'active' : '' ?>" role="menuitem">
                             <i data-lucide="box" class="submenu-icon"></i>
@@ -86,7 +87,7 @@
                     </li>
                 </ul>
             </li>
-            
+            <?php if ($_SESSION['dpto'] !=2 && $_SESSION['dpto'] !=4): ?>
             <li class="has-submenu <?= $currentAction == 'oficinas' ? 'open' : '' ?>" role="none">
                 <a href="#" class="nav-link <?= $currentAction == 'oficinas' ? 'active' : '' ?>" role="menuitem" aria-haspopup="true" aria-expanded="<?= $currentAction == 'oficinas' ? 'true' : 'false' ?>">
                     <i data-lucide="building-2" class="nav-icon"></i>
@@ -108,28 +109,28 @@
                     </li>
                 </ul>
             </li>
-            
+            <?php endif; ?>
+            <?php if($_SESSION['dpto'] !=2): ?>
             <li role="none">
                 <a href="?action=proveedor&method=home" class="nav-link <?= $currentAction == 'proveedor' ? 'active' : '' ?>" role="menuitem">
                     <i data-lucide="truck" class="nav-icon"></i>
                     <span class="nav-text">Proveedores</span>
                 </a>
             </li>
-            
+            <?php endif; ?>
             <li role="none">
                 <a href="?action=reporte&method=home" class="nav-link <?= $currentAction == 'reporte' ? 'active' : '' ?>" role="menuitem">
                     <i data-lucide="bar-chart-3" class="nav-icon"></i>
                     <span class="nav-text">Estadísticas</span>
                 </a>
             </li>
-            
             <li role="none">
                 <a href="?action=solicitudes&method=home" class="nav-link <?= $currentAction == 'solicitudes' ? 'active' : '' ?>" role="menuitem">
                     <i data-lucide="file-text" class="nav-icon"></i>
                     <span class="nav-text">Solicitudes</span>
                 </a>
             </li>
-
+            <?php if($_SESSION['dpto'] == 2): ?>
             <li role="none">
                 <a href="?action=notificaciones&method=home" class="nav-link <?= $currentAction == 'notificaciones' ? 'active' : '' ?>" role="menuitem">
                     <div style="position: relative; display: flex; align-items: center;">
@@ -140,6 +141,7 @@
                     <span class="nav-text">Notificaciones</span>
                 </a>
             </li>
+            <?php endif; ?>
         </ul>
     </nav>
 </aside>

@@ -73,7 +73,7 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
                             <i data-lucide="arrow-right" class="arrow-icon"></i>
                         </div>
                     </a>
-                    
+                    <?php if($_SESSION['dpto'] != 2): ?>
                     <!-- Proveedores -->
                     <a href="?action=proveedor&method=home" class="quick-access-card" data-category="providers">
                         <div class="card-icon-wrapper">
@@ -87,7 +87,7 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
                             <i data-lucide="arrow-right" class="arrow-icon"></i>
                         </div>
                     </a>
-                    
+                    <?php if($_SESSION['dpto'] != 4): ?>
                     <!-- Oficinas -->
                     <a href="?action=oficinas&method=home" class="quick-access-card" data-category="offices">
                         <div class="card-icon-wrapper">
@@ -101,7 +101,7 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
                             <i data-lucide="arrow-right" class="arrow-icon"></i>
                         </div>
                     </a>
-                    
+                    <?php endif; ?>
                     <!-- Estadísticas -->
                     <a href="?action=reporte&method=home" class="quick-access-card" data-category="stats">
                         <div class="card-icon-wrapper">
@@ -115,7 +115,7 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
                             <i data-lucide="arrow-right" class="arrow-icon"></i>
                         </div>
                     </a>
-                    
+                    <?php endif; ?>
                     <!-- Solicitudes -->
                     <a href="?action=solicitudes&method=home" class="quick-access-card" data-category="requests">
                         <div class="card-icon-wrapper">
