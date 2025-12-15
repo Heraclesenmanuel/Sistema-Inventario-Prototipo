@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 13-12-2025 a las 16:14:40
+-- Tiempo de generación: 15-12-2025 a las 12:13:16
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -239,8 +239,9 @@ INSERT INTO `prod_solic` (`id_solicitud`, `num_linea`, `nombre`, `un_deseadas`, 
 (33, 1, 'Cargador Laptop', 4, 'Unidades', 4),
 (33, 2, 'Tornillo', 5, 'Unidades', 4),
 (34, 0, 'RAM', 90, 'Kilogramos', 5),
-(37, 1, 'Tornillo', 6, 'Unidades', 4),
-(42, 1, 'RAM', 1, 'Unidades', 4);
+(42, 1, 'RAM', 1, 'Unidades', 4),
+(43, 1, 'RAM', 4, 'Unidades', 4),
+(43, 2, 'Cargador Laptop', 6, 'Unidades', 4);
 
 -- --------------------------------------------------------
 
@@ -377,13 +378,13 @@ INSERT INTO `solicitud` (`id_solicitud`, `id_solicitante`, `fecha_solic`, `fecha
 (1, 1, '2025-12-05 00:00:00', '2025-12-11', '', '143', 'Rechazado', 0),
 (2, 1, '2025-12-05 01:00:00', '2025-12-11', '', '204', 'Aprobado', 0),
 (3, 1, '2025-12-04 02:00:00', '2025-12-11', '', '313', 'En Revisión', 0),
-(28, 1, '2025-12-05 04:00:00', '2025-12-12', '', '212', 'Aprobado', 0),
+(28, 1, '2025-12-05 04:00:00', '2025-12-12', '', '212', 'Pendiente', 0),
 (31, 1, '2025-12-05 05:00:00', '2025-12-12', '', '143', 'En Revisión', 0),
 (32, 1, '2025-12-05 06:00:00', '2025-12-12', '', '212', 'Aprobado', 0),
-(33, 1, '2025-12-05 07:00:00', '2025-12-12', '', '212', 'Aprobado', 0),
-(34, 1, '2025-12-07 08:00:00', '2025-12-14', '', '143', 'En Revisión', 0),
-(37, 20, '2025-12-08 23:04:28', '2025-12-15', '', '212', 'Pendiente', 0),
-(42, 20, '2025-12-11 10:03:59', '2025-12-15', '', '212', 'En Revisión', 0);
+(33, 1, '2025-12-05 07:00:00', '2025-12-12', 'lol porfa', '212', 'Aprobado', 0),
+(34, 1, '2025-12-07 08:00:00', '2025-12-14', 'lol porfa', '143', 'En Revisión', 0),
+(42, 20, '2025-12-11 10:03:59', '2025-12-15', '', '212', 'En Revisión', 0),
+(43, 20, '2025-12-15 08:40:45', '2025-12-22', '', '305', 'En Revisión', 0);
 
 -- --------------------------------------------------------
 
@@ -645,7 +646,7 @@ ALTER TABLE `rol_usuario`
 -- AUTO_INCREMENT de la tabla `solicitud`
 --
 ALTER TABLE `solicitud`
-  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id_solicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT de la tabla `tipo_prod`
