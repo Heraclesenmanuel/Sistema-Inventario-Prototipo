@@ -250,25 +250,6 @@ class SolicitudesController extends AdminController
             ];
         }
     }
-    public function obtenerProducto()
-    {
-        try {
-            if (!isset($_GET['id'])) {
-                echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
-                return;
-            }
-
-            $id = $_GET['id'];
-            $producto = $this->solicitudes->obtenerSolicPorId($id);
-            if ($producto) {
-                echo json_encode(['success' => true, 'producto' => $producto, 'message' => 'obtenido']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Producto no encontrado']);
-            }
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error en el servidor']);
-        }
-    }
     private function getProductos()
     {
         try {

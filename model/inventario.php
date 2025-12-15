@@ -4,7 +4,8 @@ class Inventario extends Base {
 
     public function obtenerDatos(){
         $sql = 'SELECT p.*, tp.nombre as tipo
-                FROM producto p INNER JOIN tipo_prod tp ON p.id_tipo=tp.id_tipo';
+                FROM producto p INNER JOIN tipo_prod tp ON p.id_tipo=tp.id_tipo
+                WHERE valido=1';
         $resultado = $this->db->query($sql);
 
         if(!$resultado) {
@@ -47,7 +48,7 @@ class Inventario extends Base {
         return $stmt;
     }
     public function guardarDatos($datos) {
-        $stmt = $this->db->prepare("INSERT INTO producto (nombre, medida, id_tipo) VALUES (?, ?, ?)");
+        $stmt = $this->db->prepare("INSERT INTO producto (nombre, medida, id_tipo, fecha_r) VALUES (?, ?, ?, NOW())");
         if (!$stmt) {
             $this->db->close();
             die('Error en la preparación de la consulta SQL');
@@ -183,6 +184,7 @@ class Inventario extends Base {
                             END, 
                         2) as porcentaje
                         FROM producto
+                        WHERE valido=1
                         GROUP BY nombre";
         
         $resultEstados = $this->db->query($sqlEstados);

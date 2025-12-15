@@ -139,7 +139,7 @@ class Reportes extends Base {
     }
 
     public function obtenerTotalProductos() {
-        $sql = "SELECT COUNT(*) as total FROM producto";
+        $sql = "SELECT COUNT(*) as total FROM producto WHERE valido=1";
         $resultado = $this->db->query($sql);
         return $resultado ? $resultado->fetch_assoc()['total'] : 0;
     }

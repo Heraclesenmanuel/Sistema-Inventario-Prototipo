@@ -17,6 +17,7 @@ class Solicitud extends Base{
         return $stmt->affected_rows;
     }
     public function obtenerSolicitudes(){
+        $sql_extra = '';
         if($_SESSION['dpto'] === 3)
         {
             $sql_extra = 'WHERE estado ="Pendiente"';
@@ -25,7 +26,7 @@ class Solicitud extends Base{
         {
             $sql_extra = 'WHERE estado ="En Revisión"';
         }
-        else
+        else if ($_SESSION['dpto'] == 2)
         {
             $sql_extra = 'INNER JOIN ofic_usuario of_u 
                       ON of_u.num_oficina = s.num_oficina 
@@ -73,7 +74,7 @@ class Solicitud extends Base{
         return $datos;
     }
     public function cargarProds() {
-        $sql = "SELECT * FROM producto";
+        $sql = "SELECT * FROM producto WHERE valido=1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -145,6 +146,7 @@ class Solicitud extends Base{
         return $stmt;
     }
     public function guardarSolicitud($datos, $id = null) {
+        $this->db->begin_transaction();
         if($id)
         {
             $stmt = $this->db->prepare("INSERT INTO solicitud (id_solicitud, id_solicitante, fecha_solic, fecha_deseo, comentarios, num_oficina) VALUES (?, ?, NOW(), ?, ?, ?)");
@@ -154,11 +156,13 @@ class Solicitud extends Base{
             $stmt = $this->db->prepare("INSERT INTO solicitud (id_solicitante, fecha_solic, fecha_deseo, comentarios, num_oficina) VALUES (?, NOW(), ?, ?, ?)");
         }
         if (!$stmt) {
+            $this->db->rollback();
             $this->db->close();
             die('Error en la preparación de la consulta SQL');
         }
         $result = $this->validarTiposDatos($datos, $stmt, $id)->execute();
         if (!$result) {
+            $this->db->rollback();
             error_log("Error al ejecutar la consulta: " . $stmt->error);
         }
         $stmt->close();
@@ -170,6 +174,7 @@ class Solicitud extends Base{
         $id_solic = $this->db->insert_id;
         if (empty($prods))
         {
+            $this->db->rollback();
             return false;
         }
         for ($i=0; $i<count($prods); $i++)
@@ -177,12 +182,14 @@ class Solicitud extends Base{
             $stmt = $this->db->prepare("INSERT INTO prod_solic (id_solicitud, num_linea, nombre, un_deseadas, medida, id_tipo) VALUES (?, ?, ?, ?, ?, ?)");
             if (!$stmt)
             {
+                $this->db->rollback();
                 $this->db->close();
                 die('Error en la preparación de la consulta SQL');
             }
             $result = $this->validarDatosProds($prods[$i], $stmt, $i+1, $id_solic)->execute();
             if (!$result) 
             {
+                $this->db->rollback();
                 error_log("Error al ejecutar la consulta: " . $stmt->error);
             }
         }
@@ -190,7 +197,7 @@ class Solicitud extends Base{
         $stmt->close();
         return $result;
     }
-    public function obtenerSolicPorId($id) {
+    public function obtenerProdPorId($id) {
         $stmt = $this->db->prepare("SELECT * FROM producto WHERE id_producto = ?");
         
         if (!$stmt) {
