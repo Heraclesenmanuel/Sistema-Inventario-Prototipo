@@ -27,6 +27,14 @@ class ReporteController extends AdminController
         $usuariosPorOficina = $this->reportes->obtenerUsuariosPorOficina();
         $datosCorrelacion = $this->reportes->obtenerDatosCorrelacion();
         
+        // Totales Generales
+        $totales = [
+            'usuarios' => $this->reportes->obtenerTotalUsuarios(),
+            'productos' => $this->reportes->obtenerTotalProductos(),
+            'solicitudes' => $this->reportes->obtenerTotalSolicitudes(),
+            'oficinas' => $this->reportes->obtenerTotalOficinas()
+        ];
+        
         require_once 'views/estadisticas/index.php';
     }
 }

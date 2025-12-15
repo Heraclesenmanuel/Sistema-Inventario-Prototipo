@@ -160,7 +160,7 @@ $es_admin = isset($_SESSION['id_cargo']) && $_SESSION['id_cargo'] == 1;
     
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="assets/js/menu.js"></script>
+
     
     <script>
         // Inicializar Lucide Icons

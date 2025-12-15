@@ -5,81 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= APP_NAME ?? 'UPEL' ?> - Estadísticas</title>
     <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
+    <!-- Base Admin CSS -->
     <link rel="stylesheet" href="public/css/admin.css">
+    <!-- Page Specific CSS -->
+    <link rel="stylesheet" href="public/css/stats.css">
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Alerts -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <style>
-        .main-content {
-            width: 85%;
-            max-width: 85%;
-        }
-        
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin: 20px 0;
-            width: 100%;
-        }
-        
-        .chart-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .chart-header {
-            background: #4e73df;
-            color: white;
-            padding: 15px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
-        .chart-header i {
-            margin-right: 8px;
-        }
-        
-        .chart-body {
-            padding: 20px;
-            height: 350px;
-            position: relative;
-        }
-        
-        .chart-body canvas {
-            max-height: 100%;
-        }
-        
-        .full-width {
-            grid-column: 1 / -1;
-        }
-        
-        @media (max-width: 1200px) {
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .full-width {
-                grid-column: 1;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="dashboard">
         <?php include_once 'views/inc/heder.php' ?>
 
-        <div class="main-wrapper" style="margin-left: 10px; padding: 20px;">
-            <main class="main-content">
-                <h1><?= $titulo ?? 'Estadísticas' ?></h1>
-                <br>
+        <!-- Main Wrapper with no hardcoded width -->
+        <main class="main-content">
+            <div class="main-wrapper">
+                <header class="stats-header">
+                    <h1 class="stats-title"><?= $titulo ?? 'Panel de Estadísticas' ?></h1>
+                    <p>Resumen general del sistema y métricas clave.</p>
+                </header>
+
+                <!-- Summary Cards Section -->
+                <section class="summary-grid">
+                    <!-- Users -->
+                    <div class="summary-card card-users">
+                        <div class="summary-info">
+                            <h3>Usuarios</h3>
+                            <div class="count"><?= $totales['usuarios'] ?? 0 ?></div>
+                        </div>
+                        <div class="summary-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+
+                    <!-- Products -->
+                    <div class="summary-card card-products">
+                        <div class="summary-info">
+                            <h3>Productos</h3>
+                            <div class="count"><?= $totales['productos'] ?? 0 ?></div>
+                        </div>
+                        <div class="summary-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    </div>
+
+                    <!-- Requests -->
+                    <div class="summary-card card-requests">
+                        <div class="summary-info">
+                            <h3>Solicitudes</h3>
+                            <div class="count"><?= $totales['solicitudes'] ?? 0 ?></div>
+                        </div>
+                        <div class="summary-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                    </div>
+
+                    <!-- Offices -->
+                    <div class="summary-card card-offices">
+                        <div class="summary-info">
+                            <h3>Oficinas</h3>
+                            <div class="count"><?= $totales['oficinas'] ?? 0 ?></div>
+                        </div>
+                        <div class="summary-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+                </section>
 
                 <div class="stats-container">
                     <!-- Gráfico original - Cantidad de Productos en el Almacén -->
                     <div class="chart-card">
                         <div class="chart-header">
-                            <i class="fas fa-chart-pie"></i> Cantidad de Productos en el Almacén
+                            <span><i class="fas fa-archive"></i> Estado del Almacén</span>
                         </div>
                         <div class="chart-body">
                             <canvas id="estadoChart"></canvas>
@@ -89,7 +87,7 @@
                     <!-- 2. Frecuencia de solicitudes por oficina (Torta) -->
                     <div class="chart-card">
                         <div class="chart-header">
-                            <i class="fas fa-chart-pie"></i> Frecuencia de Solicitudes por Oficina
+                           <span><i class="fas fa-chart-pie"></i> Solicitudes por Oficina</span>
                         </div>
                         <div class="chart-body">
                             <canvas id="frecuenciaSolicitudesChart"></canvas>
@@ -99,7 +97,7 @@
                     <!-- 1. Tipos de productos solicitados por oficina (Barras) -->
                     <div class="chart-card full-width">
                         <div class="chart-header">
-                            <i class="fas fa-chart-bar"></i> Tipos de Productos Solicitados por Oficina
+                           <span><i class="fas fa-chart-bar"></i> Tipos de Productos más Solicitados</span>
                         </div>
                         <div class="chart-body">
                             <canvas id="tiposProductosChart"></canvas>
@@ -109,7 +107,7 @@
                     <!-- 3. Cantidad de productos solicitados por oficina (Torta) -->
                     <div class="chart-card">
                         <div class="chart-header">
-                            <i class="fas fa-chart-pie"></i> Cantidad de Productos Solicitados por Oficina
+                            <span><i class="fas fa-boxes"></i> Volumen de Productos Totales</span>
                         </div>
                         <div class="chart-body">
                             <canvas id="cantidadProductosChart"></canvas>
@@ -119,7 +117,7 @@
                     <!-- 4. Solicitudes rechazadas por oficina (Barras) -->
                     <div class="chart-card">
                         <div class="chart-header">
-                            <i class="fas fa-chart-bar"></i> Solicitudes Rechazadas por Oficina
+                           <span><i class="fas fa-times-circle"></i> Rechazos por Oficina</span>
                         </div>
                         <div class="chart-body">
                             <canvas id="solicitudesRechazadasChart"></canvas>
@@ -129,7 +127,7 @@
                     <!-- 5. Usuarios por oficina (Barras) -->
                     <div class="chart-card full-width">
                         <div class="chart-header">
-                            <i class="fas fa-chart-bar"></i> Usuarios por Oficina
+                            <span><i class="fas fa-users-cog"></i> Distribución de Usuarios</span>
                         </div>
                         <div class="chart-body">
                             <canvas id="usuariosChart"></canvas>
@@ -139,15 +137,15 @@
                     <!-- 6. Gráfico de Correlación -->
                     <div class="chart-card full-width">
                         <div class="chart-header">
-                            <i class="fas fa-project-diagram"></i> Correlación: Usuarios vs Solicitudes por Oficina
+                            <span><i class="fas fa-project-diagram"></i> Análisis de Correlación</span>
                         </div>
                         <div class="chart-body">
                             <canvas id="correlacionChart"></canvas>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
 
     <!-- Incluir Chart.js para gráficos -->
@@ -155,12 +153,16 @@
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Colores para los gráficos
+        // Colores para los gráficos (Modern Palette)
         const coloresPaleta = [
             '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
             '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf',
             '#dda20a', '#be2617', '#6f42c1', '#e83e8c', '#fd7e14'
         ];
+
+        // Definiciones de Chart.js Defaults
+        Chart.defaults.font.family = "'Inter', system-ui, -apple-system, sans-serif";
+        Chart.defaults.color = '#858796';
 
         // Gráfico de Productos en almacén
         const estadoData = {
@@ -168,7 +170,7 @@
             datasets: [{
                 data: [<?= implode(',', array_column($estadisticas['por_estado'], 'cantidad')) ?>],
                 backgroundColor: coloresPaleta.slice(0, <?= count($estadisticas['por_estado']) ?>),
-                hoverBackgroundColor: coloresPaleta.slice(0, <?= count($estadisticas['por_estado']) ?>).map(c => c + 'dd')
+                borderWidth: 0
             }]
         };
 
@@ -178,19 +180,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: '70%',
                 plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
-                            }
-                        }
-                    }
+                    legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } }
                 }
             }
         });
@@ -229,7 +221,8 @@
                     {
                         label: '<?= $tipo ?>',
                         data: <?= json_encode($dataPorTipo[$tipo]) ?>,
-                        backgroundColor: coloresPaleta[<?= $colorIndex++ ?>]
+                        backgroundColor: coloresPaleta[<?= $colorIndex++ ?>],
+                        borderRadius: 4
                     },
                     <?php endforeach; ?>
                 ]
@@ -238,11 +231,11 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'top' },
-                    title: { display: false }
+                    legend: { position: 'top', labels: { usePointStyle: true } }
                 },
                 scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
+                    x: { grid: { display: false } }
                 }
             }
         });
@@ -254,55 +247,36 @@
                 labels: <?= json_encode(array_column($frecuenciaSolicitudes, 'oficina')) ?>,
                 datasets: [{
                     data: <?= json_encode(array_column($frecuenciaSolicitudes, 'total_solicitudes')) ?>,
-                    backgroundColor: coloresPaleta.slice(0, <?= count($frecuenciaSolicitudes) ?>)
+                    backgroundColor: coloresPaleta.slice(0, <?= count($frecuenciaSolicitudes) ?>),
+                    borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} solicitudes (${percentage}%)`;
-                            }
-                        }
-                    }
+                    legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } }
                 }
             }
         });
 
         // Cantidad de productos solicitados por oficina
         const cantidadProductosChart = new Chart(document.getElementById('cantidadProductosChart'), {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: <?= json_encode(array_column($cantidadProductos, 'oficina')) ?>,
                 datasets: [{
                     data: <?= json_encode(array_column($cantidadProductos, 'total_productos')) ?>,
-                    backgroundColor: coloresPaleta.slice(0, <?= count($cantidadProductos) ?>)
+                    backgroundColor: coloresPaleta.slice(0, <?= count($cantidadProductos) ?>),
+                    borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: '60%',
                 plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} productos (${percentage}%)`;
-                            }
-                        }
-                    }
+                    legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } }
                 }
             }
         });
@@ -316,8 +290,7 @@
                     label: 'Solicitudes Rechazadas',
                     data: <?= json_encode(array_column($solicitudesRechazadas, 'total_rechazadas')) ?>,
                     backgroundColor: '#e74a3b',
-                    borderColor: '#be2617',
-                    borderWidth: 1
+                    borderRadius: 4
                 }]
             },
             options: {
@@ -327,7 +300,8 @@
                     legend: { display: false }
                 },
                 scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
+                    x: { grid: { display: false } }
                 }
             }
         });
@@ -341,8 +315,7 @@
                     label: 'Usuarios',
                     data: <?= json_encode(array_column($usuariosPorOficina, 'total_usuarios')) ?>,
                     backgroundColor: '#1cc88a',
-                    borderColor: '#17a673',
-                    borderWidth: 1
+                    borderRadius: 4
                 }]
             },
             options: {
@@ -352,7 +325,8 @@
                     legend: { display: false }
                 },
                 scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
+                    x: { grid: { display: false } }
                 }
             }
         });
@@ -368,12 +342,12 @@
                         {
                             x: <?= $dato['total_usuarios'] ?>,
                             y: <?= $dato['total_solicitudes'] ?>,
-                            r: <?= max(5, min(20, $dato['total_productos'] / 5)) ?>,
+                            r: <?= max(5, min(25, $dato['total_productos'] / 5)) ?>,
                             oficina: '<?= $dato['oficina'] ?>'
                         },
                         <?php endforeach; ?>
                     ],
-                    backgroundColor: 'rgba(78, 115, 223, 0.6)',
+                    backgroundColor: 'rgba(78, 115, 223, 0.5)',
                     borderColor: '#4e73df',
                     borderWidth: 2
                 }]
@@ -384,35 +358,29 @@
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#6e707e',
+                        bodyColor: '#858796',
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
                         callbacks: {
                             label: function(context) {
                                 const point = context.raw;
-                                return [
-                                    `Oficina: ${point.oficina}`,
-                                    `Usuarios: ${point.x}`,
-                                    `Solicitudes: ${point.y}`,
-                                    `Productos: ${Math.round(point.r * 5)}`
-                                ];
+                                return `${point.oficina}: ${point.x} usr, ${point.y} solic.`;
                             }
                         }
                     }
                 },
                 scales: {
                     x: {
-                        title: {
-                            display: true,
-                            text: 'Número de Usuarios'
-                        },
+                        title: { display: true, text: 'Número de Usuarios' },
                         beginAtZero: true,
-                        ticks: { stepSize: 1 }
+                        grid: { borderDash: [2, 2] }
                     },
                     y: {
-                        title: {
-                            display: true,
-                            text: 'Número de Solicitudes'
-                        },
+                        title: { display: true, text: 'Número de Solicitudes' },
                         beginAtZero: true,
-                        ticks: { stepSize: 1 }
+                        grid: { borderDash: [2, 2] }
                     }
                 }
             }
@@ -424,7 +392,8 @@
                 title: 'Éxito',
                 text: '<?= addslashes(htmlspecialchars(urldecode($_GET['success']))) ?>',
                 icon: 'success',
-                confirmButtonText: 'OK'
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#4e73df'
             });
         <?php endif; ?>
 
@@ -433,7 +402,8 @@
                 title: 'Error',
                 text: '<?= addslashes(htmlspecialchars(urldecode($_GET['error']))) ?>',
                 icon: 'error',
-                confirmButtonText: 'OK'
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#e74a3b'
             });
         <?php endif; ?>
     </script>

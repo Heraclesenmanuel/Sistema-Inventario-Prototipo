@@ -170,10 +170,18 @@ class Inventario extends Base {
     }
     public function obtenerEstadisticas() {
         // Estadísticas por estado (para gráfico de torta)
+        // Estadísticas por estado (para gráfico de torta)
+        // Fixed: Handle division by zero if total stock is 0
         $sqlEstados = "SELECT 
                         nombre, 
                         SUM(un_disponibles) as cantidad,
-                        ROUND(SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM producto), 2) as porcentaje
+                        ROUND(
+                            CASE 
+                                WHEN (SELECT SUM(un_disponibles) FROM producto) > 0 
+                                THEN SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM producto)
+                                ELSE 0 
+                            END, 
+                        2) as porcentaje
                         FROM producto
                         GROUP BY nombre";
         

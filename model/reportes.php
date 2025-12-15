@@ -130,4 +130,29 @@ class Reportes extends Base {
         
         return $resultado->fetch_all(MYSQLI_ASSOC);
     }
+    // --- Nuevos Métodos de Totales Generales ---
+    
+    public function obtenerTotalUsuarios() {
+        $sql = "SELECT COUNT(*) as total FROM usuario";
+        $resultado = $this->db->query($sql);
+        return $resultado ? $resultado->fetch_assoc()['total'] : 0;
+    }
+
+    public function obtenerTotalProductos() {
+        $sql = "SELECT COUNT(*) as total FROM producto";
+        $resultado = $this->db->query($sql);
+        return $resultado ? $resultado->fetch_assoc()['total'] : 0;
+    }
+
+    public function obtenerTotalSolicitudes() {
+        $sql = "SELECT COUNT(*) as total FROM solicitud";
+        $resultado = $this->db->query($sql);
+        return $resultado ? $resultado->fetch_assoc()['total'] : 0;
+    }
+
+    public function obtenerTotalOficinas() {
+        $sql = "SELECT COUNT(*) as total FROM oficina";
+        $resultado = $this->db->query($sql);
+        return $resultado ? $resultado->fetch_assoc()['total'] : 0;
+    }
 }

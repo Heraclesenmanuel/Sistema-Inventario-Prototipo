@@ -10,7 +10,7 @@
     <!-- Estilos -->
     <link rel="stylesheet" href="public/css/admin.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="public/css/movimientos.css">
+    <link rel="stylesheet" href="public/css/requests.css">
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -34,7 +34,7 @@
                                 <i data-lucide="calculator"></i>
                                 Gestión de Presupuesto
                                 <?php if (count($solicitudes['data'] ?? []) > 0): ?>
-                                    <span class="badge"><?= count($solicitudes['data']) ?> en revisión</span>
+                                    <span class="badge"><?= count($solicitudes['data']) ?></span>
                                 <?php endif; ?>
                             </h1>
                             <p>Asignación de proveedores y presupuesto para solicitudes en revisión</p>

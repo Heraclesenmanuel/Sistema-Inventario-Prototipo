@@ -9,7 +9,9 @@
 
     <!-- Estilos -->
     <link rel="stylesheet" href="public/css/admin.css">
-    <link rel="stylesheet" href="public/css/notificaciones2.css">
+    <link rel="stylesheet" href="public/css/admin.css">
+    <link rel="stylesheet" href="public/css/notifications.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
     <script src="https://unpkg.com/lucide@latest"></script>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 15-12-2025 a las 12:13:16
+-- Tiempo de generación: 15-12-2025 a las 14:04:08
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -181,6 +181,7 @@ INSERT INTO `ofic_usuario` (`num_oficina`, `id_usuario`) VALUES
 ('305', 27),
 ('313', 1),
 ('313', 8),
+('313', 23),
 ('313', 28),
 ('325', 21),
 ('325', 27);
@@ -375,7 +376,7 @@ CREATE TABLE `solicitud` (
 --
 
 INSERT INTO `solicitud` (`id_solicitud`, `id_solicitante`, `fecha_solic`, `fecha_deseo`, `comentarios`, `num_oficina`, `estado`, `apelada`) VALUES
-(1, 1, '2025-12-05 00:00:00', '2025-12-11', '', '143', 'Rechazado', 0),
+(1, 20, '2025-12-05 00:00:00', '2025-12-11', '', '143', 'Rechazado', 0),
 (2, 1, '2025-12-05 01:00:00', '2025-12-11', '', '204', 'Aprobado', 0),
 (3, 1, '2025-12-04 02:00:00', '2025-12-11', '', '313', 'En Revisión', 0),
 (28, 1, '2025-12-05 04:00:00', '2025-12-12', '', '212', 'Pendiente', 0),
@@ -383,7 +384,7 @@ INSERT INTO `solicitud` (`id_solicitud`, `id_solicitante`, `fecha_solic`, `fecha
 (32, 1, '2025-12-05 06:00:00', '2025-12-12', '', '212', 'Aprobado', 0),
 (33, 1, '2025-12-05 07:00:00', '2025-12-12', 'lol porfa', '212', 'Aprobado', 0),
 (34, 1, '2025-12-07 08:00:00', '2025-12-14', 'lol porfa', '143', 'En Revisión', 0),
-(42, 20, '2025-12-11 10:03:59', '2025-12-15', '', '212', 'En Revisión', 0),
+(42, 1, '2025-12-11 10:03:59', '2025-12-15', '', '212', 'En Revisión', 0),
 (43, 20, '2025-12-15 08:40:45', '2025-12-22', '', '305', 'En Revisión', 0);
 
 -- --------------------------------------------------------
@@ -457,7 +458,7 @@ CREATE TABLE `usuario` (
 --
 
 INSERT INTO `usuario` (`id_usuario`, `cedula`, `clave`, `id_cargo`, `correo`, `nombre`) VALUES
-(1, '31987430', '12345678', 4, 'heracles.sanchez@gmail.com', 'HERACLES SANCHEZ'),
+(1, '31987430', '12345678', 1, 'heracles.sanchez@gmail.com', 'HERACLES SANCHEZ'),
 (8, '31414098', '123456', 1, 'heracles.edizahir@gmail.com', 'Luis Nuñez'),
 (20, '30987788', '12345678', 3, 'francesca@gmail.com', 'Franchesca Izquierdo'),
 (21, '31466704', '12345678', 4, 'sistemasuarez4@gmail.com', 'Eduar Suarez'),
@@ -749,7 +750,3 @@ ALTER TABLE `usuario`
 ALTER TABLE `usuario_super`
   ADD CONSTRAINT `id_user_fk` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON UPDATE CASCADE;
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
