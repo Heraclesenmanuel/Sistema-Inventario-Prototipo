@@ -23,6 +23,7 @@ class SolicitudesController extends AdminController
         }
         if ($_SESSION['dpto'] == 4) {
             $proveedores = $this->proveedores->obtenerProveedores();
+            $relacionesProvTipo = $this->proveedores->getRelacionesProvTipo();
             $solicitudes = $this->obtenerDetallesMultiples($solicitudes);
             require_once 'views/solicitudes/movimientos.php';
         } else {
