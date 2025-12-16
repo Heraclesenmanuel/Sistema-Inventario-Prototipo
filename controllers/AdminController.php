@@ -6,22 +6,32 @@ require_once 'model/config.php';
 require_once 'model/oficinas.php';
 require_once 'model/proveedores.php';
 
-class AdminController 
+class AdminController
 {
     protected $bdatos;
     protected $pos;
     protected $proveedores;
-    public function __construct() 
+    public function __construct()
     {
-        $this->iniciarSesion();
         $this->bdatos = new Inicio();
         $this->proveedores = new Proveedores();
+        $this->validarSesion();
+
     }
     protected function iniciarSesion()
     {
         if (session_status() === PHP_SESSION_NONE) {
+            ini_set('session.gc_maxlifetime', 1800);
+            session_set_cookie_params(1800);
             session_start();
         }
+    }
+    public function cerrar()
+    {
+        session_unset();
+        session_destroy();
+        header("Location: ./");
+        exit();
     }
     protected function validarSesion()
     {
@@ -43,10 +53,11 @@ class AdminController
             exit();
         }
         // Verificar si el usuario existe en la base de datos
-        $usuario = $this->bdatos->obtenerNombreUsuario($_SESSION['nombre']);
-        if (!$usuario) {
-            echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
-            echo '<script>
+        else {
+            $usuario = $this->bdatos->obtenerNombreUsuario($_SESSION['id'], true);
+            if (!$usuario) {
+                echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+                echo '<script>
                 document.addEventListener("DOMContentLoaded", function() {
                     Swal.fire({
                         icon: "error",
@@ -58,20 +69,22 @@ class AdminController
                     });
                 });
             </script>';
-            session_destroy();
-            exit();
+                session_destroy();
+                exit();
+            }
         }
     }
-    public function home() {
-        $this->validarSesion();
+    public function home()
+    {
+        //$this->validarSesion();
 
-        if(isset($_POST['uptade'])){
+        if (isset($_POST['uptade'])) {
             $precio = trim($_POST['dollar']);
             //$resultado = (new Config())->updateDollar($precio);
-            
+
             //$_SESSION['mensaje'] = $resultado['message'];
-           // $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
-            
+            // $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
+
             header('Location: ?action=admin');
             exit();
         }

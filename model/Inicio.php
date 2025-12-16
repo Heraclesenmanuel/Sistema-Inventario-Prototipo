@@ -285,17 +285,18 @@ class Inicio extends Base
         $_SESSION['id'] = $datosUsuario['id_usuario'];
     }
 
-    public function obtenerNombreUsuario($nombre)
+    public function obtenerNombreUsuario($param, $porId=null)
     {
-        $consulta = "SELECT nombre FROM usuario WHERE nombre = ?";
+        $consulta = "SELECT nombre FROM usuario WHERE ";
+        if(!$porId) $sql_extra = "nombre = " . $param;
+        else $sql_extra = "id_usuario = "  . $param;
+        $consulta .= $sql_extra;
         $stmt = $this->db->prepare($consulta);
 
         if (!$stmt) {
             error_log("Error preparando consulta: " . ($this->db->error));
             return null;
         }
-
-        $stmt->bind_param("s", $nombre);
         $stmt->execute();
         $result = $stmt->get_result();
         $usuario = $result->fetch_assoc();
@@ -303,6 +304,7 @@ class Inicio extends Base
 
         return $usuario['nombre'] ?? null;
     }
+    
     private function redirigirSegunRol($idCargo)
     {
         //$clave = $this->obtenerClaveSuper();

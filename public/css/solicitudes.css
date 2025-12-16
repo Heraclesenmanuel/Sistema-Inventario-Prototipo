@@ -70,6 +70,62 @@
     background-color: #FAFAFA;
     transition: all 0.3s ease;
 }
+/* Estilo base */
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  margin: 0 4px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover */
+.pagination-btn:hover {
+  background-color: #f0f0f0;
+  border-color: #999;
+}
+
+/* Botón activo (página actual) */
+.pagination-btn.active {
+  background-color: var(--verde-esmeralda);
+  border-color: var(--verde-esmeralda);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Botón deshabilitado */
+.pagination-btn.disabled,
+.pagination-btn:disabled {
+  background-color: #e9ecef;
+  border-color: #ddd;
+  color: #aaa;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Botón con íconos (ej. flechas) */
+.pagination-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+/* Contenedor de paginación */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
 
 .search-box input:focus {
     background-color: white;

@@ -15,7 +15,7 @@ class ReporteController extends AdminController
    //Funciones de estadisticas
    
     public function home(){
-        $this->validarSesion();
+        //$this->validarSesion();
         $titulo = 'Estadisticas';
         $estadisticas = $this->inventario->obtenerEstadisticas();
         

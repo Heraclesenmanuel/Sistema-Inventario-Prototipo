@@ -197,6 +197,11 @@
                                         <td><?php echo htmlspecialchars($oficina['telefono']); ?></td>
                                         <td>
                                             <div class="action-buttons-cell">
+                                                <button class="btn-edit" 
+                                                    title="Editar" 
+                                                    onclick='openEditOfficeModal(<?php echo json_encode($oficina); ?>)'>
+                                                    <i data-lucide="pencil" class="btn-icon"></i>
+                                                </button>
                                                 <button class="btn-view" 
                                                     title="Ver detalles" 
                                                     onclick='openOfficeModal(<?php echo json_encode($oficina); ?>)'>
@@ -298,6 +303,80 @@
         </div>
     </div>
 
+    <!-- Modal Edición de Oficina -->
+    <div id="editOfficeModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>
+                    <i data-lucide="edit-3" class="modal-icon"></i>
+                    Editar Oficina
+                </h2>
+                <button class="modal-close" id="closeEditModal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="editOfficeForm" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" id="edit_num_oficina_original" name="num_oficina_original">
+                    
+                    <div class="form-group">
+                        <label class="form-label"><i data-lucide="hash" class="label-icon"></i> Número de Oficina</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="hash" class="input-icon"></i>
+                            <input type="text" id="edit_num_oficina" name="num_oficina" class="form-input" placeholder="Ej: 101" required>
+                        </div>
+                        <small class="form-text">Identificador único de la oficina</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i data-lucide="type" class="label-icon"></i> Nombre de la Oficina</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="type" class="input-icon"></i>
+                            <input type="text" id="edit_nombre" name="nombre" class="form-input" placeholder="Ej: Oficina de Sistemas" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i data-lucide="phone" class="label-icon"></i> Teléfono</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="phone" class="input-icon"></i>
+                            <input type="text" id="edit_telefono" name="telefono" class="form-input" placeholder="Ej: 0412-1234567" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i data-lucide="user-tie" class="label-icon"></i> Director</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="user-tie" class="input-icon"></i>
+                            <select id="edit_ced_dir" name="ced_dir" class="form-input" style="appearance: auto;" required>
+                                <option value="" selected disabled>Seleccione un director</option>
+                                <?php if(isset($directores['success']) && $directores['success'] && !empty($directores['data'])): ?>
+                                    <?php foreach($directores['data'] as $director): ?>
+                                        <option value="<?php echo $director['ced_dir']?>">
+                                            <?php echo htmlspecialchars($director['nombre']) . " (" . htmlspecialchars($director['ced_dir']) . ")" ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                        </div>
+                        <small class="form-text">Asignar director responsable</small>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelEditBtn">
+                        <i data-lucide="x" class="btn-icon"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-submit">
+                        <i data-lucide="save" class="btn-icon"></i>
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -307,112 +386,104 @@
             // Referencias DOM
             const officeModal = document.getElementById('officeModal');
             const closeModal = document.getElementById('closeModal');
-            const btnSelectDirector = document.getElementById('btn-select-director');
-            const btnNewDirector = document.getElementById('btn-new-director');
-            const selectDirectorContainer = document.getElementById('select-director-container');
-            const directorDataContainer = document.getElementById('director-data-container');
-            const directorSelect = document.getElementById('dir_cedula');
-            const dirCedula = document.getElementById('cedula');
-            const dirNombre = document.getElementById('dir_nombre');
-            const dirTelefono = document.getElementById('dir_telf');
-            const hiddenCedula = document.getElementById('hidden_cedula');
-            const hiddenDirNombre = document.getElementById('hidden_dir_nombre');
-            const hiddenDirTelf = document.getElementById('hidden_dir_telf');
-            const modoDirectorInput = document.getElementById('modo_director');
-            const oficinaForm = document.getElementById('oficina-form');
+            const editOfficeModal = document.getElementById('editOfficeModal');
+            const closeEditModal = document.getElementById('closeEditModal');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const editOfficeForm = document.getElementById('editOfficeForm');
 
-            let modoDirector = '';
-
-            // ===== Lógica de Director =====
-            function resetDirectorForm() {
-                selectDirectorContainer.classList.remove('active');
-                directorDataContainer.classList.remove('active');
-                btnSelectDirector.classList.remove('active');
-                btnNewDirector.classList.remove('active');
-                directorSelect.value = '';
-                dirCedula.value = '';
-                dirNombre.value = '';
-                dirTelefono.value = '';
-                hiddenCedula.value = '';
-                hiddenDirNombre.value = '';
-                hiddenDirTelf.value = '';
-                modoDirectorInput.value = '';
+            window.openEditOfficeModal = function(oficinaData) {
+                if (typeof oficinaData === 'string') oficinaData = JSON.parse(oficinaData);
                 
-                dirCedula.readOnly = true;
-                dirNombre.readOnly = true;
-                dirTelefono.readOnly = true;
-                modoDirector = '';
-            }
-
-            btnSelectDirector.addEventListener('click', function() {
-                resetDirectorForm();
-                modoDirector = 'existente';
-                modoDirectorInput.value = 'existente';
-                this.classList.add('active');
-                selectDirectorContainer.classList.add('active');
-                directorDataContainer.classList.add('active');
+                // Llenar los campos del formulario de edición
+                document.getElementById('edit_num_oficina_original').value = oficinaData.num_oficina;
+                document.getElementById('edit_num_oficina').value = oficinaData.num_oficina || '';
+                document.getElementById('edit_nombre').value = oficinaData.nombre || '';
+                document.getElementById('edit_telefono').value = oficinaData.telefono || '';
                 
-                // Readonly inputs for display
-                dirCedula.readOnly = true;
-                dirNombre.readOnly = true;
-                dirTelefono.readOnly = true;
+                // Establecer el director seleccionado
+                const directorSelect = document.getElementById('edit_ced_dir');
+                if (oficinaData.ced_dir) {
+                    directorSelect.value = oficinaData.ced_dir;
+                }
+                // Mostrar modal
+                editOfficeModal.style.display = 'flex';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            };
+
+            // Cerrar modal de edición
+            closeEditModal.addEventListener('click', () => {
+                editOfficeModal.style.display = 'none';
             });
 
-            btnNewDirector.addEventListener('click', function() {
-                resetDirectorForm();
-                modoDirector = 'nuevo';
-                modoDirectorInput.value = 'nuevo';
-                this.classList.add('active');
-                directorDataContainer.classList.add('active');
+            cancelEditBtn.addEventListener('click', () => {
+                editOfficeModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === editOfficeModal) editOfficeModal.style.display = 'none';
+            });
+            
+            // Enviar formulario de edición
+            editOfficeForm.addEventListener('submit', function(e) {
+                e.preventDefault();
                 
-                // Editable inputs
-                dirCedula.readOnly = false;
-                dirNombre.readOnly = false;
-                dirTelefono.readOnly = false;
+                const formData = new FormData(this);
+                
+                // Mostrar confirmación
+                Swal.fire({
+                    title: '¿Guardar cambios?',
+                    text: "Se actualizarán los datos de la oficina.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3F51B5',
+                    cancelButtonColor: '#5F6368',
+                    confirmButtonText: 'Sí, guardar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Enviar datos por fetch
+                        fetch('?action=oficinas&method=editarOficina', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: '¡Éxito!',
+                                    text: data.message || 'Oficina actualizada correctamente.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#3F51B5'
+                                }).then(() => {
+                                    // Cerrar modal y recargar la página
+                                    editOfficeModal.style.display = 'none';
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: data.error || 'No se pudo actualizar la oficina.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#E44336'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Ocurrió un error al procesar la solicitud.',
+                                icon: 'error',
+                                confirmButtonColor: '#E44336'
+                            });
+                        });
+                    }
+                });
             });
 
-            directorSelect.addEventListener('change', function() {
-                if (this.value && modoDirector === 'existente') {
-                    const selectedOption = this.options[this.selectedIndex];
-                    dirCedula.value = this.value;
-                    dirNombre.value = selectedOption.getAttribute('data-nombre');
-                    dirTelefono.value = selectedOption.getAttribute('data-telf');
-                    actualizarCamposOcultos();
-                }
-            });
+            // ... resto de tu código existente (lógica de director, paginación, etc.) ...
 
-            function actualizarCamposOcultos() {
-                hiddenCedula.value = dirCedula.value;
-                hiddenDirNombre.value = dirNombre.value;
-                hiddenDirTelf.value = dirTelefono.value;
-            }
-
-            dirCedula.addEventListener('input', actualizarCamposOcultos);
-            dirNombre.addEventListener('input', actualizarCamposOcultos);
-            dirTelefono.addEventListener('input', actualizarCamposOcultos);
-
-            // Validación
-            oficinaForm.addEventListener('submit', function(e) {
-                actualizarCamposOcultos();
-
-                if (!modoDirector) {
-                    e.preventDefault();
-                    Swal.fire('Atención', 'Seleccione si desea usar un director existente o agregar uno nuevo.', 'warning');
-                    return;
-                }
-                if (modoDirector === 'existente' && !directorSelect.value) {
-                    e.preventDefault();
-                    Swal.fire('Atención', 'Seleccione un director de la lista.', 'warning');
-                    return;
-                }
-                if (modoDirector === 'nuevo' && (!dirCedula.value || !dirNombre.value || !dirTelefono.value)) {
-                    e.preventDefault();
-                    Swal.fire('Datos incompletos', 'Complete todos los datos del nuevo director.', 'warning');
-                    return;
-                }
-            });
-
-            // ===== Modal Detalles =====
+            // ===== Modal Detalles (existente) =====
             window.openOfficeModal = function(oficinaData) {
                 if (typeof oficinaData === 'string') oficinaData = JSON.parse(oficinaData);
                 

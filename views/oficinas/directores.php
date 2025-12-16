@@ -67,7 +67,7 @@
                     <div class="pagination-info">
                         <span id="paginationInfo">Cargando...</span>
                     </div>
-                </div>
+                </div> <br>
 
                 <!-- Tabla de Directores -->
                 <div class="table-container">

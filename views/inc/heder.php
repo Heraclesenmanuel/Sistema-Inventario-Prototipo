@@ -42,7 +42,7 @@
                     <span>Configuración</span>
                 <?php endif; ?>
                 </button>
-                <a href="./" class="menu-item" role="menuitem">
+                <a href="?action=admin&method=cerrar" class="menu-item" role="menuitem">
                     <i data-lucide="log-out" class="menu-item-icon"></i>
                     <span>Cerrar Sesión</span>
                 </a>

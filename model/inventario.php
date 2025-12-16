@@ -6,8 +6,8 @@ class Inventario extends Base {
         $sql = 'SELECT p.*, tp.nombre as tipo, SUM(rp.un_anadidas) as un_disponibles
                 FROM producto p 
                 INNER JOIN tipo_prod tp ON p.id_tipo=tp.id_tipo
-                INNER JOIN prod_solic ps ON p.id_producto=ps.id_producto
-                INNER JOIN registro_prod rp ON ps.id_solicitud=rp.id_solicitud AND ps.num_linea=rp.num_linea
+                LEFT JOIN prod_solic ps ON p.id_producto=ps.id_producto
+                LEFT JOIN registro_prod rp ON ps.id_solicitud=rp.id_solicitud AND ps.num_linea=rp.num_linea
                 WHERE valido=1
                 GROUP BY p.nombre';
         $resultado = $this->db->query($sql);

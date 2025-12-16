@@ -8,7 +8,7 @@ class ProveedorController extends AdminController
     }
 //Funciones de Proveedores
     public function home(){
-        $this->iniciarSesion();
+        //$this->validarSesion();
         $titulo = 'Proveedores';
         $categorias = $this->proveedores->getTipos();
         $proveedores = $this->proveedores->obtenerProveedores();

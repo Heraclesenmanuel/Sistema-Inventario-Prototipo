@@ -10,7 +10,7 @@ class SolicitudesController extends AdminController
     }
     public function home()
     {
-        $this->validarSesion();
+        //$this->validarSesion();
         $titulo = 'Solicitar';
         $oficinas = $this->solicitudes->cargarOficinas();
         $tiposProducto = $this->solicitudes->getTipos();

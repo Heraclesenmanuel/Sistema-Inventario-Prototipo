@@ -10,7 +10,7 @@ class OficinasController extends AdminController
         $this->oficinas = new Oficina();
     }
     public function home(){
-        $this->validarSesion();
+        //$this->validarSesion();
         $titulo = 'Oficinas';
         $oficinas = $this->oficinas->getOficinas();
         $directores = $this->oficinas->getDirectores();
@@ -23,7 +23,7 @@ class OficinasController extends AdminController
     }
     public function directores()
     {
-        $this->validarSesion();
+        //$this->validarSesion();
         $titulo = 'Directores';
         $directores = $this->oficinas->getDirectores();
         require_once 'views/oficinas/directores.php';
@@ -85,6 +85,32 @@ class OficinasController extends AdminController
                 ]);
                 }
         }
+    }
+    public function editarOficina()
+    {
+        $numero_og = $_POST['num_oficina_original'];
+        $numero = $_POST['num_oficina'];
+        $nombre = trim($_POST['nombre']);
+        $cedula = trim($_POST['ced_dir']);
+        $telefono = trim($_POST['telefono']);
+
+        try
+        {
+        // Validar que los campos no estén vacíos
+        if (empty($nombre) || empty($cedula) || empty($numero_og)) {
+            echo json_encode(["success" => false, "error" => "Campos requeridos, El numero y la cédula son obligatorios"]);
+        } 
+        else {
+            if ($this->oficinas->editarOficina($numero_og, $numero, $nombre, $cedula, $telefono)) {
+                echo json_encode((["success" => true]));
+            } else {
+                echo json_encode(["success" => false, "error" => "No se pudo editar la oficina."]);
+            }
+        }
+        } catch (Exception $e) {
+            echo json_encode(["success" => false, "error" => "Ocurrió un error inesperado: ' . $e->getMessage() . '"]);
+        }
+        exit();
     }
     public function deleteOficina(){
         $id = $_GET['id'];

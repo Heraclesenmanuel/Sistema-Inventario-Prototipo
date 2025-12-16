@@ -10,7 +10,7 @@ class InventarioController extends AdminController
     }
      //FUNCIONES DEL INVETARIO
     public function home() {
-        $this->validarSesion();
+        //$this->validarSesion();
         $titulo = 'Inventario';
         $tipos_p = $this->inventario->getTipos();
         $datosInven = $this->inventario->obtenerDatos();
@@ -42,7 +42,7 @@ class InventarioController extends AdminController
     }
     public function categorias()
     {
-        $this->validarSesion();
+        //$this->validarSesion();
         $titulo = 'Categorias';
         $categorias = $this->inventario->getTipos();
             if (isset($_POST['add'])) {

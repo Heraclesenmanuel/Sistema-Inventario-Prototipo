@@ -116,7 +116,11 @@
                                                     title="Editar producto">
                                                     <i data-lucide="edit-3" class="btn-icon"></i>
                                                 </button>
-
+                                                <button class="btn-delete btn-eliminar"
+                                                    data-id="<?php echo $dato['id_producto']; ?>"
+                                                    title="Eliminar producto">
+                                                    <i data-lucide="trash-2" class="btn-icon"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>

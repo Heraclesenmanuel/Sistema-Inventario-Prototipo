@@ -102,6 +102,31 @@ class Oficina extends Base{
             return false;
         }
     }
+    public function editarOficina($num_ofic_og, $num_oficina, $nombre, $cedula, $telefono){
+        try {
+            if(!$this->verificarOficina($num_ofic_og))
+            {
+                $sql = "UPDATE oficina SET num_oficina=?, nombre=?, ced_dir=?, telefono=? WHERE num_oficina=?";
+                $stmt = $this->db->prepare($sql);
+                if ($stmt) {
+                    $stmt->bind_param("sssss", $num_oficina, $nombre, $cedula, $telefono, $num_ofic_og);
+                    $resultado = $stmt->execute();
+
+                    if (!$resultado) {
+                        error_log("Error al ejecutar update: " . $stmt->error);
+                    }
+                    return $resultado;
+                } else {
+                    error_log("Error al preparar statement: " . $this->db->error);
+                    return false;
+                }
+            }
+        }
+        catch (Exception $e) {
+            error_log("Error al agregar usuario: " . $e->getMessage());
+            return false;
+        }
+    }
     public function deleteOficina($id){
         try {
             $sql = "DELETE FROM oficina WHERE num_oficina = ?";
@@ -151,22 +176,6 @@ class Oficina extends Base{
         } catch (Exception $e) {
             error_log("Error al obtener Oficina por ID: " . $e->getMessage());
             return null;
-        }
-    }
-
-    public function actualizarOficina($id, $nombre, $cedula, $telefono){
-        try {
-            $sql = "UPDATE oficina SET nombre = ?, cedula = ?, telefono = ? WHERE num_oficina = ?";
-            $stmt = $this->db->prepare($sql);
-            
-            if ($stmt) {
-                $stmt->bind_param("sssi", $nombre, $cedula, $telefono, $id);
-                return $stmt->execute();
-            }
-            return false;
-        } catch (Exception $e) {
-            error_log("Error al actualizar Oficina: " . $e->getMessage());
-            return false;
         }
     }
     public function agregarDir($nombre, $cedula, $telefono){
