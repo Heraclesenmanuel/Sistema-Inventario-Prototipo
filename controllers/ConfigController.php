@@ -13,7 +13,7 @@
             $titulo = 'Configuracion';
             $roles = $this->config->getRoles();
             $usuarios = $this->config->mostrarUsuarios();
-            $oficinas = $this->config->cargarOficinas();
+            $oficinas = $this->config->cargarOfichinas();
 
             require_once 'views/conf/index.php';
         }

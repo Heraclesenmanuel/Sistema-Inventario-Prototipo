@@ -15,11 +15,10 @@
         </div>
         
         <h1 class="error-code">404</h1>
-        <h2 class="error-title">¡Vaya! Página no encontrada</h2>
+        <h2 class="error-title">¡Vaya! Llevenos a la feria y la verá.</h2>
         
         <p class="error-description">
-            Parece que la página que buscas no existe, ha sido movida o el enlace es incorrecto. 
-            No te preocupes, puedes volver al camino seguro.
+            Pagina no implementada
         </p>
         
         <a href="./" class="btn-home">

@@ -14,12 +14,12 @@ class ReporteController extends AdminController
     }
    //Funciones de estadisticas
    
-    public function home()
-    {
+    public function home(){
         $this->validarSesion();
-        $titulo = 'Estadísticas del Sistema';
+        $titulo = 'Estadisticas';
+        $estadisticas = $this->inventario->obtenerEstadisticas();
         
-        // Obtener datos de los métodos del modelo
+        // Obtener datos para los nuevos gráficos
         $tiposProductosPorOficina = $this->reportes->obtenerTiposProductosPorOficina();
         $frecuenciaSolicitudes = $this->reportes->obtenerFrecuenciaSolicitudesPorOficina();
         $cantidadProductos = $this->reportes->obtenerCantidadProductosPorOficina();
@@ -27,17 +27,6 @@ class ReporteController extends AdminController
         $usuariosPorOficina = $this->reportes->obtenerUsuariosPorOficina();
         $datosCorrelacion = $this->reportes->obtenerDatosCorrelacion();
         
-        // Obtener totales
-        $totales = [
-            'usuarios' => $this->reportes->obtenerTotalUsuarios(),
-            'productos' => $this->reportes->obtenerTotalProductos(),
-            'solicitudes' => $this->reportes->obtenerTotalSolicitudes(),
-            'oficinas' => $this->reportes->obtenerTotalOficinas()
-        ];
-        
-        // Si necesitas datos del gráfico original de estado, puedes obtener productos por tipo
-        $estadisticas['por_estado'] = $this->reportes->obtenerEstadisticasProductosPorTipo();
-        // Cargar la vista con todos los datos
         require_once 'views/estadisticas/index.php';
     }
 }

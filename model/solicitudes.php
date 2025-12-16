@@ -348,15 +348,16 @@ class Solicitud extends Base
     {
         foreach ($asignaciones as $asignacion) {
             $sql = "INSERT INTO registro_prod 
-                (id_solicitud, num_linea, un_anadidas, fecha_r) 
-                VALUES (?, ?, ?, NOW())";
+                (id_solicitud, num_linea, un_anadidas, rif_proveedor, fecha_r) 
+                VALUES (?, ?, ?, ?, NOW())";
 
             $stmt = $this->db->prepare($sql);
             $stmt->bind_param(
-                "iii",
+                "iiis",
                 $asignacion['id_solicitud'],
                 $asignacion['num_linea'],
-                $asignacion['cantidad_suplir']
+                $asignacion['cantidad_suplir'],
+                $asignacion['rif_proveedor']
             );
 
             if (!$stmt->execute() || !$this->validarProducto($asignacion['id_producto'])) {

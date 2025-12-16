@@ -21,7 +21,7 @@
         <div class="contenedor-notif">
             <button class="btn-notif" id="perfilUsuario" aria-label="Ver notificaciones">
                 <i data-lucide="bell" class="notif-icon"></i>
-                <span class="notif-badge">3</span>
+                <span class="notif"></span>
             </button>
         </div>
         
@@ -36,7 +36,7 @@
             </button>
             
             <div class="menu-desplegable" id="menuDesplegableUsuario" role="menu">
-                <?php if($_SESSION['dpto'] == 4): ?>
+                <?php if($_SESSION['dpto'] == 1): ?>
                 <button id="abrirConfiguracion" name="abrirConfiguracion" class="menu-item" role="menuitem">
                     <i data-lucide="settings" class="menu-item-icon"></i>
                     <span>Configuración</span>

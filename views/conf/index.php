@@ -809,7 +809,7 @@
                     }
                 });
                 
-                const response = await fetch(`?action=usuario&method=getOficinasUsuario&id=${encodeURIComponent(idUsuario)}`, {
+                const response = await fetch(`?action=config&method=getOficinasUsuario`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',

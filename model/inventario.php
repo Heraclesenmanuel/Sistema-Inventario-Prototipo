@@ -177,22 +177,22 @@ class Inventario extends Base {
         return $stmt->execute();
     }
     public function obtenerEstadisticas() {
-        // Estadísticas por estado (para gráfico de torta)
-        // Estadísticas por estado (para gráfico de torta)
-        // Fixed: Handle division by zero if total stock is 0
+    try {
+        // 1. Estadísticas básicas de productos por tipo
         $sqlEstados = "SELECT 
-                        nombre, 
-                        SUM(un_disponibles) as cantidad,
+                        tp.nombre as nombre,
+                        COUNT(p.id_producto) as cantidad,
                         ROUND(
                             CASE 
-                                WHEN (SELECT SUM(un_disponibles) FROM producto) > 0 
-                                THEN SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM producto)
+                                WHEN (SELECT COUNT(*) FROM producto WHERE valido = 1) > 0 
+                                THEN COUNT(p.id_producto) * 100.0 / (SELECT COUNT(*) FROM producto WHERE valido = 1)
                                 ELSE 0 
                             END, 
                         2) as porcentaje
-                        FROM producto
-                        WHERE valido=1
-                        GROUP BY nombre";
+                       FROM tipo_prod tp
+                       LEFT JOIN producto p ON tp.id_tipo = p.id_tipo AND p.valido = 1
+                       GROUP BY tp.id_tipo, tp.nombre
+                       ORDER BY cantidad DESC";
         
         $resultEstados = $this->db->query($sqlEstados);
         
@@ -200,8 +200,20 @@ class Inventario extends Base {
             throw new Exception("Error al obtener estadísticas por estado: " . $this->db->error);
         }
         
-        // Estadísticas mensuales (para tabla)
-        $sqlMensual = "SELECT * FROM usuario";
+        // 2. Estadísticas de actividad reciente
+        $sqlMensual = "SELECT 
+                        u.nombre,
+                        u.cedula,
+                        r.nombre as rol,
+                        COUNT(DISTINCT s.id_solicitud) as solicitudes_realizadas,
+                        COUNT(DISTINCT ps.id_producto) as productos_solicitados
+                       FROM usuario u
+                       LEFT JOIN solicitud s ON u.id_usuario = s.id_solicitante
+                       LEFT JOIN prod_solic ps ON s.id_solicitud = ps.id_solicitud
+                       LEFT JOIN rol_usuario r ON u.id_cargo = r.id_cargo
+                       GROUP BY u.id_usuario, u.nombre, u.cedula, r.nombre
+                       ORDER BY solicitudes_realizadas DESC
+                       LIMIT 20";
         
         $resultMensual = $this->db->query($sqlMensual);
         
@@ -213,6 +225,17 @@ class Inventario extends Base {
             'por_estado' => $resultEstados->fetch_all(MYSQLI_ASSOC),
             'mensuales' => $resultMensual->fetch_all(MYSQLI_ASSOC)
         ];
+        
+    } catch (Exception $e) {
+        // Log del error
+        error_log("Error en obtenerEstadisticas: " . $e->getMessage());
+        
+        // Retornar arrays vacíos en caso de error
+        return [
+            'por_estado' => [],
+            'mensuales' => []
+        ];
     }
+}
 }
 ?>

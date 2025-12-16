@@ -30,6 +30,25 @@ class Base
             'success' => true
         ];
     }
+    public function cargarOfichinas() {
+        $sql = "SELECT of_u.num_oficina, nombre 
+                FROM ofic_usuario of_u
+                INNER JOIN oficina o ON o.num_oficina=of_u.num_oficina
+                GROUP BY o.nombre";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $oficinas = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $oficinas[] = $row;
+        }
+
+        return [
+            'data' => $oficinas,
+            'success' => true
+        ];
+    }
     public function getRecomendaciones($rif)
     {
         $sql = "SELECT tp.nombre as nombre
