@@ -160,10 +160,11 @@
                 </button>
             </div>
 
-            <form id="requestForm" name="requestForm" method="POST" action="?action=solicitudes&method=home" novalidate
-                onsubmit="return guardarSolicitud(event)">
+            <form id="requestForm" method="POST" action="?action=solicitudes&method=home"
+                onsubmit="return guardarSolicitudConVerificacion(event)">
                 <input type="hidden" id="requestId" name="request_id">
                 <input type="hidden" id="formMode" name="form_mode" value="add">
+                <input type="hidden" id="idSolicitante" name="id_solicitante">
 
                 <div class="modal-body">
                     <div class="form-grid">
@@ -333,7 +334,7 @@
         const userRol = <?= json_encode($_SESSION['dpto'] ?? '') ?>;
         const userId = <?= json_encode($_SESSION['id'] ?? '') ?>;
         const oficinasData = <?= json_encode($oficinas['data'] ?? []) ?>;
-        console.log(productosData)
+        console.log(solicitudesData)
 
         // Variables para paginación y filtrado
         let currentPage = 1;
@@ -342,6 +343,16 @@
 
         // Inicializar filtros y paginación al cargar la página
         document.addEventListener('DOMContentLoaded', function () {
+            var error = "<?= isset($_GET['error']) ?>";
+            // Verificamos si está seteado y no vacío
+            if (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No se agregó la solicitud',
+                    text: 'La solicitud tuvo problemas al agregarse',
+                    confirmButtonText: 'Entendido'
+                });
+            }
             updateProductsCounter();
             initializeFilters();
             updateTable(); // ¡IMPORTANTE! Renderizar la tabla inicialmente
@@ -353,6 +364,336 @@
                 document.getElementById('charCount').textContent = this.value.length;
             });
         });
+        async function procederConGuardado(formMode, productosActualizados = null) {
+            const form = document.getElementById('requestForm');
+            const requestId = document.getElementById('requestId').value;
+
+            try {
+                // Si es modo editar, usar AJAX
+                if (formMode === 'edit') {
+                    return await guardarEdicion(requestId, productosActualizados);
+                } else {
+                    // Modo agregar - usar submit tradicional o AJAX
+                    return await guardarNuevaSolicitud(form);
+                }
+            } catch (error) {
+                swalLoading.close();
+                console.error('Error en procederConGuardado:', error);
+                mostrarErrorGuardado(error);
+                return false;
+            }
+        }
+
+        // Función para guardar en modo edición
+        async function guardarEdicion(requestId, productos) {
+            closeModal();
+            // Mostrar loading
+            const swalLoading = Swal.fire({
+                title: 'Procesando...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                // Obtener el ID del solicitante del campo oculto
+                const idSolicitante = document.getElementById('idSolicitante').value;
+
+                // Crear FormData
+                const formData = new FormData();
+
+                // Datos básicos del formulario
+                formData.append('request_id', requestId);
+                formData.append('departamento', document.getElementById('departamento').value);
+                formData.append('fecha_requerida', document.getElementById('fecha_requerida').value);
+                formData.append('notas', document.getElementById('notas').value);
+                formData.append('form_mode', 'edit');
+                formData.append('id_solicitante', idSolicitante);
+
+                // Agregar productos
+                const productosParaEnviar = prepararProductosParaEnvio(productos);
+                productosParaEnviar.forEach((prod, index) => {
+                    formData.append(`producto_id[]`, prod.id_producto || '');
+                    formData.append(`nombre_producto[]`, prod.nombre_producto || '');
+                    formData.append(`unidad_medida[]`, prod.unidad_medida || '');
+                    formData.append(`cantidad[]`, prod.cantidad || '');
+                    formData.append(`tipo_producto[]`, prod.tipo_producto || '');
+                });
+
+                // NOTA: NO cambiar estado aquí. Eso debe ser una acción separada.
+
+                // Enviar a actualizarSolic
+                const response = await fetch('?action=solicitudes&method=actualizarSolic', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                swalLoading.close();
+
+                if (result.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'Solicitud actualizada correctamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    closeModal();
+                    location.reload();
+                    return true;
+                } else {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: result.message || 'Error al actualizar la solicitud'
+                    });
+                    return false;
+                }
+            } catch (error) {
+                swalLoading.close();
+                console.error('Error:', error);
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al guardar la solicitud'
+                });
+                return false;
+            }
+        }
+        function prepararProductosParaEnvio(productos) {
+            return productos.map(prod => {
+                // Convertir del formato interno al formato que espera el backend
+                return {
+                    id_producto: prod.id_producto || '',
+                    nombre_producto: prod.nombre || '',
+                    unidad_medida: prod.medida || '',
+                    cantidad: prod.cantidad || '',
+                    tipo_producto: prod.id_tipo || ''
+                };
+            });
+        }
+        // Nueva función para combinar cambio de estado con productos
+        async function cambiarEstadoConProductos(solicitudId, nuevoEstado, productos) {
+            return new Promise((resolve) => {
+                // Primero preguntar confirmación
+                let mensajeConfirmacion = '';
+                let tituloConfirmacion = '';
+
+                if (userRol == 4 || userRol == 1) {
+                    tituloConfirmacion = '¿Aprobar solicitud?';
+                    mensajeConfirmacion = 'Si la apruebas, será enviada al departamento de Presupuesto. ¿Deseas continuar?';
+                } else if (userRol == 3) {
+                    tituloConfirmacion = '¿Enviar a revisión?';
+                    mensajeConfirmacion = 'Si la envías a revisión, será evaluada por el departamento de Presupuesto. ¿Deseas continuar?';
+                }
+
+                Swal.fire({
+                    title: tituloConfirmacion,
+                    text: mensajeConfirmacion,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, continuar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        // Mostrar loading
+                        const swalLoading = Swal.fire({
+                            title: 'Procesando...',
+                            text: 'Actualizando solicitud',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        try {
+                            // Crear FormData con todos los datos
+                            const formData = new FormData();
+
+                            // Datos básicos
+                            formData.append('id_solicitud', solicitudId);
+                            formData.append('nuevo_estado', nuevoEstado);
+                            formData.append('form_mode', 'edit');
+
+                            // Campos del formulario
+                            formData.append('departamento', document.getElementById('departamento').value);
+                            formData.append('fecha_requerida', document.getElementById('fecha_requerida').value);
+                            formData.append('notas', document.getElementById('notas').value);
+
+                            // Productos
+                            formData.append('productos', JSON.stringify(productos));
+
+                            // Enviar todo junto
+                            const response = await fetch('?action=solicitudes&method=actualizarSolic', {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            const result = await response.json();
+                            swalLoading.close();
+
+                            if (result.success) {
+                                let mensaje = '';
+                                if (userRol == 4 || userRol == 1) {
+                                    mensaje = 'Solicitud aprobada correctamente';
+                                } else if (userRol == 3) {
+                                    mensaje = 'Solicitud enviada a revisión correctamente';
+                                }
+
+                                await Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Éxito!',
+                                    text: mensaje,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+
+                                closeModal();
+                                location.reload();
+                                resolve(true);
+                            } else {
+                                await Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: result.message || 'Error al actualizar la solicitud'
+                                });
+                                resolve(false);
+                            }
+                        } catch (error) {
+                            swalLoading.close();
+                            console.error('Error:', error);
+                            await Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al guardar la solicitud'
+                            });
+                            resolve(false);
+                        }
+                    } else {
+                        resolve(false); // Usuario canceló
+                    }
+                });
+            });
+        }
+
+        // Función para guardar nueva solicitud
+        async function guardarNuevaSolicitud(form) {
+            // Asegurar id_solicitante antes de crear FormData
+            const idSolicitanteField = document.getElementById('idSolicitante');
+            if (!idSolicitanteField.value) {
+                idSolicitanteField.value = userId;
+            }
+
+            // Habilitar temporalmente campos deshabilitados
+            const disabledFields = form.querySelectorAll('input:disabled, select:disabled');
+            disabledFields.forEach(field => {
+                field.disabled = false;
+            });
+
+            // Crear FormData manualmente
+            const formData = new FormData();
+            const formElements = form.elements;
+
+            for (let i = 0; i < formElements.length; i++) {
+                const element = formElements[i];
+                if (element.name && !element.disabled) {
+                    if (element.type === 'checkbox' || element.type === 'radio') {
+                        if (element.checked) {
+                            formData.append(element.name, element.value);
+                        }
+                    } else {
+                        if (element.value || element.value === '0') {
+                            formData.append(element.name, element.value);
+                        }
+                    }
+                }
+            }
+
+            // Debug
+            console.log('Enviando nueva solicitud con id_solicitante:', idSolicitanteField.value);
+
+            try {
+                const response = await fetch('?action=solicitudes&method=home', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const text = await response.text();
+
+                if (response.ok && !text.includes('error') && !text.includes('Error')) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'Solicitud creada correctamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    closeModal();
+                    location.reload();
+                    return true;
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                // Fallback: enviar formulario tradicionalmente
+                console.log('Usando fallback tradicional');
+
+                // Asegurar id_solicitante en el formulario
+                idSolicitanteField.value = userId;
+
+                Swal.close();
+                form.submit();
+                return true;
+            }
+        }
+
+        // Función auxiliar para recopilar productos del formulario
+        function recopilarProductosDelFormulario() {
+            const productGroups = document.querySelectorAll('.product-fields-group');
+            const productos = [];
+
+            productGroups.forEach((group, index) => {
+                const tipo = group.querySelector('.product-type-buttons .active')?.dataset.type;
+                const producto = { tipo: tipo };
+
+                if (tipo === 'existing') {
+                    const productoSelect = document.getElementById(`producto_${index}`);
+                    if (productoSelect) {
+                        producto.id_producto = productoSelect.value;
+
+                        // Obtener datos del option seleccionado
+                        const selectedOption = productoSelect.options[productoSelect.selectedIndex];
+                        if (selectedOption) {
+                            producto.nombre = selectedOption.getAttribute('data-nombre') || '';
+                            producto.medida = selectedOption.getAttribute('data-unidad') || '';
+                            producto.id_tipo = selectedOption.getAttribute('data-tipo') || '';
+                        }
+                    }
+                } else {
+                    const nombreInput = document.getElementById(`nombre_producto_${index}`);
+                    const unidadSelect = document.getElementById(`unidad_medida_${index}`);
+                    const tipoSelect = document.getElementById(`tipo_producto_${index}`);
+
+                    if (nombreInput) producto.nombre = nombreInput.value.trim();
+                    if (unidadSelect) producto.medida = unidadSelect.value;
+                    if (tipoSelect) producto.id_tipo = tipoSelect.value;
+                }
+
+                const cantidadInput = document.getElementById(`cantidad_${index}`);
+                if (cantidadInput) producto.cantidad = cantidadInput.value;
+
+                productos.push(producto);
+            });
+
+            return productos;
+        }
         function seleccionarTipoProducto(index, tipo) {
             console.log(`Seleccionando tipo ${tipo} para producto ${index}`);
 
@@ -598,68 +939,62 @@
                 // Solo mostrar botones de editar/rechazar si el estado es apropiado
                 const mostrarEditar = (solicitud.estado === 'Pendiente' || solicitud.estado === 'En Revisión');
 
-                if ((userRol == 3 && mostrarEditar) || userRol == 1 && mostrarEditar) {
-                    let btn_class;
-                    let data_lucide;
-                    if (userRol == 3) {
-                        btn_class = `class="btn-action edit"`
-                        data_lucide = `<i data-lucide="send"></i>`
-                    }
-                    else {
-                        btn_class = `class="btn-action approve"`
-                        data_lucide = `<i data-lucide="check"></i>`
-                    }
-                    // Departamento 3: Ver, Editar (con icono de enviar), Rechazar
+                // En la sección donde generas los botones de acción:
+                
+                if ((userRol == 3 && mostrarEditar) || (userRol == 1 && mostrarEditar)) {
+                    // Rol 3 o 1: Enviar a revisión o Aprobar
+                    // Botón para enviar a revisión (Rol 3)
                     actionButtons = `
-                    <button type="button" ${btn_class}
-                            onclick="editarSolicitud(${solicitud.id_solicitud})"
-                            data-tippy-content="Editar">
-                            ${data_lucide}
-                    </button>
-                    <button type="button" class="btn-action reject" 
-                            onclick="rechazarSolicitud(${solicitud.id_solicitud})"
-                            data-tippy-content="Rechazar">
-                        <i data-lucide="x"></i>
-                    </button>
-                    <button type="button" class="btn-action view" 
-                            onclick="verDetallesSolicitudFiltrada(${solicitud.id_solicitud})"
-                            data-tippy-content="Ver Detalles">
-                        <i data-lucide="eye"></i>
-                    </button>
-                `;
+        <button type="button" class="btn-action edit" 
+                onclick="cambiarEstadoSolicitud(${solicitud.id_solicitud}, 'En Revisión')"
+                data-tippy-content="Enviar a Revisión">
+            <i data-lucide="send"></i>
+        </button>`;
+                    // Botón de rechazo para ambos
+                    actionButtons += `
+    <button type="button" class="btn-action reject" 
+            onclick="rechazarSolicitud(${solicitud.id_solicitud})"
+            data-tippy-content="Rechazar">
+        <i data-lucide="x"></i>
+    </button>
+    <button type="button" class="btn-action view" 
+            onclick="verDetallesSolicitudFiltrada(${solicitud.id_solicitud})"
+            data-tippy-content="Ver Detalles">
+        <i data-lucide="eye"></i>
+    </button>`;
                 } else if (userRol == 4 && mostrarEditar) {
-                    // Departamento 4: Editar (con icono de check), Rechazar
-                    actionButtons = `
-                    <button type="button" class="btn-action approve" 
-                            onclick="editarSolicitud(${solicitud.id_solicitud})"
-                            data-tippy-content="Aprobar">
-                        <i data-lucide="check"></i>
-                    </button>
-                    <button type="button" class="btn-action reject" 
-                            onclick="rechazarSolicitud(${solicitud.id_solicitud})"
-                            data-tippy-content="Rechazar">
-                        <i data-lucide="x"></i>
-                    </button>
-                `;
+                    // Rol 4: Aprobar directamente
+                    if (solicitud.estado === 'Pendiente' || solicitud.estado === 'En Revisión') {
+                        actionButtons = `
+        <button type="button" class="btn-action approve" 
+                onclick="cambiarEstadoSolicitud(${solicitud.id_solicitud}, 'Aprobado')"
+                data-tippy-content="Aprobar">
+            <i data-lucide="check"></i>
+        </button>`;
+                    }
+
+                    actionButtons += `
+    <button type="button" class="btn-action reject" 
+            onclick="rechazarSolicitud(${solicitud.id_solicitud})"
+            data-tippy-content="Rechazar">
+        <i data-lucide="x"></i>
+    </button>`;
                 } else {
-                    // Otros departamentos: Ver y Editar (con icono de lápiz)
-                    // Solo mostrar editar si el estado lo permite
+                    // Otros departamentos
                     if (mostrarEditar && solicitud.id_solicitante == userId) {
                         actionButtons += `
-                        <button type="button" class="btn-action edit" 
-                                onclick="editarSolicitud(${solicitud.id_solicitud})"
-                                data-tippy-content="Editar">
-                            <i data-lucide="pencil"></i>
-                        </button>
-                    `;
+        <button type="button" class="btn-action edit" 
+                onclick="editarSolicitud(${solicitud.id_solicitud})"
+                data-tippy-content="Editar">
+            <i data-lucide="pencil"></i>
+        </button>`;
                     }
                     actionButtons += `
-                    <button type="button" class="btn-action view" 
-                            onclick="verDetallesSolicitudFiltrada(${solicitud.id_solicitud})"
-                            data-tippy-content="Ver Detalles">
-                        <i data-lucide="eye"></i>
-                    </button>
-                `;
+    <button type="button" class="btn-action view" 
+            onclick="verDetallesSolicitudFiltrada(${solicitud.id_solicitud})"
+            data-tippy-content="Ver Detalles">
+        <i data-lucide="eye"></i>
+    </button>`;
                 }
 
                 tableHTML += `
@@ -831,6 +1166,8 @@
                 form.reset();
                 limpiarCamposProductos();
 
+                document.getElementById('idSolicitante').value = userId;
+
                 // Establecer fecha mínima como hoy
                 const today = new Date();
                 document.getElementById('fecha_requerida').min = today.toISOString().split('T')[0];
@@ -974,6 +1311,7 @@
             document.getElementById('departamento').value = solicitud.num_oficina || '';
             document.getElementById('fecha_requerida').value = solicitud.fecha_deseo || '';
             document.getElementById('notas').value = solicitud.comentarios || '';
+            document.getElementById('idSolicitante').value = solicitud.id_solicitante || userId;
 
             // Actualizar contador de caracteres
             const charCount = document.getElementById('charCount');
@@ -1023,6 +1361,7 @@
                     }
 
                     if (unidadSelect && producto.medida) {
+                        console.log("Colocando valor de unidad de medida...")
                         unidadSelect.value = producto.medida;
                     }
 
@@ -1060,140 +1399,6 @@
             updateProductIndexes();
             updateProductsCounter();
         }
-
-        // Función para guardar la solicitud
-        function guardarSolicitud(event) {
-            event.preventDefault();
-
-            const form = document.getElementById('requestForm');
-            const formMode = document.getElementById('formMode').value;
-
-            // Validar formulario
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return false;
-            }
-
-            // Validar que cada producto tenga tipo correcto
-            const productGroups = document.querySelectorAll('.product-fields-group');
-            let productosValidos = true;
-            let mensajeError = '';
-
-            productGroups.forEach((group, index) => {
-                const tipo = group.querySelector('.product-type-buttons .active')?.dataset.type;
-                const productoSelect = document.getElementById(`producto_${index}`);
-                const nombreInput = document.getElementById(`nombre_producto_${index}`);
-
-                if (tipo === 'existing') {
-                    // Validar que se haya seleccionado un producto
-                    if (!productoSelect || !productoSelect.value) {
-                        productosValidos = false;
-                        mensajeError = `Debe seleccionar un producto para el Producto #${index + 1}`;
-                        // Resaltar el campo
-                        productoSelect.style.borderColor = 'red';
-                    }
-                } else {
-                    // Validar que se haya ingresado un nombre
-                    if (!nombreInput || !nombreInput.value.trim()) {
-                        productosValidos = false;
-                        mensajeError = `Debe ingresar un nombre para el Producto #${index + 1}`;
-                        nombreInput.style.borderColor = 'red';
-                    }
-                }
-            });
-
-            if (!productosValidos) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error en productos',
-                    text: mensajeError
-                });
-                return false;
-            }
-            // Mostrar loading
-        const swalLoading = Swal.fire({
-            title: 'Guardando...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        
-        // Si es modo editar, cambiar la acción
-        if (formMode === 'edit') {
-            const formData = new FormData(form);
-            if(userRol == 4 || userRol == 1)
-            {
-                formData.append('nuevo_estado', 'Aprobado')
-                formData.append('id_solicitud', formData.get('request_id'))
-            }
-            else if(userRol == 3)
-            {
-                formData.append('nuevo_estado', 'En Revisión')
-                formData.append('id_solicitud', formData.get('request_id'))
-            }
-            // Agregar productos al FormData
-            const productGroups = document.querySelectorAll('.product-fields-group');
-            productGroups.forEach((group, index) => {
-                const productoId = document.getElementById(`producto_${index}`)?.value || '';
-                const nombreProducto = document.getElementById(`nombre_producto_${index}`)?.value || '';
-                const unidadMedida = document.getElementById(`unidad_medida_${index}`)?.value || '';
-                const cantidad = document.getElementById(`cantidad_${index}`)?.value || '';
-                const tipoProducto = document.getElementById(`tipo_producto_${index}`)?.value || '';
-                
-                // Los campos ya están en el FormData por ser arrays []
-                // Solo nos aseguramos de que tengan valores
-            });
-            fetch('?action=solicitudes&method=actualizarSolic', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(result => {
-                swalLoading.close();
-                if (result.success) {
-                    let mensaje = 'Solicitud actualizada correctamente';
-                    if (userRol == 4 || userRol == 1) {
-                        mensaje = 'Solicitud aprobada correctamente';
-                    } else if (userRol == 3) {
-                        mensaje = 'Solicitud enviada a revisión correctamente';
-                    }
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Éxito!',
-                        text: mensaje,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        closeModal();
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: result.message || 'Error al actualizar la solicitud'
-                    });
-                }
-            })
-            .catch(error => {
-                swalLoading.close();
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error al guardar la solicitud'
-                });
-            });
-        } else {
-            // Modo agregar - enviar formulario normalmente
-            form.submit();
-        }
-        closeModal();
-        
-        return false;
-    }
 
         // Agregar CSS para los botones de tipo
         const productTypeStyles = document.createElement('style');
@@ -1641,14 +1846,24 @@
                 existingProductGroup.style.display = 'none'; // Ocultar por defecto
             }
 
-            // Mostrar botón de eliminar
-            const removeBtn = newGroup.querySelector('.remove-product-btn');
-            if (removeBtn) {
-                removeBtn.style.display = 'block';
-                removeBtn.addEventListener('click', function () {
-                    removeProductFields(newGroup);
-                });
+            // AGREGAR BOTÓN DE ELIMINAR (esto es lo que faltaba)
+            // Crear o actualizar el botón de eliminar
+            let removeBtn = newGroup.querySelector('.remove-product-btn');
+            if (!removeBtn) {
+                removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-product-btn';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i> Eliminar';
+                removeBtn.setAttribute('aria-label', 'Eliminar producto');
+                // Agregar al final del grupo
+                newGroup.appendChild(removeBtn);
             }
+
+            // Mostrar botón de eliminar
+            removeBtn.style.display = 'block';
+            removeBtn.onclick = function () {
+                removeProductFields(newGroup);
+            };
 
             // Agregar al contenedor
             container.appendChild(newGroup);
@@ -1712,27 +1927,43 @@
                     }
                 });
 
-                // Agregar botón de eliminar a todos los grupos excepto el primero
-                if (index > 0) {
-                    // Verificar si ya existe un botón de eliminar
-                    let removeBtn = group.querySelector('.remove-product-btn');
-                    if (!removeBtn) {
-                        removeBtn = document.createElement('button');
-                        removeBtn.type = 'button';
-                        removeBtn.className = 'remove-product-btn';
-                        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                        removeBtn.setAttribute('aria-label', 'Eliminar producto');
-                        removeBtn.addEventListener('click', function () {
-                            removeProductFields(this.parentElement);
-                        });
-                        group.appendChild(removeBtn);
+                // Actualizar botones de tipo
+                const typeButtons = group.querySelector('.product-type-buttons');
+                if (typeButtons) {
+                    typeButtons.setAttribute('data-index', index);
+
+                    const newBtn = typeButtons.querySelector('[data-type="new"]');
+                    const existingBtn = typeButtons.querySelector('[data-type="existing"]');
+
+                    if (newBtn) {
+                        newBtn.setAttribute('onclick', `seleccionarTipoProducto(${index}, 'new')`);
                     }
+                    if (existingBtn) {
+                        existingBtn.setAttribute('onclick', `seleccionarTipoProducto(${index}, 'existing')`);
+                    }
+                }
+
+                // Configurar botón de eliminar
+                let removeBtn = group.querySelector('.remove-product-btn');
+                if (!removeBtn) {
+                    removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'remove-product-btn';
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i> Eliminar';
+                    removeBtn.setAttribute('aria-label', 'Eliminar producto');
+                    group.appendChild(removeBtn);
+                }
+
+                // Mostrar u ocultar botón de eliminar
+                if (index === 0) {
+                    // Primer producto - ocultar botón de eliminar
+                    removeBtn.style.display = 'none';
                 } else {
-                    // Remover botón de eliminar del primer grupo si existe
-                    const removeBtn = group.querySelector('.remove-product-btn');
-                    if (removeBtn) {
-                        removeBtn.remove();
-                    }
+                    // Productos adicionales - mostrar botón de eliminar
+                    removeBtn.style.display = 'block';
+                    removeBtn.onclick = function () {
+                        removeProductFields(group);
+                    };
                 }
             });
         }
@@ -1754,6 +1985,22 @@
                     addBtn.style.opacity = '1';
                     addBtn.style.cursor = 'pointer';
                 }
+            }
+
+            // También puedes mostrar el contador si quieres
+            const counterDisplay = document.getElementById('productCounter');
+            if (!counterDisplay) {
+                // Crear display del contador si no existe
+                const counter = document.createElement('div');
+                counter.id = 'productCounter';
+                counter.className = 'product-counter';
+                counter.innerHTML = `Productos: <strong>${count}</strong>/10`;
+
+                // Insertar después del botón "Añadir otro producto"
+                const addBtnContainer = document.querySelector('.add-product-btn').parentNode;
+                addBtnContainer.appendChild(counter);
+            } else {
+                counterDisplay.innerHTML = `Productos: <strong>${count}</strong>/10`;
             }
         }
 
@@ -1802,6 +2049,52 @@
 
         // Función principal para cambiar el estado de la solicitud
         function cambiarEstadoSolicitud(idSolicitud, nuevoEstado, motivo = '') {
+            // Si el nuevo estado es "Aprobado" y el usuario es rol 4, confirmar
+            if (nuevoEstado === 'Aprobado' && (userRol == 4 || userRol == 1)) {
+                Swal.fire({
+                    title: '¿Aprobar solicitud?',
+                    text: 'Si la apruebas, la solicitud quedará finalizada. ¿Deseas continuar?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, aprobar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        procederCambioEstado(idSolicitud, nuevoEstado, motivo);
+                    }
+                });
+                return;
+            }
+
+            // Si el nuevo estado es "En Revisión" y el usuario es rol 3, confirmar
+            if (nuevoEstado === 'En Revisión' && userRol == 3) {
+                Swal.fire({
+                    title: '¿Enviar a revisión?',
+                    text: 'Si la envías a revisión, será evaluada por el departamento de Presupuesto. ¿Deseas continuar?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, enviar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        procederCambioEstado(idSolicitud, nuevoEstado, motivo);
+                    }
+                });
+                return;
+            }
+
+            // Para rechazo u otros estados
+            procederCambioEstado(idSolicitud, nuevoEstado, motivo);
+        }
+
+        // Función auxiliar para realizar el cambio de estado
+        function procederCambioEstado(idSolicitud, nuevoEstado, motivo = '') {
             // Mostrar loading
             const swalLoading = Swal.fire({
                 title: 'Procesando...',
@@ -1829,7 +2122,6 @@
                     swalLoading.close();
 
                     if (response.success) {
-                        // Mostrar éxito
                         Swal.fire({
                             title: '¡Éxito!',
                             text: response.message || 'Estado actualizado correctamente',
@@ -1837,11 +2129,9 @@
                             confirmButtonColor: '#3085d6',
                             confirmButtonText: 'Aceptar'
                         }).then(() => {
-                            // Recargar la página para ver los cambios
                             location.reload();
                         });
                     } else {
-                        // Mostrar error
                         Swal.fire({
                             title: 'Error',
                             text: response.message || 'Hubo un error al actualizar el estado',
@@ -1853,7 +2143,6 @@
                 },
                 error: function (xhr, status, error) {
                     swalLoading.close();
-
                     Swal.fire({
                         title: 'Error de conexión',
                         text: 'No se pudo conectar con el servidor. Intenta nuevamente.',
@@ -1861,7 +2150,6 @@
                         confirmButtonColor: '#d33',
                         confirmButtonText: 'Aceptar'
                     });
-
                     console.error('Error AJAX:', error);
                 }
             });
@@ -1929,8 +2217,8 @@
                                 <li style="margin-bottom: 5px; padding: 5px; background-color: #f9f9f9; border-radius: 4px;">
                                     <strong>${index + 1}.</strong> ${producto.nombre || 'Producto'} - 
                                     Cantidad: ${producto.un_deseadas || 0} 
-                                    ${producto.medida || ''}
-                                    ${producto.nombre_tipo ? ` (${producto.nombre_tipo})` : ''}
+                                    ${producto.medida || ''}.
+                                    Tipo: ${producto.nombre_tipo ? ` ${producto.nombre_tipo}` : ''}
                                 </li>
                             `;
                             });
@@ -1987,6 +2275,614 @@
                 }
             });
         }
+        // Función para recopilar productos del formulario
+        function recopilarProductosDelFormulario() {
+            const productGroups = document.querySelectorAll('.product-fields-group');
+            const productos = [];
+
+            productGroups.forEach((group, index) => {
+                const tipo = group.querySelector('.product-type-buttons .active')?.dataset.type;
+                const producto = { tipo: tipo };
+
+                if (tipo === 'existing') {
+                    const productoSelect = document.getElementById(`producto_${index}`);
+                    if (productoSelect) {
+                        producto.id_producto = productoSelect.value;
+
+                        // Obtener datos del option seleccionado
+                        const selectedOption = productoSelect.options[productoSelect.selectedIndex];
+                        if (selectedOption) {
+                            producto.nombre = selectedOption.getAttribute('data-nombre') || '';
+                            producto.medida = selectedOption.getAttribute('data-unidad') || '';
+                            producto.id_tipo = selectedOption.getAttribute('data-tipo') || '';
+                        }
+                    }
+                } else {
+                    const nombreInput = document.getElementById(`nombre_producto_${index}`);
+                    const unidadSelect = document.getElementById(`unidad_medida_${index}`);
+                    const tipoSelect = document.getElementById(`tipo_producto_${index}`);
+
+                    if (nombreInput) producto.nombre = nombreInput.value.trim();
+                    if (unidadSelect) producto.medida = unidadSelect.value;
+                    if (tipoSelect) producto.id_tipo = tipoSelect.value;
+                }
+
+                const cantidadInput = document.getElementById(`cantidad_${index}`);
+                if (cantidadInput) producto.cantidad = cantidadInput.value;
+
+                productos.push(producto);
+            });
+
+            return productos;
+        }
+
+        // Función para buscar productos similares
+        function buscarProductosSimilares(nombreProducto, productosData, umbral = 0.8) {
+            const productosSimilares = [];
+
+            productosData.forEach(producto => {
+                const similitud = calcularSimilitud(nombreProducto, producto.nombre);
+
+                if (similitud >= umbral) {
+                    productosSimilares.push({
+                        producto: producto,
+                        similitud: similitud,
+                        id_producto: producto.id_producto,
+                        nombre: producto.nombre,
+                        medida: producto.medida,
+                        tipo: producto.id_tipo
+                    });
+                }
+            });
+
+            // Ordenar por similitud descendente
+            return productosSimilares.sort((a, b) => b.similitud - a.similitud);
+        }
+
+        // Función de similitud de texto
+        function calcularSimilitud(str1, str2) {
+            if (!str1 || !str2) return 0;
+
+            str1 = str1.toLowerCase().trim();
+            str2 = str2.toLowerCase().trim();
+
+            if (str1 === str2) return 1;
+
+            // Implementación simple
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+
+            // Si la diferencia de longitud es muy grande, similitud baja
+            if (longer.length === 0) return 1.0;
+
+            // Coincidencia simple de palabras
+            const words1 = str1.split(/\s+/);
+            const words2 = str2.split(/\s+/);
+
+            let matchingWords = 0;
+            words1.forEach(word1 => {
+                words2.forEach(word2 => {
+                    if (word1 === word2) matchingWords++;
+                });
+            });
+
+            const wordSimilarity = matchingWords / Math.max(words1.length, words2.length);
+
+            // Coincidencia de caracteres
+            let matchingChars = 0;
+            for (let i = 0; i < Math.min(str1.length, str2.length); i++) {
+                if (str1[i] === str2[i]) matchingChars++;
+            }
+
+            const charSimilarity = matchingChars / Math.max(str1.length, str2.length);
+
+            // Promedio ponderado
+            return (wordSimilarity * 0.7) + (charSimilarity * 0.3);
+        }
+        function buscarProductosSimilares(nombreProducto, productosData, umbral = 0.8) {
+            const productosSimilares = [];
+
+            productosData.forEach(producto => {
+                const similitud = calcularSimilitud(nombreProducto, producto.nombre);
+
+                if (similitud >= umbral) {
+                    productosSimilares.push({
+                        producto: producto,
+                        similitud: similitud,
+                        id_producto: producto.id_producto,
+                        nombre: producto.nombre,
+                        medida: producto.medida,
+                        tipo: producto.id_tipo
+                    });
+                }
+            });
+
+            // Ordenar por similitud descendente
+            return productosSimilares.sort((a, b) => b.similitud - a.similitud);
+        }
+        async function verificarDuplicadosAntesDeGuardar(productos) {
+            const duplicadosEncontrados = [];
+
+            for (let i = 0; i < productos.length; i++) {
+                const producto = productos[i];
+
+                if (producto.tipo === 'new' && producto.nombre) {
+                    // Buscar productos similares en la base de datos
+                    const similares = buscarProductosSimilares(producto.nombre, productosData, 0.7);
+
+                    if (similares.length > 0) {
+                        duplicadosEncontrados.push({
+                            index: i,
+                            nombreIngresado: producto.nombre,
+                            similares: similares.slice(0, 3) // Mostrar solo los 3 más similares
+                        });
+                    }
+                }
+            }
+
+            return {
+                tieneDuplicados: duplicadosEncontrados.length > 0,
+                duplicados: duplicadosEncontrados
+            };
+        }
+        async function guardarSolicitudConVerificacion(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('requestForm');
+            const formMode = document.getElementById('formMode').value;
+            const requestId = document.getElementById('requestId').value;
+
+            const idSolicitanteField = document.getElementById('idSolicitante');
+            if (!idSolicitanteField.value) {
+                idSolicitanteField.value = userId;
+            }
+            console.log('id_solicitante:', idSolicitanteField.value);
+            // 1. Validar formulario básico
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return false;
+            }
+
+            // 2. Validar productos individualmente
+            const productGroups = document.querySelectorAll('.product-fields-group');
+            let productosValidos = true;
+            let mensajeError = '';
+
+            productGroups.forEach((group, index) => {
+                const tipo = group.querySelector('.product-type-buttons .active')?.dataset.type;
+                const productoSelect = document.getElementById(`producto_${index}`);
+                const nombreInput = document.getElementById(`nombre_producto_${index}`);
+                const cantidadInput = document.getElementById(`cantidad_${index}`);
+
+                // Validar cantidad
+                if (!cantidadInput || !cantidadInput.value || parseFloat(cantidadInput.value) <= 0) {
+                    productosValidos = false;
+                    mensajeError = `Debe ingresar una cantidad válida para el Producto #${index + 1}`;
+                    if (cantidadInput) cantidadInput.style.borderColor = 'red';
+                    return;
+                }
+
+                if (tipo === 'existing') {
+                    // Validar que se haya seleccionado un producto
+                    if (!productoSelect || !productoSelect.value) {
+                        productosValidos = false;
+                        mensajeError = `Debe seleccionar un producto para el Producto #${index + 1}`;
+                        if (productoSelect) productoSelect.style.borderColor = 'red';
+                    }
+                } else {
+                    // Validar que se haya ingresado un nombre
+                    if (!nombreInput || !nombreInput.value.trim()) {
+                        productosValidos = false;
+                        mensajeError = `Debe ingresar un nombre para el Producto #${index + 1}`;
+                        if (nombreInput) nombreInput.style.borderColor = 'red';
+                    }
+                }
+            });
+
+            if (!productosValidos) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error en productos',
+                    text: mensajeError
+                });
+                return false;
+            }
+
+            // 3. Recopilar productos para verificación
+            const productos = recopilarProductosDelFormulario();
+
+            // 4. Verificar duplicados solo para productos nuevos
+            const verificacion = await verificarDuplicadosAntesDeGuardar(productos);
+
+            if (verificacion.tieneDuplicados) {
+                // Mostrar modal de confirmación con sugerencias
+                const usarExistentes = await mostrarModalDuplicados(verificacion.duplicados);
+
+                if (usarExistentes) {
+                    // Actualizar el formulario con productos existentes seleccionados
+                    await actualizarFormularioConExistentes(verificacion.duplicados);
+
+                    // Dar tiempo para que se actualicen los campos
+                    await new Promise(resolve => setTimeout(resolve, 100));
+
+                    // Volver a recopilar productos después de actualizar
+                    productos = recopilarProductosDelFormulario();
+                }
+                // Si el usuario elige "Mantener nuevos", no hacemos cambios
+            }
+
+            // 5. Determinar cómo proceder según el modo
+            if (formMode === 'edit') {
+                // Modo edición
+                return await guardarEdicion(requestId, productos);
+            } else {
+                // Modo agregar - usar AJAX que controlamos
+                return await guardarNuevaSolicitudAjax(form);
+            }
+        }
+        // Nueva función para AJAX controlado
+        async function guardarNuevaSolicitudAjax(form) {
+            closeModal();
+            // Crear FormData manual
+            const formData = new FormData();
+
+            // Asegurar id_solicitante
+            const idSolicitante = document.getElementById('idSolicitante').value || userId;
+            formData.append('id_solicitante', idSolicitante);
+
+            // Agregar otros campos necesarios
+            formData.append('departamento', document.getElementById('departamento').value);
+            formData.append('fecha_requerida', document.getElementById('fecha_requerida').value);
+            formData.append('notas', document.getElementById('notas').value);
+            formData.append('form_mode', 'add');
+
+            // Agregar productos
+            const productos = recopilarProductosDelFormulario();
+            const productosParaEnviar = prepararProductosParaEnvio(productos);
+
+            productosParaEnviar.forEach((prod, index) => {
+                formData.append(`producto_id[]`, prod.id_producto || '');
+                formData.append(`nombre_producto[]`, prod.nombre_producto || '');
+                formData.append(`unidad_medida[]`, prod.unidad_medida || '');
+                formData.append(`cantidad[]`, prod.cantidad || '');
+                formData.append(`tipo_producto[]`, prod.tipo_producto || '');
+            });
+
+            try {
+                const response = await fetch('?action=solicitudes&method=home', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'Solicitud creada correctamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    location.reload();
+                    return true;
+                } else {
+                    throw new Error('Error en el servidor');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo crear la solicitud'
+                });
+                return false;
+            }
+        }
+        function prepararYEnviarFormularioTradicional(form) {
+            // 1. Asegurar que el campo hidden tenga valor ANTES de crear FormData
+            const idSolicitanteField = document.getElementById('idSolicitante');
+            if (!idSolicitanteField.value) {
+                idSolicitanteField.value = userId;
+                console.log('idSolicitante establecido a:', userId);
+            }
+
+            // 2. Debug: Verificar todos los campos
+            console.log('=== DEBUG: Campos del formulario ===');
+            const formElements = form.elements;
+            for (let i = 0; i < formElements.length; i++) {
+                const element = formElements[i];
+                if (element.name) {
+                    console.log(`${element.name}: ${element.value} (type: ${element.type})`);
+                }
+            }
+            console.log('idSolicitante:', idSolicitanteField.value);
+
+            // 3. Habilitar campos deshabilitados
+            const disabledFields = form.querySelectorAll('input:disabled, select:disabled');
+            disabledFields.forEach(field => {
+                field.disabled = false;
+            });
+
+            // 4. Crear FormData MANUALMENTE incluyendo todos los campos necesarios
+            const formData = new FormData();
+
+            // Agregar todos los campos del formulario
+            for (let i = 0; i < formElements.length; i++) {
+                const element = formElements[i];
+                if (element.name && !element.disabled) {
+                    if (element.type === 'checkbox' || element.type === 'radio') {
+                        if (element.checked) {
+                            formData.append(element.name, element.value);
+                        }
+                    } else if (element.type === 'file') {
+                        // Para archivos
+                        if (element.files.length > 0) {
+                            formData.append(element.name, element.files[0]);
+                        }
+                    } else {
+                        // Para todos los demás (text, number, hidden, select, etc.)
+                        if (element.value || element.value === '0') {
+                            formData.append(element.name, element.value);
+                        }
+                    }
+                }
+            }
+
+            // 5. Asegurar específicamente id_solicitante
+            if (!formData.has('id_solicitante') && idSolicitanteField.value) {
+                formData.append('id_solicitante', idSolicitanteField.value);
+            }
+
+            // 6. Debug del FormData
+            console.log('=== DEBUG: FormData a enviar ===');
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ':', value);
+            }
+
+            // 7. Mostrar loading
+            Swal.fire({
+                title: 'Guardando solicitud...',
+                text: 'Por favor, espere un momento',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // 8. Enviar con fetch para tener más control
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    Swal.close();
+                    if (response.ok) {
+                        // Éxito - recargar página
+                        location.reload();
+                    } else {
+                        // Error
+                        return response.text().then(text => {
+                            throw new Error(`Error del servidor: ${response.status}`);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al guardar la solicitud. Intente nuevamente.'
+                    });
+                });
+
+            return false; // Prevenir envío tradicional
+        }
+        function actualizarProductosConExistentes(productos, duplicados) {
+            // Crear una copia de los productos
+            const productosActualizados = [...productos];
+
+            duplicados.forEach(duplicado => {
+                const radios = document.querySelectorAll(`input[name="sugerencia_${duplicado.index}"]:checked`);
+                if (radios.length > 0) {
+                    const idProductoSeleccionado = radios[0].value;
+                    const sugerenciaSeleccionada = duplicado.similares.find(s => s.id_producto == idProductoSeleccionado);
+
+                    if (sugerenciaSeleccionada) {
+                        // Actualizar el producto en el array
+                        productosActualizados[duplicado.index] = {
+                            tipo: 'existing',
+                            id_producto: sugerenciaSeleccionada.id_producto,
+                            nombre: sugerenciaSeleccionada.nombre,
+                            medida: sugerenciaSeleccionada.medida,
+                            id_tipo: sugerenciaSeleccionada.tipo,
+                            cantidad: productos[duplicado.index].cantidad
+                        };
+                    }
+                }
+            });
+
+            return productosActualizados;
+        }
+        async function actualizarFormularioConExistentes(duplicados) {
+            // Para cada duplicado, cambiar el tipo a "existing" y seleccionar el producto
+            duplicados.forEach(duplicado => {
+                const radios = document.querySelectorAll(`input[name="sugerencia_${duplicado.index}"]:checked`);
+                if (radios.length > 0) {
+                    const idProductoSeleccionado = radios[0].value;
+
+                    // Obtener el grupo del producto
+                    const group = document.querySelector(`.product-fields-group[data-product-index="${duplicado.index}"]`);
+                    if (!group) return;
+
+                    // Cambiar a tipo "existing"
+                    const buttons = group.querySelector('.product-type-buttons');
+                    const existingBtn = buttons.querySelector('[data-type="existing"]');
+                    const newBtn = buttons.querySelector('[data-type="new"]');
+
+                    newBtn.classList.remove('active');
+                    existingBtn.classList.add('active');
+
+                    // Actualizar el select de productos
+                    const productoSelect = document.getElementById(`producto_${duplicado.index}`);
+                    if (productoSelect) {
+                        // Buscar si la opción ya existe
+                        let optionExists = false;
+                        for (let option of productoSelect.options) {
+                            if (option.value === idProductoSeleccionado) {
+                                optionExists = true;
+                                break;
+                            }
+                        }
+
+                        // Si no existe, agregarla
+                        if (!optionExists) {
+                            const similar = duplicado.similares.find(s => s.id_producto == idProductoSeleccionado);
+                            if (similar) {
+                                const option = document.createElement('option');
+                                option.value = similar.id_producto;
+                                option.textContent = `${similar.nombre} (Inactivo)`;
+                                option.setAttribute('data-nombre', similar.nombre || '');
+                                option.setAttribute('data-unidad', similar.medida || '');
+                                option.setAttribute('data-tipo', similar.tipo || '');
+                                productoSelect.appendChild(option);
+                            }
+                        }
+
+                        // Seleccionar el producto
+                        productoSelect.value = idProductoSeleccionado;
+                        productoSelect.disabled = false;
+
+                        // Actualizar campos automáticamente
+                        actualizarCamposProducto(duplicado.index);
+                    }
+                }
+            });
+        }
+        async function mostrarModalDuplicados(duplicados) {
+            return new Promise((resolve) => {
+                let html = `
+            <div class="duplicados-modal" style="text-align: left; max-height: 400px; overflow-y: auto;">
+                <div class="duplicados-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <i data-lucide="alert-triangle" style="color: #f59e0b; width: 24px; height: 24px;"></i>
+                    <h3 style="margin: 0; color: #333;">Productos similares encontrados</h3>
+                </div>
+                <div class="duplicados-content">
+                    <p>Se encontraron productos similares en la base de datos. ¿Desea usar los productos existentes?</p>
+        `;
+
+                duplicados.forEach(duplicado => {
+                    html += `
+                <div class="duplicado-item" style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #f59e0b;">
+                    <div class="duplicado-info" style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #dee2e6;">
+                        <strong>Producto #${duplicado.index + 1}:</strong> "${duplicado.nombreIngresado}"
+                    </div>
+                    <div class="sugerencias" style="background: white; border-radius: 6px; padding: 12px; border: 1px solid #e9ecef;">
+                        <p style="margin-top: 0; margin-bottom: 10px; font-size: 0.9em; color: #666;"><small>Productos similares encontrados:</small></p>
+            `;
+
+                    duplicado.similares.forEach((similar, idx) => {
+                        html += `
+                    <div class="sugerencia-item" style="margin-bottom: 8px; padding: 8px; border-radius: 4px; transition: background-color 0.2s;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%;">
+                            <input type="radio" 
+                                   name="sugerencia_${duplicado.index}" 
+                                   value="${similar.id_producto}"
+                                   ${idx === 0 ? 'checked' : ''}
+                                   style="margin-right: 5px;">
+                            ${similar.nombre} (${similar.medida})
+                            <span class="similitud" style="margin-left: auto; font-size: 0.85em; color: #6c757d; background: #e9ecef; padding: 2px 8px; border-radius: 12px;">
+                                ${Math.round(similar.similitud * 100)}% similar
+                            </span>
+                        </label>
+                    </div>
+                `;
+                    });
+
+                    html += `
+                    </div>
+                </div>
+            `;
+                });
+
+                html += `
+                </div>
+            </div>
+        `;
+
+                Swal.fire({
+                    title: '¿Duplicados encontrados?',
+                    html: html,
+                    width: 600,
+                    showCancelButton: true,
+                    confirmButtonText: 'Usar productos existentes',
+                    cancelButtonText: 'Mantener como nuevos',
+                    reverseButtons: true,
+                    customClass: {
+                        container: 'swal2-high-zindex'
+                    },
+                    didOpen: () => {
+                        // Asegurar que SweetAlert esté por encima de tu modal
+                        const container = document.querySelector('.swal2-container');
+                        if (container) {
+                            container.style.zIndex = '999999';
+                        }
+                        lucide.createIcons();
+                    }
+                }).then((result) => {
+                    resolve(result.isConfirmed); // true si eligió usar existentes
+                });
+            });
+        }
+        // Agrega esto al final de tu CSS dinámico
+        const removeButtonStyles = `
+    .remove-product-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+    
+    .remove-product-btn:hover {
+        background: #c82333;
+        transform: scale(1.05);
+    }
+    
+    .remove-product-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .remove-product-btn i {
+        font-size: 0.9rem;
+    }
+    
+    /* Asegurar que el grupo de productos tenga posición relativa */
+    .product-fields-group {
+        position: relative;
+        padding-top: 10px;
+    }
+    
+    /* Ajustar el header para que no se superponga */
+    .product-group-header {
+        padding-right: 100px; /* Espacio para el botón */
+    }
+`;
+
+        // Agregar el CSS al documento
+        const styleElement = document.createElement('style');
+        styleElement.textContent = removeButtonStyles;
+        document.head.appendChild(styleElement);
     </script>
 </body>
 

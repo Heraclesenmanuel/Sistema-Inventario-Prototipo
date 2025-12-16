@@ -3,8 +3,9 @@ require_once 'model/base.php';
 class Inventario extends Base {
 
     public function obtenerDatos(){
-        $sql = 'SELECT p.*, tp.nombre as tipo
-                FROM producto p INNER JOIN tipo_prod tp ON p.id_tipo=tp.id_tipo
+        $sql = 'SELECT p.*, tp.nombre as tipo 
+                FROM producto p 
+                INNER JOIN tipo_prod tp ON p.id_tipo=tp.id_tipo
                 WHERE valido=1';
         $resultado = $this->db->query($sql);
 
@@ -21,7 +22,10 @@ class Inventario extends Base {
     public function getTiposCompleto()
     {
         $sql = "SELECT tp.id_tipo as id_tipo, tp.nombre as nombre, SUM(un_deseadas) as cant_pend, 
-                SUM(un_deseadas) as cant_solic FROM tipo_prod tp LEFT JOIN prod_solic ps ON tp.id_tipo=ps.id_tipo
+                SUM(un_deseadas) as cant_solic 
+                FROM tipo_prod tp 
+                INNER JOIN producto p ON p.id_tipo=tp.id_tipo
+                LEFT JOIN prod_solic ps ON p.id_producto=ps.id_producto
                 GROUP BY tp.id_tipo";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();

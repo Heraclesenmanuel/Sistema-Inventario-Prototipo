@@ -4,7 +4,7 @@ require_once 'model/base.php';
 class Oficina extends Base{
     public function getOficinas(){
         try {
-            $sql = 'SELECT of.num_oficina as num_oficina, of.nombre as nombre, of.telefono as telefono, dir.nombre as nombre_dir
+            $sql = 'SELECT of.num_oficina as num_oficina, of.nombre as nombre, of.telefono as telefono, dir.nombre as nombre_dir, dir.ced_dir as ced_dir, dir.telf as telf_dir
             FROM oficina of LEFT JOIN director dir ON of.ced_dir=dir.ced_dir';
             $resul = $this->db->query($sql);
 

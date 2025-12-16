@@ -18,8 +18,14 @@ class SolicitudesController extends AdminController
         $productos = $this->getProductos();
 
         if (isset($_POST['departamento'])) {
-            $this->agregarSolic();
-            header('Location: ?action=solicitudes&method=home');
+            if($this->agregarSolic())
+            {
+                header('Location: ?action=solicitudes&method=home');
+            }
+            else
+            {
+                header('Location: ?action=solicitudes&method=home&error=1');
+            }
         }
         if ($_SESSION['dpto'] == 4) {
             $proveedores = $this->proveedores->obtenerProveedores();
@@ -33,13 +39,13 @@ class SolicitudesController extends AdminController
     }
     public function agregarSolic($edit = null)
     {
-
         // Sanitizar y validar datos antes de guardar
         $datosSolic = [
             'oficina' => trim($_POST['departamento'] ?? 'N/A'),
             'fecha_deseada' => trim($_POST['fecha_requerida'] ?? 'N/A'),
             'oficina_solic' => trim($_POST['departamento'] ?? 'N/A'),
-            'comentarios' => trim($_POST['notas'] ?? 'N/A')
+            'comentarios' => trim($_POST['notas'] ?? 'N/A'),
+            'id_solicitante' => (int)$_POST['id_solicitante']
         ];
         if ($edit) {
             $datosSolic['id_solicitud'] = (int) $_POST['request_id'];
@@ -47,21 +53,26 @@ class SolicitudesController extends AdminController
 
         $productos = $this->procesarProds();
         if (empty($datosSolic['oficina']) && empty($productos[0]['nombre'])) {
+            error_log("uno de los datos esta vacio");
             return false;
         } else if ($edit) {
             $set_aceptar = $_SESSION['dpto'] == 4;
-            if ($this->solicitudes->eliminarSolicitud($datosSolic['id_solicitud']) && $this->solicitudes->guardarSolicitud($datosSolic, $datosSolic['id_solicitud']) && $this->solicitudes->guardarProds($productos)) {
+            if ($this->solicitudes->eliminarSolicitud($datosSolic['id_solicitud']) && $this->solicitudes->guardarSolicitud($datosSolic, $datosSolic['id_solicitud']) && $this->solicitudes->guardarProdsSolic($productos)) {
                 return true;
             }
-        } else if ($this->solicitudes->guardarSolicitud($datosSolic) && $this->solicitudes->guardarProds($productos)) {
+        } else if ($this->solicitudes->guardarSolicitud($datosSolic) && $this->solicitudes->guardarProdsSolic($productos)) {
             return true;
         } else {
+            error_log("caso de interes");
+            error_log(print_r($productos, true));
+            error_log("No se completo una de las transacciones");
             return false;
         }
         exit();
     }
     public function procesarProds()
     {
+        $ids_producto = $_POST['producto_id'] ?? [];
         $nombres = $_POST['nombre_producto'] ?? [];
         $un_deseadas = $_POST['cantidad'] ?? [];
         $tipos_p = $_POST['tipo_producto'] ?? [];
@@ -82,6 +93,7 @@ class SolicitudesController extends AdminController
             ) {
 
                 $productos[] = [
+                    'id_producto' => $ids_producto[$i],
                     'nombre_producto' => trim($nombres[$i]),
                     'unidad_medida' => $medidas[$i],
                     'cantidad' => intval($un_deseadas[$i]),
