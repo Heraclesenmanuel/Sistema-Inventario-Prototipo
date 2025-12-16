@@ -78,7 +78,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Nombre</th>
-                                <th>Cantidad por Entregar</th>
+                                <th>Cantidad Disponible</th>
                                 <th>Cantidad Solicitada</th>
                                 <th>Acciones</th>
                             </tr>

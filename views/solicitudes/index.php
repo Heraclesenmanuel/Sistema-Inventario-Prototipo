@@ -386,7 +386,6 @@
 
         // Función para guardar en modo edición
         async function guardarEdicion(requestId, productos) {
-            closeModal();
             // Mostrar loading
             const swalLoading = Swal.fire({
                 title: 'Procesando...',
@@ -2522,7 +2521,6 @@
         }
         // Nueva función para AJAX controlado
         async function guardarNuevaSolicitudAjax(form) {
-            closeModal();
             // Crear FormData manual
             const formData = new FormData();
 

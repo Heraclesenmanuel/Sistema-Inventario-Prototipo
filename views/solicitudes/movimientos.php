@@ -337,7 +337,10 @@
                                                     $tieneProveedor = !empty($producto['rif_proveedor']);
                                                     ?>
                                                     <div class="producto-item" data-tipo="<?= $producto['id_tipo'] ?>"
-                                                        data-has-prov="<?= $tieneProveedor ? 'true' : 'false' ?>">
+                                                        data-has-prov="<?= $tieneProveedor ? 'true' : 'false' ?>"
+                                                        data-linea="<?= $producto['num_linea'] ?>"
+                                                        data-id-producto="<?= $producto['id_producto'] ?>">
+
                                                         <div class="producto-header">
                                                             <div>
                                                                 <span
@@ -350,6 +353,14 @@
                                                             <div style="display: flex; align-items: center; gap: 0.75rem;">
                                                                 <span class="producto-quantity"><?= $producto['un_deseadas'] ?>
                                                                     <?= htmlspecialchars($producto['medida']) ?></span>
+
+                                                                <!-- Botón para descartar producto -->
+                                                                <button class="btn btn-small btn-danger btn-descartar-producto"
+                                                                    onclick="descartarProducto(<?= $solicitud['id_solicitud'] ?>, <?= $producto['num_linea'] ?>, this)"
+                                                                    title="Descartar este producto">
+                                                                    <i data-lucide="trash-2"></i>
+                                                                </button>
+
                                                                 <?php if ($tieneProveedor): ?>
                                                                     <div class="proveedor-check">
                                                                         <i data-lucide="check" style="color: var(--success-color);"></i>
@@ -372,7 +383,7 @@
                                                                                 class="form-input cantidad-suplir-input"
                                                                                 data-linea="<?= $producto['num_linea'] ?>"
                                                                                 data-cantidad-inicial="<?= $producto['un_deseadas'] ?>"
-                                                                                min="0" max="<?= $producto['un_deseadas']*2 ?>"
+                                                                                min="0" max="<?= $producto['un_deseadas'] * 2 ?>"
                                                                                 value="<?= $producto['un_deseadas'] ?>"
                                                                                 style="width: 120px;"
                                                                                 onchange="validarCantidadSuplir(<?= $solicitud['id_solicitud'] ?>, <?= $producto['num_linea'] ?>, this)">
@@ -398,14 +409,14 @@
                                                                             </select>
                                                                         </div> <br>
                                                                         <button class="btn btn-small btn-secondary"
-                                                                                onclick="buscarProveedor(<?= $producto['id_tipo'] ?>)"
-                                                                                title="Buscar más proveedores" style="flex-shrink: 0;">
-                                                                                <i data-lucide="search"></i>
+                                                                            onclick="buscarProveedor(<?= $producto['id_tipo'] ?>)"
+                                                                            title="Buscar más proveedores" style="flex-shrink: 0;">
+                                                                            <i data-lucide="search"></i>
                                                                             <span
                                                                                 style="white-space: nowrap; color: var(--gray-600); font-size: 0.875rem;">
-                                                                                Buscar proveedores 
+                                                                                Buscar proveedores
                                                                             </span>
-                                                                        </button> 
+                                                                        </button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1186,13 +1197,29 @@
             const solicitudDiv = document.querySelector(`.solicitud-card[data-id="${idSolicitud}"]`);
             if (!solicitudDiv) return;
 
-            // 1. Validar proveedores (código existente)
-            const productosDiv = document.getElementById(`productos-${idSolicitud}`);
-            const productos = productosDiv ? productosDiv.querySelectorAll('.producto-item') : [];
+            // Obtener productos NO descartados
+            const productosActivos = solicitudDiv.querySelectorAll('.producto-item:not(.producto-descartado)');
 
+            if (productosActivos.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No hay productos activos',
+                    text: 'Todos los productos han sido descartados. ¿Desea rechazar la solicitud?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Rechazar solicitud',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#F44336'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        rechazarSolicitud(idSolicitud);
+                    }
+                });
+                return;
+            }
+
+            // Validar proveedores en productos activos
             let faltanProveedores = false;
-
-            productos.forEach(producto => {
+            productosActivos.forEach(producto => {
                 const select = producto.querySelector('.proveedor-select');
                 if (select && !select.value) {
                     faltanProveedores = true;
@@ -1203,17 +1230,15 @@
                 Swal.fire({
                     icon: 'warning',
                     title: 'Proveedores faltantes',
-                    text: 'Debe asignar un proveedor a todos los productos antes de aprobar.',
+                    text: 'Debe asignar un proveedor a todos los productos activos antes de aprobar.',
                     confirmButtonText: 'Entendido'
                 });
                 return;
             }
 
-            // 2. Validar cantidades
+            // Validar cantidades en productos activos
             let problemasCantidades = [];
-            let cantidadesInvalidas = [];
-
-            productos.forEach(producto => {
+            productosActivos.forEach(producto => {
                 const inputCantidad = producto.querySelector('.cantidad-suplir-input');
 
                 if (inputCantidad) {
@@ -1229,15 +1254,12 @@
                             suplir: cantidadSuplir,
                             minimo: minPermitido
                         });
-                        cantidadesInvalidas.push(producto);
                     }
                 }
             });
 
             if (problemasCantidades.length > 0) {
-                // Mostrar solo en el modal, no en las tarjetas
                 let mensaje = 'Las siguientes cantidades no cumplen con el mínimo del 60%:<br><br>';
-
                 problemasCantidades.forEach(problema => {
                     mensaje += `• <strong>${problema.nombre}:</strong> ${problema.suplir} de ${problema.solicitado} `;
                     mensaje += `(mínimo: ${problema.minimo})<br>`;
@@ -1249,129 +1271,243 @@
                     html: mensaje,
                     confirmButtonText: 'Corregir',
                     showCancelButton: true,
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonColor: '#FF9800'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Expandir y resaltar sin agregar elementos
-                        if (productosDiv && (productosDiv.style.display === 'none' || productosDiv.style.display === '')) {
-                            toggleProductos(idSolicitud);
-                        }
-
-                        // Resaltar solo con clases CSS
-                        setTimeout(() => {
-                            cantidadesInvalidas.forEach((producto, index) => {
-                                const input = producto.querySelector('.cantidad-suplir-input');
-                                if (input) {
-                                    input.classList.add('cantidad-input-invalido', 'shake');
-
-                                    if (index === 0) {
-                                        setTimeout(() => {
-                                            input.focus();
-                                            input.select();
-                                        }, 300);
-                                    }
-                                }
-                            });
-                        }, 300);
-                    }
+                    cancelButtonText: 'Cancelar'
                 });
                 return;
             }
 
-            // 3. Si todo está bien, mostrar confirmación con resumen
-            const resumen = generarResumenSimple(idSolicitud);
+            // Recolectar datos para inserción en registro_prod
+            const asignaciones = [];
+
+            productosActivos.forEach(producto => {
+                const select = producto.querySelector('.proveedor-select');
+                const inputCantidad = producto.querySelector('.cantidad-suplir-input');
+                const linea = producto.querySelector('[data-linea]').dataset.linea;
+                const id = producto.dataset.idProducto; 
+                console.log('id: ',id);
+                const tipo = producto.dataset.tipo;
+
+                if (select && select.value && inputCantidad) {
+                    const cantidadSolicitada = parseInt(inputCantidad.dataset.cantidadInicial) || 0;
+                    const cantidadSuplir = parseInt(inputCantidad.value) || 0;
+
+                    // Calcular cantidad adicional (un_anadidas)
+                    const cantidadAdicional = cantidadSuplir - cantidadSolicitada;
+
+                    asignaciones.push({
+                        id_solicitud: idSolicitud,
+                        num_linea: parseInt(linea),
+                        rif_proveedor: select.value,
+                        id_tipo: tipo,
+                        id_producto: id,
+                        cantidad_solicitada: cantidadSolicitada,
+                        cantidad_suplir: cantidadSuplir,
+                        un_anadidas: cantidadAdicional
+                    });
+                }
+            });
+
+            // Mostrar resumen final
+            const resumen = generarResumenFinal(asignaciones);
 
             Swal.fire({
-                title: '¿Aprobar solicitud?',
+                title: '¿Confirmar aprobación?',
                 html: `
             <div style="text-align: left;">
-                <p><strong>Resumen:</strong></p>
-                <p>Cantidad total a suplir: ${resumen.totalSuplir} de ${resumen.totalSolicitado} unidades</p>
-                <p>Porcentaje: ${resumen.porcentajeTotal}%</p>
+                <p><strong>Resumen de la aprobación:</strong></p>
+                <p>• Productos aprobados: ${asignaciones.length}</p>
+                <p>• Total solicitado: ${resumen.totalSolicitado} unidades</p>
+                <p>• Total a suplir: ${resumen.totalSuplir} unidades</p>
+                <p>• Adicional aprobado: ${resumen.totalAdicional} unidades</p>
+                <p>• Porcentaje: ${resumen.porcentajeTotal}%</p>
+                ${productosDescartados[idSolicitud] && productosDescartados[idSolicitud].length > 0 ?
+                        `<p><strong>Nota:</strong> ${productosDescartados[idSolicitud].length} productos descartados</p>` : ''}
             </div>
         `,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Aprobar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#4CAF50'
+                confirmButtonText: 'Aprobar definitivamente',
+                cancelButtonText: 'Revisar nuevamente',
+                confirmButtonColor: '#4CAF50',
+                showDenyButton: false,
+                denyButtonText: 'Generar comprobante',
+                denyButtonColor: '#2196F3'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    try {
-                        // Recolectar datos
-                        const asignaciones = [];
-
-                        productos.forEach(producto => {
-                            const select = producto.querySelector('.proveedor-select');
-                            const inputCantidad = producto.querySelector('.cantidad-suplir-input');
-                            const linea = producto.querySelector('[data-linea]').dataset.linea;
-                            const tipo = producto.dataset.tipo;
-
-                            if (select && select.value && inputCantidad) {
-                                asignaciones.push({
-                                    id_solicitud: idSolicitud,
-                                    num_linea: linea,
-                                    rif_proveedor: select.value,
-                                    id_tipo: tipo,
-                                    cantidad_suplir: parseInt(inputCantidad.value) || 0,
-                                    cantidad_solicitada: parseInt(inputCantidad.dataset.cantidadInicial) || 0
-                                });
-                            }
-                        });
-
-                        // Enviar al servidor
-                        const response = await fetch('controller/PresupuestoController.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                action: 'aprobarSolicitud',
-                                id_solicitud: idSolicitud,
-                                asignaciones: asignaciones
-                            })
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Aprobada!',
-                                text: 'La solicitud ha sido aprobada.',
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-
-                            // Eliminar de la vista
-                            setTimeout(() => {
-                                solicitudDiv.remove();
-
-                                const totalSolicitudes = document.querySelectorAll('.solicitud-card').length;
-                                if (totalSolicitudes === 0) {
-                                    mostrarMensajeNoResultados(true);
-                                }
-                            }, 2000);
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: result.message || 'Error al aprobar.'
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'No se pudo procesar.'
-                        });
-                    }
+                    await procesarAprobacion(idSolicitud, asignaciones, solicitudDiv);
+                } else if (result.dismiss === Swal.DismissReason.deny) {
+                    // Generar comprobante PDF
+                    await generarComprobante(idSolicitud, asignaciones);
                 }
             });
         }
 
+        function generarResumenFinal(asignaciones) {
+            let totalSolicitado = 0;
+            let totalSuplir = 0;
+            let totalAdicional = 0;
+
+            asignaciones.forEach(asignacion => {
+                totalSolicitado += asignacion.cantidad_solicitada;
+                totalSuplir += asignacion.cantidad_suplir;
+                totalAdicional += asignacion.un_anadidas;
+            });
+
+            const porcentajeTotal = totalSolicitado > 0 ?
+                ((totalSuplir / totalSolicitado) * 100).toFixed(1) : 0;
+
+            return {
+                totalSolicitado: totalSolicitado,
+                totalSuplir: totalSuplir,
+                totalAdicional: totalAdicional,
+                porcentajeTotal: porcentajeTotal + '%'
+            };
+        }
+
+        async function procesarAprobacion(idSolicitud, asignaciones, solicitudDiv) {
+            try {
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Procesando aprobación...',
+                    text: 'Actualizando registros en el sistema',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Enviar datos al backend
+                const response = await fetch('?action=solicitudes&method=aprobarSolicitud', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'aprobarSolicitud',
+                        id_solicitud: idSolicitud,
+                        asignaciones: asignaciones,
+                        productos_descartados: productosDescartados[idSolicitud] || []
+                    })
+                });
+
+                const result = await response.json();
+
+                Swal.close();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Aprobación exitosa!',
+                        html: `
+                    <div style="text-align: left;">
+                        <p>Solicitud #${idSolicitud} aprobada correctamente.</p>
+                        <p>Se han creado ${asignaciones.length} registros en el sistema.</p>
+                        <p><strong>Estado:</strong> ${result.estado || 'Aprobada'}</p>
+                    </div>
+                `,
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+
+                    // Eliminar solicitud de la vista después de 3 segundos
+                    setTimeout(() => {
+                        solicitudDiv.remove();
+
+                        // Verificar si quedan más solicitudes
+                        const totalSolicitudes = document.querySelectorAll('.solicitud-card').length;
+                        if (totalSolicitudes === 0) {
+                            mostrarMensajeNoResultados(true);
+                        }
+
+                        // Limpiar de variables globales
+                        delete asignacionesProveedor[idSolicitud];
+                        delete productosDescartados[idSolicitud];
+                        delete cantidadesSuplir[idSolicitud];
+
+                    }, 3000);
+
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error en la aprobación',
+                        text: result.message || 'No se pudo completar la aprobación.',
+                        confirmButtonText: 'Entendido'
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor.',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        }
+        async function generarComprobante(idSolicitud, asignaciones) {
+            try {
+                Swal.fire({
+                    title: 'Generando comprobante...',
+                    text: 'Por favor espere',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch('controller/ReporteController.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'comprobante_aprobacion',
+                        id_solicitud: idSolicitud,
+                        asignaciones: asignaciones
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Comprobante_Aprobacion_${idSolicitud}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+
+                    Swal.close();
+
+                    // Preguntar si aprobar después de generar comprobante
+                    Swal.fire({
+                        title: '¿Aprobar solicitud?',
+                        text: 'El comprobante se ha descargado. ¿Desea aprobar la solicitud ahora?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, aprobar',
+                        cancelButtonText: 'No, solo comprobante',
+                        confirmButtonColor: '#4CAF50'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const solicitudDiv = document.querySelector(`.solicitud-card[data-id="${idSolicitud}"]`);
+                            procesarAprobacion(idSolicitud, asignaciones, solicitudDiv);
+                        }
+                    });
+                } else {
+                    throw new Error('Error generando comprobante');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo generar el comprobante.'
+                });
+            }
+        }
         function generarResumenSimple(idSolicitud) {
             const solicitudDiv = document.querySelector(`.solicitud-card[data-id="${idSolicitud}"]`);
             if (!solicitudDiv) return { totalSuplir: 0, totalSolicitado: 0, porcentajeTotal: '0%' };
@@ -1572,13 +1708,12 @@
 
             if (motivo) {
                 try {
-                    const response = await fetch('controller/PresupuestoController.php', {
+                    const response = await fetch('?action=solicitudes&method=rechazarSolicitud', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            action: 'rechazarSolicitud',
                             id_solicitud: idSolicitud,
                             motivo: motivo
                         })
@@ -1650,7 +1785,7 @@
             }
 
             try {
-                const response = await fetch('controller/PresupuestoController.php', {
+                const response = await fetch('?action=solicitudes&method=solicitarInfo', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2005,271 +2140,396 @@
             `;
         document.head.appendChild(style);
         document.addEventListener('DOMContentLoaded', function () {
-    console.log("Documento cargado, inicializando...");
-    
-    // Inicializar filtros
-    filtrarSolicitudes();
-    
-    // Inicializar filtros de proveedores
-    inicializarFiltrosProveedores();
-    
-    // Agregar estilos
-    agregarEstilosResaltado();
-    
-    // ========== INICIALIZACIÓN DE CANTIDADES Y BOTONES ==========
-    inicializarTodasLasSolicitudes();
-    
-    // Inicializar controles de expandir/contraer
-    agregarControlesExpandir();
-    
-    // Cargar asignaciones existentes del backend
-    cargarAsignacionesExistentes();
-});
+            console.log("Documento cargado, inicializando...");
 
-// ========== NUEVA FUNCIÓN PARA INICIALIZAR TODO ==========
+            // Inicializar filtros
+            filtrarSolicitudes();
 
-function inicializarTodasLasSolicitudes() {
-    console.log("Inicializando todas las solicitudes...");
-    
-    document.querySelectorAll('.solicitud-card').forEach(solicitudDiv => {
-        const idSolicitud = solicitudDiv.dataset.id;
-        console.log(`Procesando solicitud ${idSolicitud}`);
-        
-        // 1. Contar proveedores asignados inicialmente
-        const selects = solicitudDiv.querySelectorAll('.proveedor-select');
-        let provAsignados = 0;
-        
-        selects.forEach(select => {
-            // Verificar si el select tiene un valor seleccionado
-            if (select.value && select.value.trim() !== "") {
-                provAsignados++;
-                console.log(`  Select con proveedor: ${select.value}`);
-            } else {
-                console.log(`  Select sin proveedor`);
-            }
+            // Inicializar filtros de proveedores
+            inicializarFiltrosProveedores();
+
+            // Agregar estilos
+            agregarEstilosResaltado();
+
+            // ========== INICIALIZACIÓN DE CANTIDADES Y BOTONES ==========
+            inicializarTodasLasSolicitudes();
+
+
+            // Cargar asignaciones existentes del backend
+            cargarAsignacionesExistentes();
         });
-        
-        solicitudDiv.dataset.provAsignados = provAsignados;
-        console.log(`  Proveedores asignados: ${provAsignados}/${selects.length}`);
-        
-        // 2. Inicializar y validar TODAS las cantidades
-        const inputsCantidad = solicitudDiv.querySelectorAll('.cantidad-suplir-input');
-        let todasCantidadesValidas = true;
-        
-        inputsCantidad.forEach(input => {
-            const valor = parseInt(input.value) || 0;
-            const cantidadInicial = parseInt(input.dataset.cantidadInicial) || 0;
-            const minPermitido = Math.ceil(cantidadInicial * 0.6);
-            
-            console.log(`  Cantidad: ${valor}/${cantidadInicial}, Mínimo: ${minPermitido}`);
-            
-            // Validar si cumple con el mínimo
-            if (valor < minPermitido) {
-                console.log(`  ❌ Cantidad INVALIDA para línea ${input.dataset.linea}`);
-                input.classList.add('cantidad-input-invalido');
-                todasCantidadesValidas = false;
-            } else {
-                console.log(`  ✅ Cantidad válida para línea ${input.dataset.linea}`);
-                input.classList.remove('cantidad-input-invalido');
-            }
-            
-            // Guardar en cantidadesSuplir
-            if (!cantidadesSuplir[idSolicitud]) {
-                cantidadesSuplir[idSolicitud] = {};
-            }
-            cantidadesSuplir[idSolicitud][input.dataset.linea] = {
-                valor: valor,
-                valido: (valor >= minPermitido),
-                porcentaje: cantidadInicial > 0 ? (valor / cantidadInicial * 100) : 0
-            };
-        });
-        
-        // 3. Verificar estado inicial del botón
-        verificarBotonAprobar(solicitudDiv, provAsignados, selects.length, todasCantidadesValidas);
-        
-        // 4. Configurar event listeners
-        configurarEventListenersSolicitud(solicitudDiv);
-    });
-}
+        // Variable global para productos descartados
+        let productosDescartados = {};
 
-// ========== FUNCIÓN MEJORADA PARA VERIFICAR BOTÓN ==========
+        function descartarProducto(idSolicitud, numLinea, botonElement) {
+            const productoItem = botonElement.closest('.producto-item');
+            const nombreProducto = productoItem.querySelector('.producto-name').textContent;
 
-function verificarBotonAprobar(solicitudDiv, provAsignados, totalProductos, todasCantidadesValidas = null) {
-    const botonAprobar = solicitudDiv.querySelector('.btn-success');
-    if (!botonAprobar) {
-        console.log("No se encontró botón de aprobar");
-        return;
-    }
+            Swal.fire({
+                title: '¿Descartar producto?',
+                html: `¿Está seguro de descartar el producto <strong>"${nombreProducto}"</strong>?<br>
+               Este producto ya no será obligatorio para aprobar la solicitud.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, descartar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#F44336'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Marcar como descartado
+                    productoItem.classList.add('producto-descartado');
 
-    // Si no se pasó el parámetro, calcular si las cantidades son válidas
-    if (todasCantidadesValidas === null) {
-        const inputsCantidad = solicitudDiv.querySelectorAll('.cantidad-suplir-input');
-        todasCantidadesValidas = true;
-        
-        inputsCantidad.forEach(input => {
-            const valor = parseInt(input.value) || 0;
-            const cantidadInicial = parseInt(input.dataset.cantidadInicial);
-            const minPermitido = Math.ceil(cantidadInicial * 0.6);
-            
-            if (valor < minPermitido) {
-                todasCantidadesValidas = false;
-            }
-        });
-    }
+                    // Deshabilitar todos los inputs y selects
+                    productoItem.querySelectorAll('input, select, button').forEach(element => {
+                        if (!element.classList.contains('producto-restaurar-btn')) {
+                            element.disabled = true;
+                            element.style.pointerEvents = 'none';
+                        }
+                    });
 
-    // Verificar proveedores
-    const proveedoresCompletos = provAsignados === totalProductos && totalProductos > 0;
+                    // Cambiar botón de descartar por botón de restaurar
+                    const botonContenedor = botonElement.parentElement;
+                    botonElement.style.display = 'none';
 
-    console.log(`Verificando botón: proveedores=${proveedoresCompletos} (${provAsignados}/${totalProductos}), cantidades=${todasCantidadesValidas}`);
+                    const restaurarBtn = document.createElement('button');
+                    restaurarBtn.className = 'producto-restaurar-btn';
+                    restaurarBtn.innerHTML = '<i data-lucide="refresh-ccw"></i> Restaurar';
+                    restaurarBtn.onclick = function () {
+                        restaurarProducto(idSolicitud, numLinea, this);
+                    };
+                    botonContenedor.appendChild(restaurarBtn);
 
-    if (proveedoresCompletos && todasCantidadesValidas) {
-        botonAprobar.disabled = false;
-        botonAprobar.classList.remove('btn-disabled');
-        botonAprobar.style.opacity = '1';
-        botonAprobar.style.cursor = 'pointer';
-        botonAprobar.title = 'Aprobar con presupuesto';
-        console.log(`✅ Botón HABILITADO para solicitud ${solicitudDiv.dataset.id}`);
-    } else {
-        botonAprobar.disabled = true;
-        botonAprobar.classList.add('btn-disabled');
-        botonAprobar.style.opacity = '0.6';
-        botonAprobar.style.cursor = 'not-allowed';
-        
-        // Tooltip informativo
-        if (!proveedoresCompletos) {
-            botonAprobar.title = `Faltan ${totalProductos - provAsignados} proveedores por asignar`;
-        } else if (!todasCantidadesValidas) {
-            botonAprobar.title = 'Algunas cantidades no cumplen el mínimo del 60%';
-        } else {
-            botonAprobar.title = 'Completa todos los requisitos para aprobar';
+                    // Agregar badge de descartado
+                    const badge = document.createElement('span');
+                    badge.className = 'producto-descartado-badge';
+                    badge.innerHTML = '<i data-lucide="x-circle"></i> Descartado';
+                    productoItem.querySelector('.producto-header').appendChild(badge);
+
+                    // Guardar en variable global
+                    if (!productosDescartados[idSolicitud]) {
+                        productosDescartados[idSolicitud] = [];
+                    }
+                    productosDescartados[idSolicitud].push(numLinea);
+
+                    // Actualizar iconos
+                    lucide.createIcons();
+
+                    // Actualizar estado del botón de aprobar
+                    actualizarEstadoSolicitud(idSolicitud);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Producto descartado',
+                        text: 'El producto ha sido descartado y ya no es obligatorio.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
         }
-        console.log(`❌ Botón DESHABILITADO para solicitud ${solicitudDiv.dataset.id}`);
-    }
-}
 
-// ========== FUNCIÓN PARA CONFIGURAR EVENT LISTENERS ==========
+        function restaurarProducto(idSolicitud, numLinea, botonElement) {
+            const productoItem = botonElement.closest('.producto-item');
+            const nombreProducto = productoItem.querySelector('.producto-name').textContent;
 
-function configurarEventListenersSolicitud(solicitudDiv) {
-    const idSolicitud = solicitudDiv.dataset.id;
-    
-    // Event listeners para cambios en cantidades
-    solicitudDiv.querySelectorAll('.cantidad-suplir-input').forEach(input => {
-        // Remover listeners existentes primero
-        const nuevoInput = input.cloneNode(true);
-        input.parentNode.replaceChild(nuevoInput, input);
-        
-        // Agregar nuevo listener
-        nuevoInput.addEventListener('input', function() {
-            const valor = parseInt(this.value) || 0;
-            const cantidadInicial = parseInt(this.dataset.cantidadInicial);
-            const minPermitido = Math.ceil(cantidadInicial * 0.6);
-            
-            if (valor < minPermitido) {
-                this.classList.add('cantidad-input-invalido');
-            } else {
-                this.classList.remove('cantidad-input-invalido');
+            // Quitar clase de descartado
+            productoItem.classList.remove('producto-descartado');
+
+            // Habilitar todos los inputs y selects
+            productoItem.querySelectorAll('input, select, button').forEach(element => {
+                element.disabled = false;
+                element.style.pointerEvents = '';
+            });
+
+            // Remover badge de descartado
+            const badge = productoItem.querySelector('.producto-descartado-badge');
+            if (badge) badge.remove();
+
+            // Remover botón de restaurar
+            botonElement.remove();
+
+            // Mostrar botón de descartar nuevamente
+            const btnDescartar = productoItem.querySelector('.btn-descartar-producto');
+            if (btnDescartar) {
+                btnDescartar.style.display = '';
             }
-            
-            // Actualizar estado del botón
-            setTimeout(() => actualizarEstadoSolicitud(idSolicitud), 100);
-        });
-        
-        nuevoInput.addEventListener('change', function() {
-            const numLinea = this.dataset.linea;
-            validarCantidadSuplir(idSolicitud, numLinea, this);
+
+            // Remover de productos descartados
+            if (productosDescartados[idSolicitud]) {
+                const index = productosDescartados[idSolicitud].indexOf(numLinea);
+                if (index > -1) {
+                    productosDescartados[idSolicitud].splice(index, 1);
+                }
+            }
+
+            // Actualizar iconos
+            lucide.createIcons();
+
+            // Actualizar estado del botón de aprobar
             actualizarEstadoSolicitud(idSolicitud);
-        });
-    });
-    
-    // Event listeners para cambios en proveedores
-    solicitudDiv.querySelectorAll('.proveedor-select').forEach(select => {
-        // Remover listeners existentes primero
-        const nuevoSelect = select.cloneNode(true);
-        select.parentNode.replaceChild(nuevoSelect, select);
-        
-        nuevoSelect.addEventListener('change', function() {
-            const numLinea = this.closest('[data-linea]').dataset.linea;
-            cambiarProveedor(idSolicitud, numLinea, this.value);
-            
-            // Actualizar contador y botón
-            actualizarContadorProvAsignados(idSolicitud);
-            actualizarEstadoSolicitud(idSolicitud);
-        });
-    });
-}
 
-// ========== FUNCIÓN PARA ACTUALIZAR ESTADO ==========
+            Swal.fire({
+                icon: 'success',
+                title: 'Producto restaurado',
+                text: 'El producto ha sido restaurado y ahora es obligatorio nuevamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
 
-function actualizarEstadoSolicitud(idSolicitud) {
-    const solicitudDiv = document.querySelector(`.solicitud-card[data-id="${idSolicitud}"]`);
-    if (!solicitudDiv) return;
-    
-    const selects = solicitudDiv.querySelectorAll('.proveedor-select');
-    const provAsignados = parseInt(solicitudDiv.dataset.provAsignados || 0);
-    
-    verificarBotonAprobar(solicitudDiv, provAsignados, selects.length);
-}
+        // ========== NUEVA FUNCIÓN PARA INICIALIZAR TODO ==========
 
-// ========== MODIFICAR LA FUNCIÓN cambiarProveedor ==========
+        function inicializarTodasLasSolicitudes() {
+            console.log("Inicializando todas las solicitudes...");
 
-function cambiarProveedor(idSolicitud, numLinea, rifProveedor) {
-    console.log(`Cambiando proveedor: ${idSolicitud}, ${numLinea}, ${rifProveedor}`);
-    
-    // Guardar asignación
-    if (!asignacionesProveedor[idSolicitud]) {
-        asignacionesProveedor[idSolicitud] = {};
-    }
-    asignacionesProveedor[idSolicitud][numLinea] = rifProveedor;
-    
-    // Actualizar contador
-    const solicitudDiv = document.querySelector(`.solicitud-card[data-id="${idSolicitud}"]`);
-    if (solicitudDiv) {
-        let provAsignados = 0;
-        solicitudDiv.querySelectorAll('.proveedor-select').forEach(select => {
-            if (select.value && select.value.trim() !== "") {
-                provAsignados++;
+            document.querySelectorAll('.solicitud-card').forEach(solicitudDiv => {
+                const idSolicitud = solicitudDiv.dataset.id;
+                console.log(`Procesando solicitud ${idSolicitud}`);
+
+                // 1. Contar proveedores asignados inicialmente
+                const selects = solicitudDiv.querySelectorAll('.proveedor-select');
+                let provAsignados = 0;
+
+                selects.forEach(select => {
+                    // Verificar si el select tiene un valor seleccionado
+                    if (select.value && select.value.trim() !== "") {
+                        provAsignados++;
+                        console.log(`  Select con proveedor: ${select.value}`);
+                    } else {
+                        console.log(`  Select sin proveedor`);
+                    }
+                });
+
+                solicitudDiv.dataset.provAsignados = provAsignados;
+                console.log(`  Proveedores asignados: ${provAsignados}/${selects.length}`);
+
+                // 2. Inicializar y validar TODAS las cantidades
+                const inputsCantidad = solicitudDiv.querySelectorAll('.cantidad-suplir-input');
+                let todasCantidadesValidas = true;
+
+                inputsCantidad.forEach(input => {
+                    const valor = parseInt(input.value) || 0;
+                    const cantidadInicial = parseInt(input.dataset.cantidadInicial) || 0;
+                    const minPermitido = Math.ceil(cantidadInicial * 0.6);
+
+                    console.log(`  Cantidad: ${valor}/${cantidadInicial}, Mínimo: ${minPermitido}`);
+
+                    // Validar si cumple con el mínimo
+                    if (valor < minPermitido) {
+                        console.log(`  ❌ Cantidad INVALIDA para línea ${input.dataset.linea}`);
+                        input.classList.add('cantidad-input-invalido');
+                        todasCantidadesValidas = false;
+                    } else {
+                        console.log(`  ✅ Cantidad válida para línea ${input.dataset.linea}`);
+                        input.classList.remove('cantidad-input-invalido');
+                    }
+
+                    // Guardar en cantidadesSuplir
+                    if (!cantidadesSuplir[idSolicitud]) {
+                        cantidadesSuplir[idSolicitud] = {};
+                    }
+                    cantidadesSuplir[idSolicitud][input.dataset.linea] = {
+                        valor: valor,
+                        valido: (valor >= minPermitido),
+                        porcentaje: cantidadInicial > 0 ? (valor / cantidadInicial * 100) : 0
+                    };
+                });
+
+                // 3. Verificar estado inicial del botón
+                verificarBotonAprobar(solicitudDiv, provAsignados, selects.length, todasCantidadesValidas);
+
+                // 4. Configurar event listeners
+                configurarEventListenersSolicitud(solicitudDiv);
+            });
+        }
+
+        // ========== FUNCIÓN MEJORADA PARA VERIFICAR BOTÓN ==========
+
+        function verificarBotonAprobar(solicitudDiv, provAsignados, totalProductos, todasCantidadesValidas = null) {
+            const botonAprobar = solicitudDiv.querySelector('.btn-success');
+            if (!botonAprobar) return;
+
+            const idSolicitud = solicitudDiv.dataset.id;
+
+            // Contar productos NO descartados
+            const productosNoDescartados = solicitudDiv.querySelectorAll('.producto-item:not(.producto-descartado)').length;
+
+            // Contar proveedores asignados solo en productos no descartados
+            let provAsignadosNoDescartados = 0;
+            solicitudDiv.querySelectorAll('.producto-item:not(.producto-descartado) .proveedor-select').forEach(select => {
+                if (select.value && select.value.trim() !== "") {
+                    provAsignadosNoDescartados++;
+                }
+            });
+
+            // Verificar cantidades solo en productos no descartados
+            if (todasCantidadesValidas === null) {
+                todasCantidadesValidas = true;
+                solicitudDiv.querySelectorAll('.producto-item:not(.producto-descartado) .cantidad-suplir-input').forEach(input => {
+                    const valor = parseInt(input.value) || 0;
+                    const cantidadInicial = parseInt(input.dataset.cantidadInicial);
+                    const minPermitido = Math.ceil(cantidadInicial * 0.6);
+
+                    if (valor < minPermitido) {
+                        todasCantidadesValidas = false;
+                    }
+                });
             }
-        });
-        
-        solicitudDiv.dataset.provAsignados = provAsignados;
-        
-        // Actualizar visualmente
-        const summaryItems = solicitudDiv.querySelectorAll('.summary-content .summary-item');
-        if (summaryItems.length >= 2) {
-            const proveedoresItem = summaryItems[1];
-            const contadorElement = proveedoresItem.querySelector('p');
-            
-            if (contadorElement) {
-                contadorElement.textContent = `${provAsignados} de ${solicitudDiv.querySelectorAll('.proveedor-select').length}`;
-                contadorElement.style.color = provAsignados > 0 ? 'var(--success-color)' : 'var(--warning-color)';
+
+            const proveedoresCompletos = provAsignadosNoDescartados === productosNoDescartados && productosNoDescartados > 0;
+
+            console.log(`Verificando botón: 
+        Productos totales: ${totalProductos}
+        Productos descartados: ${productosDescartados[idSolicitud] ? productosDescartados[idSolicitud].length : 0}
+        Productos activos: ${productosNoDescartados}
+        Proveedores asignados: ${provAsignadosNoDescartados}/${productosNoDescartados}
+        Cantidades válidas: ${todasCantidadesValidas}`);
+
+            if (proveedoresCompletos && todasCantidadesValidas && productosNoDescartados > 0) {
+                botonAprobar.disabled = false;
+                botonAprobar.classList.remove('btn-disabled');
+                botonAprobar.style.opacity = '1';
+                botonAprobar.style.cursor = 'pointer';
+                botonAprobar.title = 'Aprobar con presupuesto';
+            } else {
+                botonAprobar.disabled = true;
+                botonAprobar.classList.add('btn-disabled');
+                botonAprobar.style.opacity = '0.6';
+                botonAprobar.style.cursor = 'not-allowed';
+
+                if (productosNoDescartados === 0) {
+                    botonAprobar.title = 'Todos los productos han sido descartados';
+                } else if (!proveedoresCompletos) {
+                    botonAprobar.title = `Faltan ${productosNoDescartados - provAsignadosNoDescartados} proveedores por asignar`;
+                } else if (!todasCantidadesValidas) {
+                    botonAprobar.title = 'Algunas cantidades no cumplen el mínimo del 60%';
+                }
             }
         }
-    }
-}
 
-// ========== FUNCIÓN PARA CARGAR ASIGNACIONES EXISTENTES ==========
+        // ========== FUNCIÓN PARA CONFIGURAR EVENT LISTENERS ==========
 
-function cargarAsignacionesExistentes() {
-    document.querySelectorAll('.proveedor-select[selected]').forEach(select => {
-        const solicitudId = select.closest('.solicitud-card').dataset.id;
-        const numLinea = select.closest('[data-linea]').dataset.linea;
-        const rifProveedor = select.value;
+        function configurarEventListenersSolicitud(solicitudDiv) {
+            const idSolicitud = solicitudDiv.dataset.id;
 
-        if (solicitudId && numLinea && rifProveedor) {
-            cambiarProveedor(solicitudId, numLinea, rifProveedor);
-            
-            // Actualizar estado después de cargar
-            setTimeout(() => {
-                actualizarEstadoSolicitud(solicitudId);
-            }, 500);
+            // Event listeners para cambios en cantidades
+            solicitudDiv.querySelectorAll('.cantidad-suplir-input').forEach(input => {
+                // Remover listeners existentes primero
+                const nuevoInput = input.cloneNode(true);
+                input.parentNode.replaceChild(nuevoInput, input);
+
+                // Agregar nuevo listener
+                nuevoInput.addEventListener('input', function () {
+                    const valor = parseInt(this.value) || 0;
+                    const cantidadInicial = parseInt(this.dataset.cantidadInicial);
+                    const minPermitido = Math.ceil(cantidadInicial * 0.6);
+
+                    if (valor < minPermitido) {
+                        this.classList.add('cantidad-input-invalido');
+                    } else {
+                        this.classList.remove('cantidad-input-invalido');
+                    }
+
+                    // Actualizar estado del botón
+                    setTimeout(() => actualizarEstadoSolicitud(idSolicitud), 100);
+                });
+
+                nuevoInput.addEventListener('change', function () {
+                    const numLinea = this.dataset.linea;
+                    validarCantidadSuplir(idSolicitud, numLinea, this);
+                    actualizarEstadoSolicitud(idSolicitud);
+                });
+            });
+
+            // Event listeners para cambios en proveedores
+            solicitudDiv.querySelectorAll('.proveedor-select').forEach(select => {
+                // Remover listeners existentes primero
+                const nuevoSelect = select.cloneNode(true);
+                select.parentNode.replaceChild(nuevoSelect, select);
+
+                nuevoSelect.addEventListener('change', function () {
+                    const numLinea = this.closest('[data-linea]').dataset.linea;
+                    cambiarProveedor(idSolicitud, numLinea, this.value);
+
+                    // Actualizar contador y botón
+                    actualizarContadorProvAsignados(idSolicitud);
+                    actualizarEstadoSolicitud(idSolicitud);
+                });
+            });
         }
-    });
-}
 
-// ========== AGREGAR ESTILOS CSS ==========
+        // ========== FUNCIÓN PARA ACTUALIZAR ESTADO ==========
 
-const estilosBotones = document.createElement('style');
-estilosBotones.textContent = `
+        function actualizarEstadoSolicitud(idSolicitud) {
+            const solicitudDiv = document.querySelector(`.solicitud-card[data-id="${idSolicitud}"]`);
+            if (!solicitudDiv) return;
+
+            const selects = solicitudDiv.querySelectorAll('.proveedor-select');
+            const provAsignados = parseInt(solicitudDiv.dataset.provAsignados || 0);
+
+            verificarBotonAprobar(solicitudDiv, provAsignados, selects.length);
+        }
+
+        // ========== MODIFICAR LA FUNCIÓN cambiarProveedor ==========
+
+        function cambiarProveedor(idSolicitud, numLinea, rifProveedor) {
+            console.log(`Cambiando proveedor: ${idSolicitud}, ${numLinea}, ${rifProveedor}`);
+
+            // Guardar asignación
+            if (!asignacionesProveedor[idSolicitud]) {
+                asignacionesProveedor[idSolicitud] = {};
+            }
+            asignacionesProveedor[idSolicitud][numLinea] = rifProveedor;
+
+            // Actualizar contador
+            const solicitudDiv = document.querySelector(`.solicitud-card[data-id="${idSolicitud}"]`);
+            if (solicitudDiv) {
+                let provAsignados = 0;
+                solicitudDiv.querySelectorAll('.proveedor-select').forEach(select => {
+                    if (select.value && select.value.trim() !== "") {
+                        provAsignados++;
+                    }
+                });
+
+                solicitudDiv.dataset.provAsignados = provAsignados;
+
+                // Actualizar visualmente
+                const summaryItems = solicitudDiv.querySelectorAll('.summary-content .summary-item');
+                if (summaryItems.length >= 2) {
+                    const proveedoresItem = summaryItems[1];
+                    const contadorElement = proveedoresItem.querySelector('p');
+
+                    if (contadorElement) {
+                        contadorElement.textContent = `${provAsignados} de ${solicitudDiv.querySelectorAll('.proveedor-select').length}`;
+                        contadorElement.style.color = provAsignados > 0 ? 'var(--success-color)' : 'var(--warning-color)';
+                    }
+                }
+            }
+        }
+
+        // ========== FUNCIÓN PARA CARGAR ASIGNACIONES EXISTENTES ==========
+
+        function cargarAsignacionesExistentes() {
+            document.querySelectorAll('.proveedor-select[selected]').forEach(select => {
+                const solicitudId = select.closest('.solicitud-card').dataset.id;
+                const numLinea = select.closest('[data-linea]').dataset.linea;
+                const rifProveedor = select.value;
+
+                if (solicitudId && numLinea && rifProveedor) {
+                    cambiarProveedor(solicitudId, numLinea, rifProveedor);
+
+                    // Actualizar estado después de cargar
+                    setTimeout(() => {
+                        actualizarEstadoSolicitud(solicitudId);
+                    }, 500);
+                }
+            });
+        }
+
+        // ========== AGREGAR ESTILOS CSS ==========
+
+        const estilosBotones = document.createElement('style');
+        estilosBotones.textContent = `
     .btn-disabled {
         background-color: var(--gray-300) !important;
         border-color: var(--gray-400) !important;
@@ -2302,7 +2562,7 @@ estilosBotones.textContent = `
         animation: shake 0.5s;
     }
 `;
-document.head.appendChild(estilosBotones);
+        document.head.appendChild(estilosBotones);
 
 
         // ========== EVENT LISTENERS ==========
@@ -2365,6 +2625,56 @@ document.head.appendChild(estilosBotones);
     }
 `;
         document.head.appendChild(estilosCantidad);
+        // Agrega estos estilos al final del script
+        const estilosDescartar = document.createElement('style');
+        estilosDescartar.textContent = `
+    .producto-descartado {
+        opacity: 0.6;
+        background-color: var(--gray-100) !important;
+        border: 2px dashed var(--gray-400) !important;
+        pointer-events: none;
+        user-select: none;
+    }
+    
+    .producto-descartado .producto-header {
+        text-decoration: line-through;
+        color: var(--gray-500) !important;
+    }
+    
+    .producto-descartado .btn-descartar-producto {
+        display: none !important;
+    }
+    
+    .producto-descartado .proveedor-asignacion {
+        display: none !important;
+    }
+    
+    .producto-descartado-badge {
+        background-color: var(--danger-color) !important;
+        color: white !important;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+    
+    .producto-restaurar-btn {
+        background: var(--success-color) !important;
+        color: white !important;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        margin-top: 0.5rem;
+    }
+    
+    .producto-restaurar-btn:hover {
+        background: #2E7D32 !important;
+    }
+`;
+        document.head.appendChild(estilosDescartar);
     </script>
 </body>
 

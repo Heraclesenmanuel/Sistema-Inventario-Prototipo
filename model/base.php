@@ -7,7 +7,15 @@ class Base
         $this->db = (new BaseDatos())->conectar();
     }
     public function cargarOficinas() {
-        $sql = "SELECT num_oficina, nombre FROM oficina";
+        $sql_extra = "WHERE of_u.id_usuario = " . $_SESSION['id'];
+        if($_SESSION['dpto'] == 3 || $_SESSION['dpto'] == 4)
+        {
+            $sql_extra = 'GROUP BY o.nombre';
+        }
+        $sql = "SELECT of_u.num_oficina, nombre 
+                FROM ofic_usuario of_u
+                INNER JOIN oficina o ON o.num_oficina=of_u.num_oficina
+                " . $sql_extra;
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -41,7 +49,21 @@ class Base
         return $valores;
     }
     public function getTipos() {
-        $sql = "SELECT id_tipo, nombre FROM tipo_prod";
+        $sql = "SELECT tp.id_tipo,
+       tp.nombre,
+       COALESCE(SUM(ps.un_deseadas), 0) AS cant_solic,
+       COALESCE(SUM(rp.un_anadidas), 0) AS cant_pend
+FROM tipo_prod tp
+LEFT JOIN producto p
+       ON tp.id_tipo = p.id_tipo
+LEFT JOIN prod_solic ps
+       ON p.id_producto = ps.id_producto
+LEFT JOIN registro_prod rp
+       ON ps.id_solicitud = rp.id_solicitud
+      AND ps.num_linea   = rp.num_linea
+GROUP BY tp.id_tipo, tp.nombre;
+;
+";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();

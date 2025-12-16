@@ -6,6 +6,186 @@ class Solicitud extends Base
     {
         return count(array_filter($solicitudes, fn($solicitud) => $solicitud['estado'] !== "En revision"));
     }
+    public function generarNotificacionRechazada($idUsuario, $idSolicitud, $motivo = '')
+    {
+        try {
+            // Insertar la notificación
+            $query = "INSERT INTO notificacion (tipo, fecha_notif) VALUES (1, NOW())";
+            $result = $this->db->query($query);
+
+            if (!$result) {
+                throw new Exception("Error al insertar notificación: " . $this->db->error);
+            }
+
+            $idNotif = $this->db->insert_id;
+
+            // Insertar en receptor_notif con subtítulo personalizado
+            $subtitulo = "Solicitud #{$idSolicitud} rechazada";
+            if (!empty($motivo)) {
+                $subtitulo .= " - Motivo: {$motivo}";
+            }
+
+            $queryReceptor = "INSERT INTO receptor_notif (id_usuario, id_notif, leido, subtitulo) 
+                             VALUES (?, ?, 0, ?)";
+            $stmtReceptor = $this->db->prepare($queryReceptor);
+            $stmtReceptor->bind_param("iis", $idUsuario, $idNotif, $subtitulo);
+
+            if (!$stmtReceptor->execute()) {
+                throw new Exception("Error al insertar receptor: " . $stmtReceptor->error);
+            }
+
+            $stmtReceptor->close();
+            return true;
+
+        } catch (Exception $e) {
+            error_log("Error al generar notificación de rechazo: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function generarNotificacionRevisionPendiente($idUsuario, $idSolicitud)
+    {
+        try {
+            // Obtener usuarios con rol de Presupuesto (id_cargo = 4)
+            $queryUsuarios = "SELECT id_usuario FROM usuario WHERE id_cargo = 4";
+            $resultUsuarios = $this->db->query($queryUsuarios);
+
+            if (!$resultUsuarios) {
+                throw new Exception("Error al obtener usuarios: " . $this->db->error);
+            }
+
+            $usuariosPresupuesto = [];
+            while ($row = $resultUsuarios->fetch_assoc()) {
+                $usuariosPresupuesto[] = $row['id_usuario'];
+            }
+
+            if (empty($usuariosPresupuesto)) {
+                return false;
+            }
+
+            // Insertar una notificación
+            $queryNotif = "INSERT INTO notificacion (tipo, fecha_notif) VALUES (2, NOW())";
+            $resultNotif = $this->db->query($queryNotif);
+
+            if (!$resultNotif) {
+                throw new Exception("Error al insertar notificación: " . $this->db->error);
+            }
+
+            $idNotif = $this->db->insert_id;
+            $subtitulo = "Solicitud #{$idSolicitud} necesita revisión";
+
+            // Para cada usuario de presupuesto, crear registro en receptor_notif
+            $queryReceptor = "INSERT INTO receptor_notif (id_usuario, id_notif, leido, subtitulo) 
+                             VALUES (?, ?, 0, ?)";
+            $stmtReceptor = $this->db->prepare($queryReceptor);
+
+            foreach ($usuariosPresupuesto as $usuarioId) {
+                $stmtReceptor->bind_param("iis", $usuarioId, $idNotif, $subtitulo);
+                if (!$stmtReceptor->execute()) {
+                    error_log("Error al insertar receptor para usuario {$usuarioId}: " . $stmtReceptor->error);
+                }
+            }
+
+            $stmtReceptor->close();
+            return true;
+
+        } catch (Exception $e) {
+            error_log("Error al generar notificación de revisión pendiente: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function generarNotificacionAceptada($idUsuario, $idSolicitud)
+    {
+        try {
+            // Insertar la notificación
+            $query = "INSERT INTO notificacion (tipo, fecha_notif) VALUES (3, NOW())";
+            $result = $this->db->query($query);
+
+            if (!$result) {
+                throw new Exception("Error al insertar notificación: " . $this->db->error);
+            }
+
+            $idNotif = $this->db->insert_id;
+
+            // Insertar en receptor_notif
+            $subtitulo = "Solicitud #{$idSolicitud} aprobada exitosamente";
+
+            $queryReceptor = "INSERT INTO receptor_notif (id_usuario, id_notif, leido, subtitulo) 
+                             VALUES (?, ?, 0, ?)";
+            $stmtReceptor = $this->db->prepare($queryReceptor);
+            $stmtReceptor->bind_param("iis", $idUsuario, $idNotif, $subtitulo);
+
+            if (!$stmtReceptor->execute()) {
+                throw new Exception("Error al insertar receptor: " . $stmtReceptor->error);
+            }
+
+            $stmtReceptor->close();
+            return true;
+
+        } catch (Exception $e) {
+            error_log("Error al generar notificación de aceptación: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function obtenerIdSolicitante($idSolicitud)
+    {
+        try {
+            $query = "SELECT id_solicitante FROM solicitud WHERE id_solicitud = ?";
+            $stmt = $this->db->prepare($query);
+            $stmt->bind_param("i", $idSolicitud);
+            $stmt->execute();
+
+            $resultado = $stmt->get_result();
+            $row = $resultado->fetch_assoc();
+            $stmt->close();
+
+            return $row ? $row['id_solicitante'] : null;
+
+        } catch (Exception $e) {
+            error_log("Error al obtener solicitante: " . $e->getMessage());
+            return null;
+        }
+    }
+    public function getLastInsertId()
+    {
+        return $this->db->insert_id;
+    }
+    public function generarNotificacionPersonalizada($idUsuario, $tipo, $subtitulo = '')
+    {
+        try {
+            // Insertar la notificación
+            $query = "INSERT INTO notificacion (tipo, fecha_notif) VALUES (?, NOW())";
+            $stmt = $this->db->prepare($query);
+            $stmt->bind_param("i", $tipo);
+            
+            if (!$stmt->execute()) {
+                throw new Exception("Error al insertar notificación: " . $stmt->error);
+            }
+            
+            $idNotif = $this->db->insert_id;
+            $stmt->close();
+            
+            // Si se proporciona un usuario específico
+            if ($idUsuario) {
+                $queryReceptor = "INSERT INTO receptor_notif (id_usuario, id_notif, leido, subtitulo) 
+                                 VALUES (?, ?, 0, ?)";
+                $stmtReceptor = $this->db->prepare($queryReceptor);
+                $stmtReceptor->bind_param("iis", $idUsuario, $idNotif, $subtitulo);
+                
+                if (!$stmtReceptor->execute()) {
+                    throw new Exception("Error al insertar receptor: " . $stmtReceptor->error);
+                }
+                
+                $stmtReceptor->close();
+            }
+            
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Error al generar notificación personalizada: " . $e->getMessage());
+            return false;
+        }
+    }
     public function actualizarEstadoSolicitud($idSolicitud, $nuevoEstado, $motivo)
     {
         $sql = "UPDATE solicitud SET
@@ -16,6 +196,16 @@ class Solicitud extends Base
         $stmt->bind_param('ssi', $nuevoEstado, $motivo, $idSolicitud);
         $stmt->execute();
         return $stmt->affected_rows;
+    }
+    public function validarProducto($idProducto)
+    {
+        $sql = "UPDATE producto SET
+                valido = 1
+                WHERE id_producto = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('i', $idProducto);
+        $result = $stmt->execute();
+        return $result;
     }
     public function obtenerSolicitudes()
     {
@@ -57,24 +247,129 @@ class Solicitud extends Base
     }
     public function cargarProds()
     {
-        $sql = "SELECT * FROM producto";
+        $sql = "SELECT p.*, ps.un_deseadas
+                FROM producto p
+                LEFT JOIN prod_solic ps ON p.id_producto=ps.id_producto";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();
-        $oficinas = [];
+        $productos = [];
 
         while ($row = $result->fetch_assoc()) {
-            $oficinas[] = $row;
+            $productos[] = $row;
         }
 
         return [
-            'data' => $oficinas,
+            'data' => $productos,
             'success' => true
         ];
     }
+ public function getUsuariosPorRol($idRol)
+    {
+        $query = "SELECT id_usuario FROM usuario WHERE id_cargo = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $idRol);
+        $stmt->execute();
+        
+        $resultado = $stmt->get_result();
+        $usuarios = [];
+        
+        while ($row = $resultado->fetch_assoc()) {
+            $usuarios[] = $row['id_usuario'];
+        }
+        
+        $stmt->close();
+        return $usuarios;
+    }
+    
+    /**
+     * Obtener detalles del solicitante
+     */
+    public function getSolicitanteInfo($idSolicitud)
+    {
+        $query = "SELECT u.id_usuario, u.nombre, u.correo 
+                  FROM solicitud s 
+                  INNER JOIN usuario u ON s.id_solicitante = u.id_usuario 
+                  WHERE s.id_solicitud = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $idSolicitud);
+        $stmt->execute();
+        
+        $resultado = $stmt->get_result();
+        $row = $resultado->fetch_assoc();
+        $stmt->close();
+        
+        return $row;
+    }
+    
+    /**
+     * Obtener notificaciones no leídas de un usuario
+     */
+    public function getNotificacionesNoLeidas($idUsuario)
+    {
+        $query = "SELECT n.id_notif, n.tipo, n.fecha_notif, tn.mensaje, rn.subtitulo, rn.leido
+                  FROM receptor_notif rn
+                  INNER JOIN notificacion n ON rn.id_notif = n.id_notif
+                  INNER JOIN tipo_notif tn ON n.tipo = tn.id_tipo_notif
+                  WHERE rn.id_usuario = ? AND rn.leido = 0
+                  ORDER BY n.fecha_notif DESC";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $idUsuario);
+        $stmt->execute();
+        
+        $resultado = $stmt->get_result();
+        $notificaciones = [];
+        
+        while ($row = $resultado->fetch_assoc()) {
+            $notificaciones[] = $row;
+        }
+        
+        $stmt->close();
+        return $notificaciones;
+    }
+    
+    /**
+     * Marcar notificación como leída
+     */
+    public function marcarNotificacionLeida($idUsuario, $idNotif)
+    {
+        $query = "UPDATE receptor_notif SET leido = 1 
+                  WHERE id_usuario = ? AND id_notif = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("ii", $idUsuario, $idNotif);
+        
+        $resultado = $stmt->execute();
+        $stmt->close();
+        
+        return $resultado;
+    }
+    public function insertarRegistrosProductos($id_solicitud, $asignaciones)
+    {
+        foreach ($asignaciones as $asignacion) {
+            $sql = "INSERT INTO registro_prod 
+                (id_solicitud, num_linea, un_anadidas, fecha_r) 
+                VALUES (?, ?, ?, NOW())";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param(
+                "iii",
+                $asignacion['id_solicitud'],
+                $asignacion['num_linea'],
+                $asignacion['cantidad_suplir']
+            );
+
+            if (!$stmt->execute() || !$this->validarProducto($asignacion['id_producto'])) {
+                throw new Exception("Error insertando registro_prod: " . $stmt->error);
+            }
+
+            $stmt->close();
+        }
+    }
     public function getProdsPorIdSolic($id_solicitud)
     {
-        $sql = "SELECT ps.*, p.nombre, p.medida, t.nombre as nombre_tipo FROM prod_solic ps 
+        $sql = "SELECT ps.*, p.nombre, p.medida, p.id_tipo, t.nombre as nombre_tipo, ps.un_deseadas
+                FROM prod_solic ps 
                 INNER JOIN solicitud s ON s.id_solicitud = ps.id_solicitud
                 INNER JOIN producto p ON ps.id_producto=p.id_producto
                 INNER JOIN tipo_prod t ON p.id_tipo = t.id_tipo
@@ -102,6 +397,7 @@ class Solicitud extends Base
         $stmt->bind_param('i', $id);
         $resultado = $stmt->execute();
 
+        error_log("ELIMINANDO");
         return $resultado;
     }
     public function validarTiposDatos($datos, $stmt, $id = null)
@@ -145,7 +441,7 @@ class Solicitud extends Base
         // Asegúrate de que estás recibiendo los datos correctos
         error_log("Datos recibidos en guardarProdInvalido: " . print_r($prod, true));
 
-        $stmt = $this->db->prepare("INSERT INTO producto (nombre, medida, id_tipo, valido) VALUES (?, ?, ?, 0)");
+        $stmt = $this->db->prepare("INSERT INTO producto (nombre, medida, id_tipo, fecha_r, valido) VALUES (?, ?, ?, NOW(), 0)");
 
         if (!$stmt) {
             error_log("Error preparando la consulta del producto invalido: " . $this->db->error);
@@ -304,9 +600,12 @@ class Solicitud extends Base
     {
         // Estadísticas por estado (para gráfico de torta)
         $sqlEstados = "SELECT 
-                        nombre, 
-                        SUM(un_disponibles) as cantidad,
-                        ROUND(SUM(un_disponibles) * 100.0 / (SELECT SUM(un_disponibles) FROM producto), 2) as porcentaje
+                        p.nombre, 
+                        SUM(rp.un_anadidas) as cantidad,
+                        ROUND(SUM(rp.un_anadidas) * 100.0 / (SELECT SUM(rp.un_anadidas) FROM producto 
+                        INNER JOIN prod_solic ps ON p.id_producto=ps.id_producto
+                        INNER JOIN registro_prod rp ON rp.id_solicitud=ps.id_solicitud
+                        AND rp.num_linea=ps.num_linea), 2) as porcentaje
                         FROM producto
                         GROUP BY nombre";
 

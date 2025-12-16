@@ -44,7 +44,7 @@ class InventarioController extends AdminController
     {
         $this->validarSesion();
         $titulo = 'Categorias';
-        $categorias = $this->inventario->getTiposCompleto();
+        $categorias = $this->inventario->getTipos();
             if (isset($_POST['add'])) {
             // Sanitizar y validar datos antes de guardar
             $datos = [

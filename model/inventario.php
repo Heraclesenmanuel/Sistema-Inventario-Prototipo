@@ -3,10 +3,13 @@ require_once 'model/base.php';
 class Inventario extends Base {
 
     public function obtenerDatos(){
-        $sql = 'SELECT p.*, tp.nombre as tipo 
+        $sql = 'SELECT p.*, tp.nombre as tipo, SUM(rp.un_anadidas) as un_disponibles
                 FROM producto p 
                 INNER JOIN tipo_prod tp ON p.id_tipo=tp.id_tipo
-                WHERE valido=1';
+                INNER JOIN prod_solic ps ON p.id_producto=ps.id_producto
+                INNER JOIN registro_prod rp ON ps.id_solicitud=rp.id_solicitud AND ps.num_linea=rp.num_linea
+                WHERE valido=1
+                GROUP BY p.nombre';
         $resultado = $this->db->query($sql);
 
         if(!$resultado) {

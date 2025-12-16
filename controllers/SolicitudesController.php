@@ -18,12 +18,9 @@ class SolicitudesController extends AdminController
         $productos = $this->getProductos();
 
         if (isset($_POST['departamento'])) {
-            if($this->agregarSolic())
-            {
+            if ($this->agregarSolic()) {
                 header('Location: ?action=solicitudes&method=home');
-            }
-            else
-            {
+            } else {
                 header('Location: ?action=solicitudes&method=home&error=1');
             }
         }
@@ -36,39 +33,6 @@ class SolicitudesController extends AdminController
             $cant_solicts_no_en_rev = $this->solicitudes->contarSolictsNoEnRev($solicitudes);
             require_once 'views/solicitudes/index.php';
         }
-    }
-    public function agregarSolic($edit = null)
-    {
-        // Sanitizar y validar datos antes de guardar
-        $datosSolic = [
-            'oficina' => trim($_POST['departamento'] ?? 'N/A'),
-            'fecha_deseada' => trim($_POST['fecha_requerida'] ?? 'N/A'),
-            'oficina_solic' => trim($_POST['departamento'] ?? 'N/A'),
-            'comentarios' => trim($_POST['notas'] ?? 'N/A'),
-            'id_solicitante' => (int)$_POST['id_solicitante']
-        ];
-        if ($edit) {
-            $datosSolic['id_solicitud'] = (int) $_POST['request_id'];
-        }
-
-        $productos = $this->procesarProds();
-        if (empty($datosSolic['oficina']) && empty($productos[0]['nombre'])) {
-            error_log("uno de los datos esta vacio");
-            return false;
-        } else if ($edit) {
-            $set_aceptar = $_SESSION['dpto'] == 4;
-            if ($this->solicitudes->eliminarSolicitud($datosSolic['id_solicitud']) && $this->solicitudes->guardarSolicitud($datosSolic, $datosSolic['id_solicitud']) && $this->solicitudes->guardarProdsSolic($productos)) {
-                return true;
-            }
-        } else if ($this->solicitudes->guardarSolicitud($datosSolic) && $this->solicitudes->guardarProdsSolic($productos)) {
-            return true;
-        } else {
-            error_log("caso de interes");
-            error_log(print_r($productos, true));
-            error_log("No se completo una de las transacciones");
-            return false;
-        }
-        exit();
     }
     public function procesarProds()
     {
@@ -138,59 +102,6 @@ class SolicitudesController extends AdminController
         ]);
         exit();
     }
-    public function cambiarEstado()
-    {
-        header('Content-Type: application/json');
-
-        try {
-            // Verificar si es una solicitud POST
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Método no permitido'
-                ]);
-            }
-            // Obtener datos del POST
-            $idSolicitud = $_POST['id_solicitud'] ?? null;
-            $nuevoEstado = $_POST['nuevo_estado'] ?? null;
-            $motivo = $_POST['motivo'] ?? '';
-
-            // Validar datos requeridos
-            if (!$idSolicitud || !$nuevoEstado) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Datos incompletos'
-                ]);
-            }
-
-            // Validar estado permitido
-            $estadosPermitidos = ['Aprobado', 'Rechazado', 'En Revisión'];
-            if (!in_array($nuevoEstado, $estadosPermitidos)) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Estado no válido'
-                ]);
-            }
-            $actualizado = $this->solicitudes->actualizarEstadoSolicitud($idSolicitud, $nuevoEstado, $motivo);
-
-            if ($actualizado) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Solicitud colocada ' . strtolower($nuevoEstado) . ' correctamente'
-                ]);
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'No se pudo actualizar el estado de la solicitud'
-                ]);
-            }
-        } catch (Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
-            ]);
-        }
-    }
     public function obtenerDetalles()
     {
         header('Content-Type: application/json');
@@ -234,6 +145,102 @@ class SolicitudesController extends AdminController
                 'message' => 'Error al obtener detalles: ' . $e->getMessage()
             ]);
         }
+    }
+    // En tu controlador PresupuestoController.php
+
+    public function aprobarSolicitud()
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!$data || !isset($data['id_solicitud']) || !isset($data['asignaciones'])) {
+            echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
+            return;
+        }
+
+        $id_solicitud = $data['id_solicitud'];
+        $asignaciones = $data['asignaciones'];
+        $comentarios = '';
+        $productos_descartados = $data['productos_descartados'] ?? [];
+
+        try {
+            // 1. Actualizar estado de la solicitud
+            $this->solicitudes->actualizarEstadoSolicitud($id_solicitud, 'Aprobado', $comentarios);
+
+            // 2. Obtener ID del solicitante
+            $idSolicitante = $this->solicitudes->obtenerIdSolicitante($id_solicitud);
+
+            // 3. Generar notificación de aprobación
+            if ($idSolicitante) {
+                $this->solicitudes->generarNotificacionAceptada($idSolicitante, $id_solicitud);
+            }
+
+            // 4. Insertar registros en registro_prod
+            $this->solicitudes->insertarRegistrosProductos($id_solicitud, $asignaciones);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Solicitud aprobada correctamente',
+                'estado' => 'Aprobado'
+            ]);
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+    }
+    public function agregarSolic($edit = null)
+    {
+        // Sanitizar y validar datos antes de guardar
+        $datosSolic = [
+            'oficina' => trim($_POST['departamento'] ?? 'N/A'),
+            'fecha_deseada' => trim($_POST['fecha_requerida'] ?? 'N/A'),
+            'oficina_solic' => trim($_POST['departamento'] ?? 'N/A'),
+            'comentarios' => trim($_POST['notas'] ?? 'N/A'),
+            'id_solicitante' => (int) $_POST['id_solicitante']
+        ];
+
+        if ($edit) {
+            $datosSolic['id_solicitud'] = (int) $_POST['request_id'];
+        }
+
+        $productos = $this->procesarProds();
+
+        if (empty($datosSolic['oficina']) && empty($productos[0]['nombre'])) {
+            error_log("uno de los datos esta vacio");
+            return false;
+        } else if ($edit) {
+            if (
+                $this->solicitudes->eliminarSolicitud($datosSolic['id_solicitud'])
+                && $this->solicitudes->guardarSolicitud($datosSolic, $datosSolic['id_solicitud'])
+                && $this->solicitudes->guardarProdsSolic($productos)
+            ) {
+                return true;
+            }
+        } else {
+            // Guardar la solicitud
+            if (
+                $this->solicitudes->guardarSolicitud($datosSolic)
+                && $this->solicitudes->guardarProdsSolic($productos)
+            ) {
+
+                // Obtener el ID de la nueva solicitud creada
+                $idNuevaSolicitud = $this->solicitudes->getLastInsertId();
+
+                // Generar notificación de revisión pendiente para presupuesto
+                if ($idNuevaSolicitud) {
+                    $this->solicitudes->generarNotificacionRevisionPendiente(
+                        $datosSolic['id_solicitante'],
+                        $idNuevaSolicitud
+                    );
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
     public function obtenerDetallesMultiples(array $solicitudes)
     {
@@ -279,6 +286,7 @@ class SolicitudesController extends AdminController
     {
         header('Content-Type: application/json; charset=utf-8');
         try {
+            error_log("EDITANDO");
             if ($this->agregarSolic(true)) {
                 if (isset($_POST['nuevo_estado'])) {
                     $this->cambiarEstado();
@@ -294,5 +302,76 @@ class SolicitudesController extends AdminController
         // Si no entra en el if, devuelve algo por defecto
         echo json_encode(['success' => false, 'message' => 'No se pudo actualizar']);
         exit();
+    }
+    public function cambiarEstado()
+    {
+        header('Content-Type: application/json');
+
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Método no permitido'
+                ]);
+                return;
+            }
+
+            $idSolicitud = $_POST['id_solicitud'] ?? null;
+            $nuevoEstado = $_POST['nuevo_estado'] ?? null;
+            $motivo = $_POST['motivo'] ?? '';
+
+            if (!$idSolicitud || !$nuevoEstado) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Datos incompletos'
+                ]);
+                return;
+            }
+
+            // Obtener ID del solicitante
+            $idSolicitante = $this->solicitudes->obtenerIdSolicitante($idSolicitud);
+            if (!$idSolicitante) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No se pudo identificar al solicitante'
+                ]);
+                return;
+            }
+
+            $actualizado = $this->solicitudes->actualizarEstadoSolicitud($idSolicitud, $nuevoEstado, $motivo);
+
+            if ($actualizado) {
+                // Generar notificación según el estado
+                switch ($nuevoEstado) {
+                    case 'Rechazado':
+                        $this->solicitudes->generarNotificacionRechazada($idSolicitante, $idSolicitud, $motivo);
+                        break;
+
+                    case 'Aprobado':
+                        $this->solicitudes->generarNotificacionAceptada($idSolicitante, $idSolicitud);
+                        break;
+
+                    case 'En Revisión':
+                        // Cuando una solicitud pasa a revisión, notificar a presupuesto
+                        $this->solicitudes->generarNotificacionRevisionPendiente($idSolicitante, $idSolicitud);
+                        break;
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Solicitud colocada ' . strtolower($nuevoEstado) . ' correctamente'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No se pudo actualizar el estado de la solicitud'
+                ]);
+            }
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
     }
 }
